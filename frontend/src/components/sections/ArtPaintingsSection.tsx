@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Palette, X, ZoomIn, Brush, Layers, Sparkles, Maximize2 } from 'lucide-react';
+import { Palette, X, Maximize2, Brush, Layers, Sparkles } from 'lucide-react';
 import { artApi } from '@/api/content.api';
+import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
 
 interface Artwork {
   id: string | number;
@@ -13,17 +14,38 @@ interface Artwork {
   palette: string[];
 }
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.5 },
-  }),
-};
+// Curated high-resolution fallback artwork stills for the cinematic viewfinder carousel
+const FALLBACK_ARTWORKS: ViewfinderImage[] = [
+  {
+    id: 'fa1',
+    url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=1200&auto=format&fit=crop',
+    title: 'Oil on Linen Study',
+  },
+  {
+    id: 'fa2',
+    url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1200&auto=format&fit=crop',
+    title: 'Abstract Acrylic Geometry',
+  },
+  {
+    id: 'fa3',
+    url: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=1200&auto=format&fit=crop',
+    title: 'Expressive Portrait Canvas',
+  },
+  {
+    id: 'fa4',
+    url: 'https://images.unsplash.com/photo-1582561424760-0321d75e81fa?q=80&w=1200&auto=format&fit=crop',
+    title: 'Brushstrokes & Mixed Media',
+  },
+  {
+    id: 'fa5',
+    url: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=1200&auto=format&fit=crop',
+    title: 'Modern Minimalist Composition',
+  },
+];
 
 export const ArtPaintingsSection: React.FC = () => {
   const [selected, setSelected] = useState<Artwork | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const { data: dbArtworks, isLoading } = artApi.useGetAll();
 
   const artworks: Artwork[] =
@@ -41,110 +63,193 @@ export const ArtPaintingsSection: React.FC = () => {
         }))
       : [];
 
+  // Map artworks to viewfinder image format
+  const dbImages: ViewfinderImage[] = artworks
+    .filter((a) => a.imageUrl && a.imageUrl.trim() !== '')
+    .map((a) => ({
+      id: a.id,
+      url: a.imageUrl,
+      title: a.title,
+      caption: `${a.medium} • ${a.year}`,
+    }));
+
+  // Combine with fallbacks so the 1-second auto-play carousel always has active frames
+  const carouselImages =
+    dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_ARTWORKS.slice(dbImages.length)];
+
   return (
-    <section id="art" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-900">
-      {/* Section Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="text-center mb-14"
-      >
-        <h2 className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-400 mb-2">
-          Creative Expressions
-        </h2>
-        <h3 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
-          Art &amp; Paintings
-        </h3>
-        <p className="mt-3 text-sm text-neutral-400 font-light tracking-wide max-w-xl mx-auto">
-          Where science meets soul — a gallery of paintings, sketches, and digital works born from
-          curiosity, colour, and quiet contemplation.
-        </p>
-      </motion.div>
+    <section id="art" className="py-24 sm:py-28 px-6 sm:px-10 lg:px-12 max-w-7xl mx-auto">
+      {/* ============================================================== */}
+      {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 md:grid-cols-2)           */}
+      {/* ============================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center">
+        {/* ------------------------------------------------------------ */}
+        {/* MEDIA COLUMN: Camera Viewfinder Auto-playing Carousel (Left) */}
+        {/* ------------------------------------------------------------ */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.85, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full flex items-center justify-center order-1 md:order-1"
+        >
+          <CameraViewfinderCarousel
+            images={carouselImages}
+            intervalMs={3500}
+            bracketColorClass="border-white"
+            onClickImage={() => setIsGalleryOpen(true)}
+          />
+        </motion.div>
 
-      {artworks.length === 0 ? (
-        <div className="text-center py-16 rounded-sm border border-neutral-900 bg-neutral-950/70 max-w-lg mx-auto">
-          <Palette className="w-8 h-8 text-neutral-500 mx-auto mb-3 opacity-60" />
-          <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">
-            Artworks will appear here once added in the Admin panel.
+        {/* ------------------------------------------------------------ */}
+        {/* TEXT COLUMN: Typography & Call to Action (Right)             */}
+        {/* ------------------------------------------------------------ */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full flex flex-col justify-center items-start text-left order-2 md:order-2"
+        >
+          <span className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-400 mb-3">
+            Creative Expressions
+          </span>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-none">
+            <span className="title-highlight">
+              Art &amp; Paintings
+            </span>
+          </h2>
+          <p className="mt-5 text-base sm:text-lg text-neutral-400 font-light leading-relaxed tracking-wide max-w-xl">
+            Where science meets soul — a gallery of paintings, sketches, and digital works born from curiosity, colour, and quiet contemplation.
           </p>
-        </div>
-      ) : (
-        <>
-          {/* Stats Row */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center justify-center gap-8 mb-14"
+          <button
+            type="button"
+            onClick={() => setIsGalleryOpen(true)}
+            className="mt-8 inline-flex items-center gap-2 text-sm sm:text-base font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
           >
-            {[
-              { icon: Brush, label: 'Mediums', value: `${new Set(artworks.map((a) => a.medium)).size}` },
-              { icon: Layers, label: 'Works', value: `${artworks.length}` },
-              { icon: Sparkles, label: 'Years Active', value: `${new Set(artworks.map((a) => a.year)).size}` },
-            ].map(({ icon: Icon, label, value }) => (
-              <div key={label} className="text-center">
-                <div className="flex items-center justify-center w-9 h-9 mx-auto rounded-none bg-neutral-900 border border-neutral-800 mb-2">
-                  <Icon className="w-3.5 h-3.5 text-white" />
+            <span>DISCOVER MORE</span>
+            <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
+          </button>
+        </motion.div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* FULL-SCREEN 'VIEW ALL' MODAL GALLERY                           */}
+      {/* ============================================================== */}
+      <AnimatePresence>
+        {isGalleryOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col overflow-hidden"
+          >
+            {/* Modal Top Bar */}
+            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-black/60">
+              <div className="flex items-center gap-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+                <div>
+                  <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
+                    <span className="title-highlight">Art &amp; Paintings Archive</span>
+                  </h3>
+                  <p className="text-xs text-neutral-400 font-mono">
+                    {artworks.length} Original Works
+                  </p>
                 </div>
-                <div className="text-xl font-bold font-mono text-white">{value}</div>
-                <div className="text-[10px] text-neutral-400 uppercase tracking-widest font-semibold">{label}</div>
               </div>
-            ))}
-          </motion.div>
 
-          {/* Gallery Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {artworks.map((artwork, i) => (
-          <motion.div
-            key={artwork.id}
-            custom={i}
-            variants={cardVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            onClick={() => setSelected(artwork)}
-            className="group relative overflow-hidden rounded-none border border-neutral-850 bg-neutral-950 cursor-pointer hover:border-neutral-600 transition-colors"
-          >
-            {/* Image */}
-            <div className="relative h-60 overflow-hidden bg-neutral-900">
-              <img
-                src={artwork.imageUrl}
-                alt={artwork.title}
-                className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              {/* Zoom Icon */}
-              <div className="absolute top-3 right-3 w-8 h-8 rounded-none bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <Maximize2 className="w-3.5 h-3.5 text-white" />
-              </div>
+              <button
+                onClick={() => setIsGalleryOpen(false)}
+                className="p-2 sm:p-2.5 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-2 text-xs uppercase font-bold tracking-wider"
+              >
+                <X className="w-4 h-4" />
+                <span className="hidden sm:inline">Close</span>
+              </button>
             </div>
 
-            {/* Content */}
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
-                  {artwork.medium}
-                </span>
-                <span className="text-[10px] font-mono text-neutral-400">
-                  {artwork.year}
-                </span>
-              </div>
-              <h3 className="text-base font-bold uppercase tracking-wider text-white line-clamp-1">
-                {artwork.title}
-              </h3>
-              <p className="mt-1 text-xs text-neutral-400 line-clamp-2 leading-relaxed">
-                {artwork.description}
-              </p>
+            {/* Gallery Grid Content */}
+            <div className="flex-1 overflow-y-auto p-6 sm:p-10">
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="aspect-[4/3] bg-neutral-900 border border-neutral-800 animate-pulse" />
+                  ))}
+                </div>
+              ) : artworks.length === 0 ? (
+                <div className="text-center py-24 max-w-md mx-auto">
+                  <Palette className="w-12 h-12 text-neutral-500 mx-auto mb-4 opacity-50" />
+                  <p className="text-sm uppercase tracking-widest text-neutral-400 font-bold mb-2">
+                    Gallery Awaiting Artworks
+                  </p>
+                  <p className="text-xs text-neutral-500">
+                    Artworks created or uploaded in the Admin panel will appear in this exhibition gallery.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {artworks.map((artwork, idx) => (
+                    <motion.div
+                      key={artwork.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
+                      onClick={() => setSelected(artwork)}
+                      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-all cursor-pointer flex flex-col"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-neutral-900">
+                        <img
+                          src={artwork.imageUrl}
+                          alt={artwork.title}
+                          className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute top-3 right-3 w-8 h-8 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Maximize2 className="w-3.5 h-3.5 text-white" />
+                        </div>
+                      </div>
+
+                      <div className="p-4 flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] font-mono uppercase text-neutral-400">
+                            {artwork.medium}
+                          </span>
+                          <span className="text-[10px] font-mono text-neutral-400">
+                            {artwork.year}
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-bold uppercase text-white truncate">
+                          {artwork.title}
+                        </h4>
+                        {artwork.description && (
+                          <p className="mt-1 text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+                            {artwork.description}
+                          </p>
+                        )}
+                        {artwork.palette && artwork.palette.length > 0 && (
+                          <div className="flex items-center gap-1.5 mt-3">
+                            {artwork.palette.map((color, cIdx) => (
+                              <span
+                                key={cIdx}
+                                className="w-2.5 h-2.5 rounded-full ring-1 ring-white/20"
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
-        ))}
-          </div>
-        </>
-      )}
+        )}
+      </AnimatePresence>
 
-      {/* Lightbox Modal */}
+      {/* ============================================================== */}
+      {/* ARTWORK LIGHTBOX MODAL                                         */}
+      {/* ============================================================== */}
       <AnimatePresence>
         {selected && (
           <motion.div
@@ -152,7 +257,7 @@ export const ArtPaintingsSection: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl"
             onClick={() => setSelected(null)}
           >
             <motion.div
@@ -182,7 +287,9 @@ export const ArtPaintingsSection: React.FC = () => {
               <div className="p-6">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <h3 className="text-xl font-black uppercase tracking-wider text-white">{selected.title}</h3>
+                    <h3 className="text-xl font-black uppercase tracking-wider text-white">
+                      {selected.title}
+                    </h3>
                     <p className="text-xs uppercase font-mono tracking-widest text-neutral-400 mt-1">
                       {selected.medium} &bull; {selected.year}
                     </p>

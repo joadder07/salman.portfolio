@@ -8,6 +8,9 @@ import { LoadingSpinner } from '@/components/shared';
 // Public Pages
 import { HomePage } from '@/pages/public/HomePage';
 
+const AboutPage = lazy(() =>
+  import('@/pages/public/AboutPage').then((m) => ({ default: m.AboutPage }))
+);
 const PhotographyPage = lazy(() =>
   import('@/pages/public/PhotographyPage').then((m) => ({ default: m.PhotographyPage }))
 );
@@ -72,6 +75,7 @@ export const AppRoutes: React.FC = () => {
         {/* Public Pages */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/photography/:id" element={<PhotographyPage />} />
           <Route path="/videos/:id" element={<VideoPage />} />
         </Route>

@@ -1,157 +1,433 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronDown, Lock } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { ChevronDown, Lock, Menu, X, ArrowUpRight } from 'lucide-react';
 import { useCurrentUser } from '@/api/auth.api';
+import { useSiteSettings } from '@/api/settings.api';
 
 export const Header: React.FC = () => {
   const { data: user } = useCurrentUser();
+  const { data: settings } = useSiteSettings();
+  const location = useLocation();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const portfolioDropdownRef = useRef<HTMLDivElement>(null);
+  const contactDropdownRef = useRef<HTMLDivElement>(null);
+  const portfolioTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contactTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Dynamic social URLs from database / settings
+  const facebookUrl = settings?.socialLinks?.facebook || settings?.facebookUrl || '#';
+  const instagramUrl = settings?.socialLinks?.instagram || settings?.instagramUrl || '#';
+  const linkedinUrl = settings?.socialLinks?.linkedin || '#';
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
+      setIsScrolled(window.scrollY > 30);
     };
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close dropdown on outside click
+  // Close dropdowns and mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsPortfolioOpen(false);
+    setIsContactOpen(false);
+  }, [location.pathname]);
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      const target = event.target as Node;
+      if (portfolioDropdownRef.current && !portfolioDropdownRef.current.contains(target)) {
+        if (portfolioTimeoutRef.current) clearTimeout(portfolioTimeoutRef.current);
         setIsPortfolioOpen(false);
+      }
+      if (contactDropdownRef.current && !contactDropdownRef.current.contains(target)) {
+        if (contactTimeoutRef.current) clearTimeout(contactTimeoutRef.current);
+        setIsContactOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (portfolioTimeoutRef.current) clearTimeout(portfolioTimeoutRef.current);
+      if (contactTimeoutRef.current) clearTimeout(contactTimeoutRef.current);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
+  // Portfolio dropdown handlers
+  const handlePortfolioMouseEnter = () => {
+    if (portfolioTimeoutRef.current) {
+      clearTimeout(portfolioTimeoutRef.current);
+      portfolioTimeoutRef.current = null;
     }
     setIsPortfolioOpen(true);
   };
 
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
+  const handlePortfolioMouseLeave = () => {
+    portfolioTimeoutRef.current = setTimeout(() => {
       setIsPortfolioOpen(false);
     }, 150);
   };
 
-  const handleToggle = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  const handlePortfolioToggle = () => {
+    if (portfolioTimeoutRef.current) clearTimeout(portfolioTimeoutRef.current);
     setIsPortfolioOpen((prev) => !prev);
   };
 
-  const handleItemClick = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  // Contact dropdown handlers
+  const handleContactMouseEnter = () => {
+    if (contactTimeoutRef.current) {
+      clearTimeout(contactTimeoutRef.current);
+      contactTimeoutRef.current = null;
+    }
+    setIsContactOpen(true);
+  };
+
+  const handleContactMouseLeave = () => {
+    contactTimeoutRef.current = setTimeout(() => {
+      setIsContactOpen(false);
+    }, 150);
+  };
+
+  const handleContactToggle = () => {
+    if (contactTimeoutRef.current) clearTimeout(contactTimeoutRef.current);
+    setIsContactOpen((prev) => !prev);
+  };
+
+  const handleItemClick = (href: string) => {
+    if (portfolioTimeoutRef.current) clearTimeout(portfolioTimeoutRef.current);
+    if (contactTimeoutRef.current) clearTimeout(contactTimeoutRef.current);
     setIsPortfolioOpen(false);
+    setIsContactOpen(false);
+    setIsMobileMenuOpen(false);
+
+    if (href.startsWith('/#')) {
+      const id = href.replace('/#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.href = href;
+      }
+    }
   };
 
   const portfolioItems = [
     { label: 'Photography', href: '/#photography' },
     { label: 'Videos', href: '/#videos' },
     { label: 'Art', href: '/#art' },
-    { label: 'Pets', href: '/#pets' },
-    { label: 'Hobbies', href: '/#hobbies' },
-    { label: 'Books', href: '/#books' },
+    { label: 'Hobbies & Pets', href: '/#hobbies' },
     { label: 'Achievements', href: '/#achievements' },
   ];
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-        isScrolled
-          ? 'opacity-100 pointer-events-auto translate-y-0 bg-black/80 backdrop-blur-md border-b border-white/10 shadow-2xl py-3.5 sm:py-4'
-          : 'opacity-0 pointer-events-none -translate-y-3 bg-transparent border-transparent py-0'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out py-6 sm:py-7 border-none ${
+        isScrolled || location.pathname !== '/'
+          ? 'bg-black/40 backdrop-blur-md'
+          : 'bg-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 flex items-center justify-between">
-        {/* Far Left: 'Salman Sajid Joadder' in clean modern sans-serif */}
-        <div className="flex-1 flex justify-start items-center">
-          <a
-            href="/#"
-            className="font-sans font-light tracking-wide text-xs sm:text-sm text-white/90 hover:text-white transition-colors uppercase whitespace-nowrap"
-          >
-            Salman Sajid Joadder
-          </a>
-        </div>
-
-        {/* Center: Exactly Two Links ('About Salman' and 'Portfolio' Dropdown) */}
-        <nav className="flex items-center gap-8 sm:gap-12 text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white/80">
-          {/* About Salman link */}
-          <a
-            href="/#about"
-            className="hover:text-white transition-colors duration-200 py-1 relative group/about"
-          >
-            <span>About Salman</span>
-            <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-white transition-all duration-200 group-hover/about:w-full" />
-          </a>
-
-          {/* Portfolio Dropdown */}
-          <div
-            ref={dropdownRef}
-            className="relative group"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <button
-              type="button"
-              onClick={handleToggle}
-              className="flex items-center gap-1.5 hover:text-white transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
-              aria-haspopup="true"
-              aria-expanded={isPortfolioOpen}
-            >
-              <span>PORTFOLIO</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-200 text-white/60 ${
-                  isPortfolioOpen ? 'rotate-180 text-white' : ''
-                }`}
-              />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isPortfolioOpen && (
-              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2.5 w-48 z-50">
-                <div className="bg-neutral-950/95 backdrop-blur-xl border border-white/10 shadow-2xl py-2">
-                  {portfolioItems.map((item) => (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      onClick={handleItemClick}
-                      className="block px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      {item.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </nav>
-
-        {/* Far Right: Subtle Dashboard / ADMIN link */}
-        <div className="flex-1 flex justify-end items-center">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 flex items-center justify-between">
+        {/* Left: Signature Brand/Logo in Hero Brush Font - Hidden at top of home, appears on scroll/subpages */}
+        <div
+          className={`flex items-center transition-all duration-300 ease-in-out ${
+            isScrolled || location.pathname !== '/'
+              ? 'opacity-100 translate-y-0 pointer-events-auto'
+              : 'opacity-0 -translate-y-2 pointer-events-none'
+          }`}
+        >
           <Link
-            to={user ? '/admin' : '/admin/login'}
-            className="text-[10px] sm:text-[11px] tracking-[0.22em] uppercase font-medium text-white/50 hover:text-white transition-colors flex items-center gap-1.5 py-1"
-            title="Admin Dashboard"
+            to="/"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="font-brush text-xl sm:text-2xl md:text-3xl text-white tracking-wide uppercase hover:opacity-85 transition-opacity whitespace-nowrap select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+            style={{
+              fontFamily: "'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive",
+            }}
           >
-            <Lock className="w-3 h-3 text-white/40" />
-            <span>Dashboard</span>
+            SALMAN SAJID JOADDER
           </Link>
         </div>
+
+        {/* Right Area: Navigation Links */}
+        <div className="flex items-center gap-6 sm:gap-8 md:gap-10">
+          {/* Desktop Navigation Links: DASHBOARD -> PORTFOLIO -> CONTACT -> ABOUT SALMAN */}
+          <nav className="hidden md:flex items-center gap-7 lg:gap-10 text-xs sm:text-[13px] font-bold tracking-[0.22em] uppercase text-white">
+            {/* 1. Dashboard (with lock icon) */}
+            <Link
+              to={user ? '/admin' : '/admin/login'}
+              className="text-[11px] sm:text-xs tracking-[0.22em] uppercase font-bold text-white/80 hover:text-white transition-colors flex items-center gap-1.5 py-1"
+              title="Admin Dashboard"
+            >
+              <Lock className="w-3.5 h-3.5 text-white/70" />
+              <span>Dashboard</span>
+            </Link>
+
+            {/* 2. Portfolio Dropdown */}
+            <div
+              ref={portfolioDropdownRef}
+              className="relative group"
+              onMouseEnter={handlePortfolioMouseEnter}
+              onMouseLeave={handlePortfolioMouseLeave}
+            >
+              <button
+                type="button"
+                onClick={handlePortfolioToggle}
+                className="flex items-center gap-1.5 font-bold tracking-[0.22em] text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
+                aria-haspopup="true"
+                aria-expanded={isPortfolioOpen}
+              >
+                <span>PORTFOLIO</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 text-white/80 ${
+                    isPortfolioOpen ? 'rotate-180 text-white' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isPortfolioOpen && (
+                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 w-52 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="bg-black/95 backdrop-blur-xl border border-white/10 shadow-2xl py-2">
+                    {portfolioItems.map((item) => (
+                      <a
+                        key={item.label}
+                        href={item.href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleItemClick(item.href);
+                        }}
+                        className="block px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                      >
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 3. Contact Dropdown */}
+            <div
+              ref={contactDropdownRef}
+              className="relative group"
+              onMouseEnter={handleContactMouseEnter}
+              onMouseLeave={handleContactMouseLeave}
+            >
+              <button
+                type="button"
+                onClick={handleContactToggle}
+                className="flex items-center gap-1.5 font-bold tracking-[0.22em] text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
+                aria-haspopup="true"
+                aria-expanded={isContactOpen}
+              >
+                <span>CONTACT</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 text-white/80 ${
+                    isContactOpen ? 'rotate-180 text-white' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Contact Dropdown Menu */}
+              {isContactOpen && (
+                <div className="absolute right-0 sm:left-1/2 sm:-translate-x-1/2 top-full pt-3 w-52 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="bg-black/95 backdrop-blur-xl border border-white/10 shadow-2xl py-2">
+                    {/* Facebook Link */}
+                    <a
+                      href={facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsContactOpen(false)}
+                      className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <span>Facebook</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+                    </a>
+
+                    {/* Instagram Link */}
+                    <a
+                      href={instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsContactOpen(false)}
+                      className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <span>Instagram</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+                    </a>
+
+                    {/* LinkedIn Link */}
+                    <a
+                      href={linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsContactOpen(false)}
+                      className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <span>LinkedIn</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+                    </a>
+
+                    {/* Divider */}
+                    <div className="my-1 border-t border-white/10" />
+
+                    {/* Direct / Send a Message */}
+                    <a
+                      href="/#contact"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleItemClick('/#contact');
+                      }}
+                      className="block px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      Send a Message
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 4. About Salman (on the far right end, direct Link to /about) */}
+            <div className="pl-4 md:pl-5 border-l border-white/20">
+              <Link
+                to="/about"
+                className={`text-white hover:text-white/80 transition-colors duration-200 py-1 relative group/nav whitespace-nowrap block ${
+                  location.pathname === '/about' ? 'text-white' : ''
+                }`}
+              >
+                <span>ABOUT SALMAN</span>
+                <span
+                  className={`absolute bottom-0 left-0 h-[1.5px] bg-white transition-all duration-200 ${
+                    location.pathname === '/about' ? 'w-full' : 'w-0 group-hover/nav:w-full'
+                  }`}
+                />
+              </Link>
+            </div>
+          </nav>
+
+          {/* Mobile Menu Hamburger Button */}
+          <div className="flex md:hidden items-center gap-3">
+            <Link
+              to={user ? '/admin' : '/admin/login'}
+              className="text-[10px] tracking-wider uppercase font-bold text-white/70 hover:text-white p-1"
+              title="Admin Dashboard"
+            >
+              <Lock className="w-4 h-4 text-white/70" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-white hover:text-white/80 p-1.5 focus:outline-none cursor-pointer"
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Mobile Dropdown Menu Drawer */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden mt-4 mx-4 bg-black/95 backdrop-blur-2xl border border-white/10 p-6 shadow-2xl flex flex-col gap-5 animate-in fade-in duration-200">
+          <Link
+            to={user ? '/admin' : '/admin/login'}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="text-xs font-bold uppercase tracking-[0.2em] text-white/90 hover:text-white flex items-center gap-2"
+          >
+            <Lock className="w-3.5 h-3.5 text-white/70" />
+            <span>Dashboard</span>
+          </Link>
+
+          <div>
+            <div className="text-sm font-bold uppercase tracking-[0.22em] text-white mb-3">
+              PORTFOLIO
+            </div>
+            <div className="grid grid-cols-2 gap-2 pl-3 border-l border-white/15">
+              {portfolioItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleItemClick(item.href);
+                  }}
+                  className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1 transition-colors"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-sm font-bold uppercase tracking-[0.22em] text-white mb-3">
+              CONTACT
+            </div>
+            <div className="flex flex-col gap-1.5 pl-3 border-l border-white/15">
+              <a
+                href={facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1 transition-colors flex items-center justify-between"
+              >
+                <span>Facebook</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+              </a>
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1 transition-colors flex items-center justify-between"
+              >
+                <span>Instagram</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+              </a>
+              <a
+                href={linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1 transition-colors flex items-center justify-between"
+              >
+                <span>LinkedIn</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+              </a>
+              <a
+                href="/#contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleItemClick('/#contact');
+                }}
+                className="text-xs font-bold uppercase tracking-[0.18em] text-white hover:text-white py-1.5 pt-2 border-t border-white/10 transition-colors"
+              >
+                Send a Message
+              </a>
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-white/15">
+            <Link
+              to="/about"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-sm font-bold uppercase tracking-[0.22em] text-white hover:text-white/70 transition-colors block"
+            >
+              ABOUT SALMAN
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
+
+

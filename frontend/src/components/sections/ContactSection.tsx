@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, User, Mail, MessageSquare, ShieldCheck, EyeOff } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Send, ShieldCheck, EyeOff, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { useSendMessage } from '@/api/interactions.api';
 import toast from 'react-hot-toast';
@@ -56,109 +54,139 @@ export const ContactSection: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="py-24 border-t border-neutral-900 px-4">
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <h2 className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-400 mb-2">
-          Connect &amp; Collaborate
-        </h2>
-        <h3 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
-          Send a Message
-        </h3>
-        <p className="mt-3 text-sm text-neutral-400 font-light tracking-wide">
-          Reach out for collaborations, research inquiries, or drop an anonymous whisper.
-        </p>
-      </div>
+    <section id="contact" className="pt-10 sm:pt-14 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 max-w-7xl mx-auto">
+      {/* ============================================================== */}
+      {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 lg:grid-cols-2 gap-10)    */}
+      {/* ============================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        {/* ------------------------------------------------------------ */}
+        {/* LEFT COLUMN: Section Heading, Tag, & Narrative Text           */}
+        {/* ------------------------------------------------------------ */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.85, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full flex flex-col justify-center items-start text-left"
+        >
+          <span className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-400 mb-2">
+            Connect &amp; Collaborate
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-[2.5rem] font-black uppercase tracking-tight text-white leading-tight font-heading">
+            <span className="title-highlight">
+              Send a Message
+            </span>
+          </h2>
+          <p className="mt-3 text-sm sm:text-base text-neutral-400 font-light leading-relaxed tracking-wide max-w-lg">
+            Reach out for collaborations, research inquiries, or drop an anonymous whisper. Whether you have a project idea, an invitation, or simply want to connect, feel free to drop a line below.
+          </p>
+        </motion.div>
 
-      <div className="max-w-xl mx-auto">
-        <div className="rounded-none border border-neutral-850 bg-neutral-950 p-6 sm:p-8">
-          {/* Anonymous Mode Toggle Header */}
-          <div className="flex items-center justify-between pb-5 mb-6 border-b border-neutral-850">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-none bg-neutral-900 text-white border border-neutral-800">
-                {isAnonymous ? <EyeOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+        {/* ------------------------------------------------------------ */}
+        {/* RIGHT COLUMN: Contact Form Card / Box                       */}
+        {/* ------------------------------------------------------------ */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full flex justify-center lg:justify-end"
+        >
+          <div className="w-full max-w-xl lg:max-w-2xl rounded-none bg-black/25 backdrop-blur-md border border-white/10 shadow-2xl p-4 sm:p-5">
+            {/* Mode Toggle Header: Compact & Wide Horizontal Layout */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3.5 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-none bg-white/5 backdrop-blur-sm text-white border border-white/10 shrink-0">
+                  {isAnonymous ? <EyeOff className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-white">
+                    {isAnonymous ? 'ANONYMOUS MODE' : 'DIRECT CONTACT MODE'}
+                  </p>
+                  <p className="text-[10px] sm:text-[11px] text-neutral-400 font-light mt-0.5 leading-tight">
+                    {isAnonymous
+                      ? 'Identity will not be collected or logged.'
+                      : 'Your name and email will be transmitted.'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-white">
-                  {isAnonymous ? 'Anonymous Mode' : 'Direct Contact Mode'}
-                </p>
-                <p className="text-[11px] text-neutral-400 font-light">
-                  {isAnonymous
-                    ? "Identity will not be collected or logged."
-                    : 'Your name and email will be transmitted.'}
-                </p>
-              </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => setIsAnonymous(!isAnonymous)}
-              className={`px-3 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all border cursor-pointer ${
-                isAnonymous
-                  ? 'bg-white text-black border-white'
-                  : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white'
-              }`}
-            >
-              {isAnonymous ? 'Anonymous: ON' : 'Make Anonymous'}
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isAnonymous && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Name *"
-                  placeholder="Your Name"
-                  value={senderName}
-                  onChange={(e) => setSenderName(e.target.value)}
-                  required={!isAnonymous}
-                />
-                <Input
-                  label="Email *"
-                  type="email"
-                  placeholder="you@domain.com"
-                  value={senderEmail}
-                  onChange={(e) => setSenderEmail(e.target.value)}
-                  required={!isAnonymous}
-                />
-              </div>
-            )}
-
-            <Input
-              label="Subject"
-              placeholder="e.g. Research Collaboration / Inquiry"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-            />
-
-            <div className="space-y-1.5 text-left">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block">
-                Message Content *
-              </label>
-              <textarea
-                rows={5}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={
+              <button
+                type="button"
+                onClick={() => setIsAnonymous(!isAnonymous)}
+                className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-none text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-all border cursor-pointer whitespace-nowrap shrink-0 shadow-sm ${
                   isAnonymous
-                    ? 'Write your anonymous message freely...'
-                    : 'Hi Salman, I would love to connect about...'
-                }
-                className="w-full rounded-none border border-neutral-800 bg-black/80 px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white transition-colors"
-                required
-              />
+                    ? 'bg-white text-black border-white hover:bg-neutral-200'
+                    : 'bg-white/5 backdrop-blur-sm text-neutral-200 border-white/15 hover:bg-white hover:text-black hover:border-white'
+                }`}
+              >
+                {isAnonymous ? 'ANONYMOUS: ON' : 'MAKE ANONYMOUS'}
+              </button>
             </div>
 
-            <button
-              type="submit"
-              disabled={sendMessage.isPending}
-              className="w-full py-4 rounded-none bg-white text-black font-bold uppercase tracking-[0.22em] text-xs hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>{sendMessage.isPending ? 'Transmitting...' : 'Send Message'}</span>
-            </button>
-          </form>
-        </div>
+            <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3">
+              {!isAnonymous && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    label="Name *"
+                    placeholder="Your Name"
+                    value={senderName}
+                    onChange={(e) => setSenderName(e.target.value)}
+                    required={!isAnonymous}
+                    className="h-8 sm:h-8.5 text-xs py-1 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
+                  />
+                  <Input
+                    label="Email *"
+                    type="email"
+                    placeholder="you@domain.com"
+                    value={senderEmail}
+                    onChange={(e) => setSenderEmail(e.target.value)}
+                    required={!isAnonymous}
+                    className="h-8 sm:h-8.5 text-xs py-1 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
+                  />
+                </div>
+              )}
+
+              <Input
+                label="Subject"
+                placeholder="e.g. Research Collaboration / Inquiry"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="h-8 sm:h-8.5 text-xs py-1 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
+              />
+
+              <div className="space-y-1 text-left">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                  Message Content *
+                </label>
+                <textarea
+                  rows={2}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder={
+                    isAnonymous
+                      ? 'Write your anonymous message freely...'
+                      : 'Hi Salman, I would love to connect about...'
+                  }
+                  className="w-full h-18 sm:h-20 rounded-none bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-2 text-xs text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:outline-none transition-colors resize-none leading-relaxed"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={sendMessage.isPending}
+                className="w-full py-2.5 sm:py-2.5 rounded-none bg-white text-black font-bold uppercase tracking-[0.22em] text-xs hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1.5 shadow-xl"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>{sendMessage.isPending ? 'Transmitting...' : 'Send Message'}</span>
+              </button>
+            </form>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
 };
+
+export default ContactSection;

@@ -25,9 +25,9 @@
   }
 
   [data-theme="sunset"] {
-    --background: 12 30% 8%;
+    --background: 0 0% 5%;
     --foreground: 30 40% 98%;
-    --card: 12 28% 12%;
+    --card: 0 0% 9%;
     --card-foreground: 30 40% 98%;
     --primary: 16 90% 58%;
     --primary-foreground: 0 0% 100%;
@@ -99,14 +99,31 @@
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background-color: hsl(var(--background));
+  background-color: #020202;
+  background-image: url('/images/dark-texture.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
-h1, h2, h3, .font-heading {
-  font-family: 'Syne', 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+/* Tall bold condensed typography for major section titles & headings */
+h1:not(.font-brush),
+h2:not(.font-brush),
+h3:not(.font-brush),
+h4:not(.font-brush),
+.font-heading,
+.font-condensed {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+h2:not(.font-brush) {
+  letter-spacing: 0.2em;
 }
 
 .font-handwriting {
@@ -114,7 +131,7 @@ h1, h2, h3, .font-heading {
 }
 
 .font-brush {
-  font-family: 'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive;
+  font-family: 'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive !important;
 }
 
 /* Glassmorphism helpers for dark minimalist aesthetic */
@@ -156,4 +173,54 @@ h1, h2, h3, .font-heading {
     transform: translateX(100%);
   }
 }
+
+/* Unified identical inverted grain texture layer for light sections */
+.texture-inverted-grain {
+  background-image: url('/images/dark-texture.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  filter: invert(1);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Smooth scroll-triggered fade-in and slide-up animation utility */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================== */
+/* CINEMATIC TITLE & HEADING HIGHLIGHT SYSTEM                     */
+/* Consistent translucent dark background highlight bar           */
+/* ============================================================== */
+.title-highlight {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.10);
+  padding: 0.18em 0.45em;
+  line-height: 1.15;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  vertical-align: middle;
+}
+
+.title-highlight-dark {
+  display: inline-block;
+  background-color: rgba(0, 0, 0, 0.08);
+  padding: 0.18em 0.45em;
+  line-height: 1.15;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  vertical-align: middle;
+}
+
 

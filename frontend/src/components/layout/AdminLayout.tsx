@@ -91,14 +91,20 @@ export const AdminLayout: React.FC = () => {
         }`}
       >
         <div>
-          {/* Brand header */}
+          {/* Brand header - Links back to public homepage */}
           <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
-            <Link to="/admin" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-md">
+            <Link
+              to="/"
+              className="flex items-center gap-2.5 group transition-all duration-200 hover:opacity-80 cursor-pointer"
+              title="Return to Public Website"
+            >
+              <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-md transition-transform duration-200 group-hover:scale-105">
                 P
               </div>
               <div>
-                <span className="text-sm font-bold block text-foreground">Control Center</span>
+                <span className="text-sm font-bold block text-foreground group-hover:text-primary transition-colors">
+                  Control Center
+                </span>
                 <span className="text-[10px] text-muted-foreground font-mono">Portfolio Admin</span>
               </div>
             </Link>

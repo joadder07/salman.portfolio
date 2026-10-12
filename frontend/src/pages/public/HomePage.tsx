@@ -6,10 +6,9 @@ import {
   PhotographySection,
   VideosSection,
   ArtPaintingsSection,
-  HobbiesSection,
-  PetsSection,
-  BooksSection,
+  HobbiesPetsSection,
   AchievementsSection,
+  CinematicBannerSection,
   ContactSection,
 } from '@/components/sections';
 
@@ -22,10 +21,9 @@ export const HomePage: React.FC = () => {
       <PhotographySection />
       <VideosSection />
       <ArtPaintingsSection />
-      <HobbiesSection />
-      <PetsSection />
-      <BooksSection />
+      <HobbiesPetsSection />
       <AchievementsSection />
+      <CinematicBannerSection />
       <ContactSection />
     </div>
   );

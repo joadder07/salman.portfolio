@@ -28,6 +28,34 @@ interface MusicContextType {
   setPlaylist: (tracks: Track[]) => void;
 }
 
+export const DEFAULT_PLAYLIST: Track[] = [
+  {
+    title: 'Pink Floyd - Breathe (In The Air) (2023 Remaster) [jcz0YxYl6Ac]',
+    artist: 'Pink Floyd',
+    src: 'https://res.cloudinary.com/jmgpicxr/video/upload/v1791739303/portfolio/music/vfqvo5qixfu75t27j77w.mp3',
+  },
+  {
+    title: 'Mild Orange - One (Official Video)',
+    artist: 'Mild Orange',
+    src: 'https://res.cloudinary.com/jmgpicxr/video/upload/v1791726532/portfolio/music/wfhegdpoawm4tzrozpkh.mp3',
+  },
+  {
+    title: 'Bob Moses - Heaven Only Knows (Official Audio)',
+    artist: 'Bob Moses',
+    src: 'https://res.cloudinary.com/jmgpicxr/video/upload/v1791726745/portfolio/music/oj21qxduz7fbouhxo6aw.mp3',
+  },
+  {
+    title: 'Harry Styles - Sign of the Times (Official Video)',
+    artist: 'Harry Styles',
+    src: 'https://res.cloudinary.com/jmgpicxr/video/upload/v1791739328/portfolio/music/lbdncygjw8s7cae97znu.mp3',
+  },
+  {
+    title: 'Tears For Fears - Head Over Heels [CsHiG-43Fzg]',
+    artist: 'Tears For Fears',
+    src: 'https://res.cloudinary.com/jmgpicxr/video/upload/v1791739345/portfolio/music/sedspavfpeea2q25b8hw.mp3',
+  },
+];
+
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
 
 export const MusicProvider: React.FC<{
@@ -37,7 +65,7 @@ export const MusicProvider: React.FC<{
   const { data: settings } = useSiteSettings();
 
   const [playlist, setPlaylist] = useState<Track[]>(
-    initialPlaylist && initialPlaylist.length > 0 ? initialPlaylist : []
+    initialPlaylist && initialPlaylist.length > 0 ? initialPlaylist : DEFAULT_PLAYLIST
   );
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -50,14 +78,13 @@ export const MusicProvider: React.FC<{
 
   // Synchronize playlist with site settings fetched from the database/Admin panel
   useEffect(() => {
-    if (settings?.musicPlaylist && Array.isArray(settings.musicPlaylist)) {
+    if (settings?.musicPlaylist && Array.isArray(settings.musicPlaylist) && settings.musicPlaylist.length > 0) {
       setPlaylist(settings.musicPlaylist);
       setCurrentTrackIndex((prev) => {
-        if (settings.musicPlaylist!.length === 0) return 0;
         return prev < settings.musicPlaylist!.length ? prev : 0;
       });
-    } else if (settings && !settings.musicPlaylist) {
-      setPlaylist([]);
+    } else if (settings && (!settings.musicPlaylist || settings.musicPlaylist.length === 0)) {
+      setPlaylist(DEFAULT_PLAYLIST);
       setCurrentTrackIndex(0);
     }
   }, [settings?.musicPlaylist]);

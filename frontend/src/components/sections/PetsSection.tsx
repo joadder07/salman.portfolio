@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { PawPrint } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { FadeUpHeading } from '@/components/ui';
 import { petApi } from '@/api/content.api';
 import { Skeleton } from '@/components/shared';
 
@@ -9,15 +10,15 @@ export const PetsSection: React.FC = () => {
   const { data: pets, isLoading } = petApi.useGetAll();
 
   return (
-    <section id="pets" className="py-24 border-t border-neutral-900 px-4">
-      <div className="text-center max-w-3xl mx-auto mb-16">
+    <section id="pets" className="py-24 px-4">
+      <FadeUpHeading className="text-center max-w-3xl mx-auto mb-16">
         <h2 className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-400 mb-2">
           Furry Companions
         </h2>
         <h3 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
           Meet My Pets
         </h3>
-      </div>
+      </FadeUpHeading>
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -109,7 +109,9 @@ export const PhotographyPage: React.FC = () => {
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-              {photo.title}
+              <span className="title-highlight">
+                {photo.title}
+              </span>
             </h1>
 
             {photo.description && (

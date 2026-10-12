@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import { useSiteSettings } from '@/api/settings.api';
 import { useCurrentUser } from '@/api/auth.api';
-import { HeroImageSlider } from './HeroImageSlider';
 
 export const HeroSection: React.FC = () => {
   const { data: settings } = useSiteSettings();
@@ -17,16 +16,12 @@ export const HeroSection: React.FC = () => {
     settings?.adminProfilePic ||
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2560&auto=format&fit=crop';
 
-  const subtitleText =
-    settings?.tagline ||
-    'Exploring Research, Promoting Health, Building Machines, Capturing Moments & Creating Art';
-
   return (
     <>
       {/* Fullscreen Cinematic Hero Container */}
       <section
         id="hero"
-        className="relative h-screen w-full overflow-hidden flex items-center justify-center select-none"
+        className="relative h-screen w-full overflow-hidden flex items-center justify-center select-none bg-[#020202]"
       >
         {/* Large, high-quality photograph covering the entire hero section */}
         <div
@@ -37,40 +32,40 @@ export const HeroSection: React.FC = () => {
         {/* Subtle dark overlay so content is readable */}
         <div className="absolute inset-0 bg-black/30 z-[1]" />
 
-        {/* Main Name: 'SALMAN SAJID JOADDER' aligned to the left side with cinematic spacing */}
-        <div className="absolute inset-0 z-10 flex flex-col justify-center items-start text-left pl-8 sm:pl-12 md:pl-20 lg:pl-32 pr-6 pointer-events-none select-none">
+        {/* Soft bottom gradient fade to enhance readability of lower subtitle text */}
+        <div className="absolute bottom-0 left-0 right-0 h-2/5 sm:h-[42%] bg-gradient-to-t from-black/90 via-black/55 to-transparent z-[2] pointer-events-none" />
+
+        {/* Main Name: 'SALMAN SAJID' shifted inward to the right */}
+        <div className="absolute inset-0 z-10 flex flex-col justify-center items-start text-left pl-8 sm:pl-14 md:pl-20 lg:pl-28 pr-6 pointer-events-none select-none">
           <motion.h1
-            initial={{ opacity: 0, scale: 0.95, x: -12 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 1.1,
+              delay: 0.35,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="font-brush text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white tracking-normal uppercase leading-tight max-w-3xl drop-shadow-none text-left"
             style={{
               fontFamily: "'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive",
             }}
           >
-            SALMAN SAJID JOADDER
+            SALMAN SAJID
           </motion.h1>
         </div>
 
-        {/* Hero Subtitle at the bottom: 'Exploring Research, Promoting Health, Building Machines, Capturing Moments & Creating Art' */}
-        <div className="absolute bottom-8 left-6 sm:left-12 max-w-2xl sm:max-w-3xl z-20 pointer-events-none">
-          <p className="text-[10px] sm:text-xs md:text-sm font-light uppercase tracking-[0.22em] sm:tracking-[0.28em] text-white/90 leading-relaxed">
-            {subtitleText}
-          </p>
-        </div>
-
         {/* Subtle Bottom-Right Scroll Down Indicator */}
-        <a
+        <motion.a
           href="#about"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.95, ease: [0.22, 1, 0.36, 1] }}
           className="absolute bottom-8 right-6 sm:right-12 z-20 text-white/80 hover:text-white transition-all p-2 animate-bounce"
           aria-label="Scroll to About section"
         >
           <ArrowDown className="w-5 h-5" />
-        </a>
+        </motion.a>
       </section>
-
-      {/* Auto-scrolling 8-slot Image Carousel (Maintained) */}
-      <HeroImageSlider images={settings?.heroImages} />
     </>
   );
 };

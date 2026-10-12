@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { FadeUpHeading } from '@/components/ui';
 import { hobbyApi } from '@/api/content.api';
 import { Skeleton } from '@/components/shared';
 
@@ -9,8 +10,8 @@ export const HobbiesSection: React.FC = () => {
   const { data: hobbies, isLoading } = hobbyApi.useGetAll();
 
   return (
-    <section id="hobbies" className="py-24 border-t border-neutral-900 px-4">
-      <div className="text-center max-w-3xl mx-auto mb-16">
+    <section id="hobbies" className="py-24 px-4">
+      <FadeUpHeading className="text-center max-w-3xl mx-auto mb-16">
         <h2 className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-400 mb-2">
           Passions &amp; Pastimes
         </h2>
@@ -20,7 +21,7 @@ export const HobbiesSection: React.FC = () => {
         <p className="mt-3 text-sm text-neutral-400 font-light tracking-wide">
           What keeps the curiosity alive outside of code and research.
         </p>
-      </div>
+      </FadeUpHeading>
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

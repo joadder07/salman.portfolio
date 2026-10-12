@@ -34,6 +34,78 @@ async function main() {
   });
   console.log(`👤 Admin user ready: ${admin.email}`);
 
+  // Default initial music tracklist with Pink Floyd first
+  const defaultMusicPlaylist = JSON.stringify([
+    {
+      title: "Pink Floyd - Breathe (In The Air) (2023 Remaster) [jcz0YxYl6Ac]",
+      artist: "Pink Floyd",
+      src: "https://res.cloudinary.com/jmgpicxr/video/upload/v1791739303/portfolio/music/vfqvo5qixfu75t27j77w.mp3"
+    },
+    {
+      title: "Mild Orange - One (Official Video)",
+      artist: "Mild Orange",
+      src: "https://res.cloudinary.com/jmgpicxr/video/upload/v1791726532/portfolio/music/wfhegdpoawm4tzrozpkh.mp3"
+    },
+    {
+      title: "Bob Moses - Heaven Only Knows (Official Audio)",
+      artist: "Bob Moses",
+      src: "https://res.cloudinary.com/jmgpicxr/video/upload/v1791726745/portfolio/music/oj21qxduz7fbouhxo6aw.mp3"
+    },
+    {
+      title: "Harry Styles - Sign of the Times (Official Video)",
+      artist: "Harry Styles",
+      src: "https://res.cloudinary.com/jmgpicxr/video/upload/v1791739328/portfolio/music/lbdncygjw8s7cae97znu.mp3"
+    },
+    {
+      title: "Tears For Fears - Head Over Heels [CsHiG-43Fzg]",
+      artist: "Tears For Fears",
+      src: "https://res.cloudinary.com/jmgpicxr/video/upload/v1791739345/portfolio/music/sedspavfpeea2q25b8hw.mp3"
+    }
+  ]);
+
+  const defaultHeroImages = JSON.stringify([
+    {
+      id: 1,
+      url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop',
+      title: 'Alpine Reflections',
+    },
+    {
+      id: 2,
+      url: 'https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?q=80&w=1200&auto=format&fit=crop',
+      title: 'Neon Odyssey',
+    },
+    {
+      id: 3,
+      url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop',
+      title: 'Coastal Solitude',
+    },
+    {
+      id: 4,
+      url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1200&auto=format&fit=crop',
+      title: 'Misty Horizon',
+    },
+    {
+      id: 5,
+      url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
+      title: 'Circuit Telemetry',
+    },
+    {
+      id: 6,
+      url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop',
+      title: 'Deep Space Analytics',
+    },
+    {
+      id: 7,
+      url: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200&auto=format&fit=crop',
+      title: 'Urban Silhouette',
+    },
+    {
+      id: 8,
+      url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop',
+      title: 'Starry Peaks',
+    },
+  ]);
+
   // 2. Seed Site Settings
   const existingSettings = await prisma.siteSettings.findUnique({ where: { id: 'singleton' } });
   const settings = await prisma.siteSettings.upsert({
@@ -52,8 +124,8 @@ async function main() {
       }),
       facebookUrl: 'https://facebook.com',
       instagramUrl: 'https://instagram.com',
-      musicPlaylist: existingSettings?.musicPlaylist || JSON.stringify([]),
-      heroImages: JSON.stringify([]),
+      musicPlaylist: existingSettings?.musicPlaylist || defaultMusicPlaylist,
+      heroImages: existingSettings?.heroImages || defaultHeroImages,
     },
     create: {
       id: 'singleton',
@@ -70,8 +142,8 @@ async function main() {
       }),
       facebookUrl: 'https://facebook.com',
       instagramUrl: 'https://instagram.com',
-      musicPlaylist: JSON.stringify([]),
-      heroImages: JSON.stringify([]),
+      musicPlaylist: defaultMusicPlaylist,
+      heroImages: defaultHeroImages,
     },
   });
   console.log(`⚙️ Site settings initialized: ${settings.siteName}`);
