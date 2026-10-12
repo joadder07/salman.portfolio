@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  bio          String?
+  profilePic   String?
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Education {
+  id          String    @id @default(cuid())
+  institution String
+  degree      String
+  field       String?
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  logoUrl     String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Photography {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  category    String?
+  tags        String?
+  featured    Boolean   @default(false)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  comments    Comment[]
+}
+
+model Video {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  videoUrl     String
+  thumbnailUrl String?
+  category     String?
+  duration     Int?
+  featured     Boolean   @default(false)
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  comments     Comment[]
+}
+
+model Art {
+  id          String   @id @default(cuid())
+  title       String
+  medium      String?
+  year        String?
+  description String?
+  imageUrl    String
+  palette     String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Hobby {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  iconUrl     String?
+  imageUrl    String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Pet {
+  id          String    @id @default(cuid())
+  name        String
+  species     String
+  breed       String?
+  description String?
+  imageUrl    String?
+  birthDate   DateTime?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Book {
+  id        String    @id @default(cuid())
+  title     String
+  author    String
+  coverUrl  String?
+  review    String?
+  rating    Int?
+  readDate  DateTime?
+  genre     String?
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Achievement {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  date        DateTime?
+  category    String?
+  link        String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Comment {
+  id            String        @id @default(cuid())
+  authorName    String
+  authorEmail   String?
+  content       String
+  status        CommentStatus @default(PENDING)
+  photographyId String?
+  photography   Photography?  @relation(fields: [photographyId], references: [id], onDelete: Cascade)
+  videoId       String?
+  video         Video?        @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  senderName  String?
+  senderEmail String?
+  subject     String?
+  content     String
+  isAnonymous Boolean  @default(false)
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SiteSettings {
+  id            String   @id @default("singleton")
+  siteName      String   @default("My Portfolio")
+  tagline       String?
+  heroTitle     String?
+  heroSubtitle  String?
+  aboutText     String?
+  socialLinks   String?
+  facebookUrl   String?
+  instagramUrl  String?
+  activeTheme   String   @default("default")
+  musicPlaylist       String?
+  heroImages          String?
+  heroBackgroundImage String?
+  updatedAt           DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  SUPERADMIN
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

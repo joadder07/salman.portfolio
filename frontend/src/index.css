@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 14%;
+    --input: 0 0% 14%;
+    --ring: 0 0% 100%;
+    --radius: 0.375rem;
+  }
+
+  [data-theme="sunset"] {
+    --background: 12 30% 8%;
+    --foreground: 30 40% 98%;
+    --card: 12 28% 12%;
+    --card-foreground: 30 40% 98%;
+    --primary: 16 90% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 16 25% 18%;
+    --secondary-foreground: 30 40% 98%;
+    --muted: 12 20% 16%;
+    --muted-foreground: 20 15% 65%;
+    --accent: 38 92% 54%;
+    --accent-foreground: 12 30% 8%;
+    --border: 16 25% 20%;
+    --ring: 16 90% 58%;
+  }
+
+  [data-theme="forest"] {
+    --background: 155 35% 7%;
+    --foreground: 140 30% 96%;
+    --card: 155 30% 11%;
+    --card-foreground: 140 30% 96%;
+    --primary: 150 70% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 155 20% 16%;
+    --secondary-foreground: 140 30% 96%;
+    --muted: 155 20% 14%;
+    --muted-foreground: 145 15% 62%;
+    --accent: 85 75% 48%;
+    --accent-foreground: 155 35% 7%;
+    --border: 155 20% 18%;
+    --ring: 150 70% 45%;
+  }
+
+  [data-theme="ocean"] {
+    --background: 200 45% 7%;
+    --foreground: 195 40% 97%;
+    --card: 200 40% 11%;
+    --card-foreground: 195 40% 97%;
+    --primary: 190 90% 50%;
+    --primary-foreground: 200 45% 7%;
+    --secondary: 200 25% 17%;
+    --secondary-foreground: 195 40% 97%;
+    --muted: 200 25% 14%;
+    --muted-foreground: 195 20% 64%;
+    --accent: 172 75% 46%;
+    --accent-foreground: 200 45% 7%;
+    --border: 200 25% 19%;
+    --ring: 190 90% 50%;
+  }
+
+  [data-theme="light"] {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 98%;
+    --card-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 94%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 94%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --ring: 221 83% 53%;
+  }
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .font-heading {
+  font-family: 'Syne', 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+}
+
+.font-handwriting {
+  font-family: 'Permanent Marker', 'Rock Salt', cursive, sans-serif;
+}
+
+.font-brush {
+  font-family: 'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive;
+}
+
+/* Glassmorphism helpers for dark minimalist aesthetic */
+.glass {
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-nav {
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Custom scrollbar for sleek minimalist look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #404040;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
