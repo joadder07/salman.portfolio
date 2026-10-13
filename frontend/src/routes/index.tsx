@@ -79,6 +79,10 @@ export const AppRoutes: React.FC = () => {
           <Route element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="hero" element={<Navigate to="/admin/settings?tab=hero" replace />} />
+            <Route path="hero-section" element={<Navigate to="/admin/settings?tab=hero" replace />} />
+            <Route path="banner" element={<Navigate to="/admin/settings?tab=banner" replace />} />
+            <Route path="showcase-banner" element={<Navigate to="/admin/settings?tab=banner" replace />} />
             <Route path="hero-gallery" element={<HeroGalleryManager />} />
             <Route path="education" element={<EducationManager />} />
             <Route path="photography" element={<PhotographyManager />} />

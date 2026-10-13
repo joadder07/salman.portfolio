@@ -166,6 +166,9 @@ model SiteSettings {
   musicPlaylist       String?
   heroImages          String?
   heroBackgroundImage String?
+  bannerImage         String?
+  bannerQuote         String?
+  bannerQuoteSubtext  String?
   updatedAt           DateTime @updatedAt
 }
 

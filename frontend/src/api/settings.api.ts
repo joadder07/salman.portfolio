@@ -22,6 +22,9 @@ export interface SiteSettings {
   musicPlaylist?: Track[];
   heroImages?: HeroImageSlot[];
   heroBackgroundImage?: string;
+  bannerImage?: string;
+  bannerQuote?: string;
+  bannerQuoteSubtext?: string;
   adminProfilePic?: string;
   adminName?: string;
   adminBio?: string;
@@ -47,6 +50,7 @@ export const useUpdateSettings = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['siteSettings'], data);
+      queryClient.invalidateQueries({ queryKey: ['siteSettings'] });
     },
   });
 };

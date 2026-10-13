@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Sparkles,
   Palette,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import {
@@ -21,8 +22,10 @@ import {
   petApi,
 } from '@/api/content.api';
 import { usePendingCommentsCount, useUnreadMessagesCount } from '@/api/interactions.api';
+import { useSiteSettings } from '@/api/settings.api';
 
 export const DashboardPage: React.FC = () => {
+  const { data: settings } = useSiteSettings();
   const { data: education = [] } = educationApi.useGetAll();
   const { data: photos = [] } = photographyApi.useGetAll();
   const { data: videos = [] } = videoApi.useGetAll();
@@ -34,6 +37,8 @@ export const DashboardPage: React.FC = () => {
   const { data: unreadMessages = 0 } = useUnreadMessagesCount();
 
   const metrics = [
+    { label: 'Hero Background', count: settings?.heroBackgroundImage ? 'Custom Active' : 'Default Circuit', to: '/admin/settings?tab=hero', icon: <ImageIcon className="w-5 h-5 text-primary" /> },
+    { label: 'Showcase Banner', count: settings?.bannerImage ? 'Custom Active' : 'Default Circuit', to: '/admin/settings?tab=banner', icon: <Sparkles className="w-5 h-5 text-primary" /> },
     { label: 'Unread Messages', count: unreadMessages, to: '/admin/messages', color: 'text-primary', alert: unreadMessages > 0 },
     { label: 'Pending Comments', count: pendingComments, to: '/admin/comments', color: 'text-white', alert: pendingComments > 0 },
     { label: 'Education Milestones', count: education.length, to: '/admin/education', icon: <GraduationCap className="w-5 h-5" /> },

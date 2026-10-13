@@ -64,6 +64,18 @@ export class SettingsService {
     if (payload.heroImages !== undefined) {
       payload.heroImages = JSON.stringify(payload.heroImages);
     }
+    if (payload.heroBackgroundImage === '') {
+      payload.heroBackgroundImage = null;
+    }
+    if (payload.bannerImage === '') {
+      payload.bannerImage = null;
+    }
+    if (payload.bannerQuote === '') {
+      payload.bannerQuote = null;
+    }
+    if (payload.bannerQuoteSubtext === '') {
+      payload.bannerQuoteSubtext = null;
+    }
 
     const result = await prisma.siteSettings.upsert({
       where: { id: SINGLETON_ID },

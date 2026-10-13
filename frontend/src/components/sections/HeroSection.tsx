@@ -1,20 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import { useSiteSettings } from '@/api/settings.api';
-import { useCurrentUser } from '@/api/auth.api';
+
+// Static circuit board background image fallback (image_19.png)
+export const DEFAULT_CIRCUIT_BOARD_HERO = '/images/circuit-board-hero.jpg';
 
 export const HeroSection: React.FC = () => {
   const { data: settings } = useSiteSettings();
-  const { data: user } = useCurrentUser();
 
-  // High-quality cinematic photograph covering the entire hero section
-  // Priority: 1) Admin custom uploaded hero background image, 2) fallback profile pic, 3) fallback unsplash
-  const heroBgImage =
-    settings?.heroBackgroundImage ||
-    user?.profilePic?.replace(/w=\d+/, 'w=2560') ||
-    settings?.adminProfilePic ||
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2560&auto=format&fit=crop';
+  // 1) Dynamic custom uploaded image from settings (if present)
+  // 2) Default circuit board background image (image_19.png) as fallback
+  const customHeroBg = settings?.heroBackgroundImage?.trim();
+  const [activeHeroBg, setActiveHeroBg] = useState<string>(
+    customHeroBg || DEFAULT_CIRCUIT_BOARD_HERO
+  );
+
+  useEffect(() => {
+    if (customHeroBg) {
+      const img = new Image();
+      img.src = customHeroBg;
+      img.onload = () => setActiveHeroBg(customHeroBg);
+      img.onerror = () => {
+        console.warn('Failed to load custom hero background, falling back to default circuit board image.');
+        setActiveHeroBg(DEFAULT_CIRCUIT_BOARD_HERO);
+      };
+    } else {
+      setActiveHeroBg(DEFAULT_CIRCUIT_BOARD_HERO);
+    }
+  }, [customHeroBg]);
 
   return (
     <>
@@ -25,11 +39,12 @@ export const HeroSection: React.FC = () => {
       >
         {/* Large, high-quality photograph covering the hero section */}
         <motion.div
+          key={activeHeroBg}
           initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 transition-transform duration-1000 ease-out"
-          style={{ backgroundImage: `url(${heroBgImage})` }}
+          style={{ backgroundImage: `url(${activeHeroBg})` }}
         />
 
         {/* Subtle dark overlay so content is readable */}

@@ -83,36 +83,33 @@ export const HobbiesPetsSection: React.FC = () => {
   return (
     <section
       id="hobbies"
-      className="relative py-28 sm:py-40 md:py-52 px-4 sm:px-8 lg:px-12 bg-black text-black overflow-hidden select-none"
+      className="relative pt-24 sm:pt-36 md:pt-48 pb-14 sm:pb-20 px-4 sm:px-8 lg:px-12 bg-white text-black overflow-hidden select-none"
     >
       {/* Anchor for pets link navigation */}
       <div id="pets" className="absolute -top-24" />
 
-      {/* Seamless white canvas background that starts and ends in deep black to eliminate any dividing hairline seam */}
+      {/* Seamless white canvas background that starts smoothly from previous section and stays clean, solid white to the bottom */}
       <div
         className="absolute inset-0 pointer-events-none z-0"
         style={{
           background:
-            'linear-gradient(to bottom, #000000 0%, #000000 1%, #ffffff 12%, #ffffff 88%, #000000 99%, #000000 100%)',
+            'linear-gradient(to bottom, #000000 0%, #000000 1%, #ffffff 12%, #ffffff 100%)',
         }}
       />
 
       {/* Top smooth organic scrim blend from preceding black section into white section */}
       <div className="absolute -top-1 left-0 right-0 h-40 sm:h-64 md:h-80 lg:h-96 scrim-gradient-to-bottom pointer-events-none z-10" />
 
-      {/* Bottom smooth organic scrim blend from white section into succeeding black section */}
-      <div className="absolute -bottom-1 left-0 right-0 h-40 sm:h-64 md:h-80 lg:h-96 scrim-gradient-to-top pointer-events-none z-10" />
-
-      {/* Subtle texture layer with soft edge mask so it never casts a hard line */}
+      {/* Subtle texture layer with soft edge mask at top only */}
       <div
         className="absolute inset-0 bg-[url('/images/dark-texture.jpg')] bg-cover sm:bg-fixed bg-center pointer-events-none opacity-40 z-[1]"
         style={{
           filter: 'invert(1)',
           mixBlendMode: 'multiply',
           WebkitMaskImage:
-            'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+            'linear-gradient(to bottom, transparent 0%, black 15%, black 100%)',
           maskImage:
-            'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+            'linear-gradient(to bottom, transparent 0%, black 15%, black 100%)',
         }}
         aria-hidden="true"
       />
