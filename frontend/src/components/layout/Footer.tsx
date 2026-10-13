@@ -23,15 +23,15 @@ export const Footer: React.FC = () => {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center text-center"
       >
-        {/* Handwritten Signature in a Compact Single Horizontal Line */}
-        <h2 className="font-brush text-white tracking-normal uppercase select-none mb-6 sm:mb-8 flex flex-row items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap">
-          <span className="text-sm sm:text-base font-brush opacity-80 mt-0.5">
+        {/* Handwritten Signature in a Compact Horizontal Line */}
+        <h2 className="font-brush text-white tracking-normal uppercase select-none mb-6 sm:mb-8 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-center max-w-full px-2">
+          <span className="text-xs sm:text-base font-brush opacity-80 mt-0.5">
             A
           </span>
-          <span className="text-2xl sm:text-3xl font-brush tracking-wide">
+          <span className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-brush tracking-wide">
             SALMAN SAJID JOADDER
           </span>
-          <span className="text-sm sm:text-base font-brush opacity-80 mt-0.5">
+          <span className="text-xs sm:text-base font-brush opacity-80 mt-0.5">
             VISION
           </span>
         </h2>

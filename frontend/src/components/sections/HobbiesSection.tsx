@@ -55,7 +55,7 @@ export const HobbiesSection: React.FC = () => {
                       <img
                         src={hobby.imageUrl}
                         alt={hobby.name}
-                        className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-transform duration-700 ease-out group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />
                     </div>
                   )}

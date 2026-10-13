@@ -8,7 +8,7 @@ export * from './ArtPaintingsSection';
 export * from './HobbiesSection';
 export * from './PetsSection';
 export * from './HobbiesPetsSection';
-export * from './AchievementsSection';
 export * from './CinematicBannerSection';
 export * from './ContactSection';
 export * from './HeroGalleryCarousel';
+

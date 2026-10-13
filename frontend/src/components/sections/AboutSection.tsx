@@ -104,13 +104,13 @@ export const AboutSection: React.FC = () => {
   const idx3 = (currentIndex + 2) % carouselImages.length;
 
   return (
-    <section id="about" className="py-24 sm:py-28 px-6 sm:px-10 lg:px-12 max-w-7xl mx-auto w-full">
+    <section id="about" className="pt-6 sm:pt-10 lg:pt-28 pb-16 sm:pb-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full overflow-hidden">
       {/* ============================================================== */}
       {/* RESPONSIVE SPLIT LAYOUT (grid-cols-1 lg:grid-cols-12 gap-8)    */}
       {/* ============================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         {/* ------------------------------------------------------------ */}
-        {/* LEFT COLUMN: Multi-line Roles & Salman's Story Link          */}
+        {/* LEFT COLUMN: Multi-line Roles, Bio Text & Salman's Story Link */}
         {/* ------------------------------------------------------------ */}
         <motion.div
           initial={{ opacity: 0, y: 28 }}
@@ -119,26 +119,32 @@ export const AboutSection: React.FC = () => {
           transition={{ duration: 0.85, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
           className="w-full lg:col-span-5 xl:col-span-4 flex flex-col justify-center items-start text-left"
         >
-          <div className="flex flex-col items-start text-left select-none space-y-1 sm:space-y-1.5">
+          {/* Multi-line Roles Stack */}
+          <div className="flex flex-col items-start text-left select-none space-y-0.5 sm:space-y-1 w-full">
             {ROLES.map((role) => (
               <h2
                 key={role}
-                className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] font-black uppercase text-white font-heading leading-tight tracking-tight whitespace-nowrap hover:text-neutral-300 transition-colors duration-200"
+                className="text-3xl xs:text-4xl sm:text-4xl md:text-5xl lg:text-[2.85rem] font-black uppercase text-white font-heading leading-[0.96] tracking-tight whitespace-normal sm:whitespace-nowrap break-words hover:text-neutral-300 transition-colors duration-200"
                 style={{
                   fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
                 }}
               >
-                <span className="title-highlight">
-                  {role}
-                </span>
+                {role}
               </h2>
             ))}
           </div>
 
+          {/* Clean Flow into Bio Text Immediately Below Roles */}
+          <p className="mt-5 sm:mt-6 text-sm sm:text-base text-neutral-300 font-light leading-relaxed max-w-xl">
+            {settings?.aboutText ||
+              settings?.adminBio ||
+              'Salman Sajid is a filmmaker, photographer, and researcher driven by the art of capturing authentic, honest moments. Through love, curiosity, adventure, and everything in between, he documents real stories and explores the intersection of human health, visual arts, and technology.'}
+          </p>
+
           {/* Salman's Story Link */}
           <Link
             to="/about"
-            className="mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
+            className="mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
           >
             <span>SALMAN&apos;S STORY</span>
             <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
@@ -172,7 +178,7 @@ export const AboutSection: React.FC = () => {
                     key={`box1-${img.id || idx}`}
                     src={img.url}
                     alt={img.title || 'Showcase'}
-                    className={`absolute inset-0 w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 transition-opacity duration-700 ease-in-out ${
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
                       idx === idx1 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}
                     loading="lazy"
@@ -190,7 +196,7 @@ export const AboutSection: React.FC = () => {
                     key={`box2-${img.id || idx}`}
                     src={img.url}
                     alt={img.title || 'Showcase'}
-                    className={`absolute inset-0 w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 transition-opacity duration-700 ease-in-out ${
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
                       idx === idx2 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}
                     loading="lazy"
@@ -208,7 +214,7 @@ export const AboutSection: React.FC = () => {
                     key={`box3-${img.id || idx}`}
                     src={img.url}
                     alt={img.title || 'Showcase'}
-                    className={`absolute inset-0 w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 transition-opacity duration-700 ease-in-out ${
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
                       idx === idx3 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}
                     loading="lazy"
@@ -262,7 +268,7 @@ export const AboutSection: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <div>
                   <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
-                    <span className="title-highlight">Showcase Visuals Archive</span>
+                    Showcase Visuals Archive
                   </h3>
                   <p className="text-xs text-neutral-400 font-mono">
                     {carouselImages.length} Visuals Loaded
@@ -295,7 +301,7 @@ export const AboutSection: React.FC = () => {
                       <img
                         src={item.url}
                         alt={item.title || 'Visual'}
-                        className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 transition-transform duration-700 ease-out group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         loading="lazy"
                       />
                     </div>

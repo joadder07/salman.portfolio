@@ -74,12 +74,12 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
   }, [images, currentIndex]);
 
   return (
-    <div ref={containerRef} className={`relative p-3.5 sm:p-5 md:p-6 w-full select-none ${className}`}>
-      {/* Absolute Solid White Viewfinder Corner Indicators */}
-      <div className="absolute top-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-l-2 border-white pointer-events-none z-20 transition-colors duration-200" />
-      <div className="absolute top-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-r-2 border-white pointer-events-none z-20 transition-colors duration-200" />
-      <div className="absolute bottom-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-l-2 border-white pointer-events-none z-20 transition-colors duration-200" />
-      <div className="absolute bottom-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-r-2 border-white pointer-events-none z-20 transition-colors duration-200" />
+    <div ref={containerRef} className={`relative p-0 sm:p-5 md:p-6 w-full select-none ${className}`}>
+      {/* Absolute Solid Viewfinder Corner Indicators (Desktop only - clean borderless on mobile) */}
+      <div className={`hidden sm:block absolute top-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-l-2 ${bracketColorClass || 'border-white'} pointer-events-none z-20 transition-colors duration-200`} />
+      <div className={`hidden sm:block absolute top-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-r-2 ${bracketColorClass || 'border-white'} pointer-events-none z-20 transition-colors duration-200`} />
+      <div className={`hidden sm:block absolute bottom-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-l-2 ${bracketColorClass || 'border-white'} pointer-events-none z-20 transition-colors duration-200`} />
+      <div className={`hidden sm:block absolute bottom-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-r-2 ${bracketColorClass || 'border-white'} pointer-events-none z-20 transition-colors duration-200`} />
 
       {/* ============================================================== */}
       {/* INNER IMAGE CAROUSEL CONTAINER (Clean Edge-to-Edge Image View) */}
@@ -95,7 +95,7 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
             key={item.id || item.url || idx}
             src={item.url}
             alt={item.title || 'Showcase image'}
-            className={`absolute inset-0 w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-opacity duration-1000 ease-in-out ${
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
               idx === currentIndex
                 ? 'opacity-100 z-10'
                 : 'opacity-0 z-0 pointer-events-none'

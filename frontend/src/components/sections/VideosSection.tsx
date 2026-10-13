@@ -76,11 +76,11 @@ export const VideosSection: React.FC = () => {
   };
 
   return (
-    <section id="videos" className="py-24 sm:py-28 px-6 sm:px-10 lg:px-12 max-w-7xl mx-auto">
+    <section id="videos" className="py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
       {/* ============================================================== */}
       {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 md:grid-cols-2)           */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-center">
         {/* ------------------------------------------------------------ */}
         {/* MEDIA COLUMN: Camera Viewfinder Auto-playing Carousel (Right)*/}
         {/* ------------------------------------------------------------ */}
@@ -109,21 +109,16 @@ export const VideosSection: React.FC = () => {
           transition={{ duration: 0.85, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
           className="w-full flex flex-col justify-center items-start text-left order-2 md:order-1"
         >
-          <span className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-400 mb-3">
-            Motion &amp; Demos
-          </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-none">
-            <span className="title-highlight">
-              Video Showcase &amp; Tech Talks
-            </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-tight font-heading">
+            Video Showcase
           </h2>
-          <p className="mt-5 text-base sm:text-lg text-neutral-400 font-light leading-relaxed tracking-wide max-w-xl">
-            Project walkthroughs, presentations, hackathon pitches, and recordings. Exploring the frontier of human-computer interaction, machine learning, and visual storytelling.
+          <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-neutral-400 font-light leading-relaxed tracking-wide max-w-xl">
+            Documentaries, educational insights, travel vlogs, and personal passion projects. Exploring real-world stories, unique cultures, learning experiences, and visual storytelling through my lens
           </p>
           <button
             type="button"
             onClick={() => setIsGalleryOpen(true)}
-            className="mt-8 inline-flex items-center gap-2 text-sm sm:text-base font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
+            className="mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
           >
             <span>DISCOVER MORE</span>
             <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
@@ -148,7 +143,7 @@ export const VideosSection: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <div>
                   <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
-                    <span className="title-highlight">Video Showcase Archive</span>
+                    Video Showcase Archive
                   </h3>
                   <p className="text-xs text-neutral-400 font-mono">
                     {videos?.length || 0} Productions &amp; Demos
@@ -200,7 +195,7 @@ export const VideosSection: React.FC = () => {
                           <img
                             src={video.thumbnailUrl}
                             alt={video.title}
-                            className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                             loading="lazy"
                           />
                         ) : (

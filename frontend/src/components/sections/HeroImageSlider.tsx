@@ -129,7 +129,7 @@ export const HeroImageSlider: React.FC<HeroImageSliderProps> = ({ images }) => {
                     src={slot.url}
                     alt={slot.title || `Highlight ${(idx % totalSlots) + 1}`}
                     loading="lazy"
-                    className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-700 ease-out group-hover/card:scale-105"
+                    className="w-full h-full object-cover transition-all duration-700 ease-out group-hover/card:scale-105"
                   />
 
                   {/* Gradient Overlay */}

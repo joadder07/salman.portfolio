@@ -46,9 +46,6 @@ const ArtAndHobbiesManager = lazy(() =>
 const PetManager = lazy(() =>
   import('@/pages/admin/PetManager').then((m) => ({ default: m.PetManager }))
 );
-const AchievementManager = lazy(() =>
-  import('@/pages/admin/AchievementManager').then((m) => ({ default: m.AchievementManager }))
-);
 const CommentModeration = lazy(() =>
   import('@/pages/admin/CommentModeration').then((m) => ({ default: m.CommentModeration }))
 );
@@ -90,7 +87,6 @@ export const AppRoutes: React.FC = () => {
             <Route path="art" element={<ArtAndHobbiesManager />} />
             <Route path="hobbies" element={<ArtAndHobbiesManager />} />
             <Route path="pets" element={<PetManager />} />
-            <Route path="achievements" element={<AchievementManager />} />
             <Route path="comments" element={<CommentModeration />} />
             <Route path="messages" element={<MessageInbox />} />
           </Route>

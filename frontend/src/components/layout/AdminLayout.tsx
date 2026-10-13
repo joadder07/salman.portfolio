@@ -6,7 +6,6 @@ import {
   Camera,
   Video,
   PawPrint,
-  Award,
   MessageSquare,
   Mail,
   Settings,
@@ -50,7 +49,6 @@ export const AdminLayout: React.FC = () => {
     { label: 'Videos', to: '/admin/videos', icon: <Video className="w-4 h-4" /> },
     { label: 'Art & Hobbies', to: '/admin/art-and-hobbies', icon: <Palette className="w-4 h-4" /> },
     { label: 'Pets', to: '/admin/pets', icon: <PawPrint className="w-4 h-4" /> },
-    { label: 'Achievements', to: '/admin/achievements', icon: <Award className="w-4 h-4" /> },
     {
       label: 'Comments',
       to: '/admin/comments',

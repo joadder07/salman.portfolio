@@ -114,9 +114,7 @@ export const VideoPage: React.FC = () => {
         </div>
 
         <h1 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-          <span className="title-highlight">
-            {video.title}
-          </span>
+          {video.title}
         </h1>
 
         {video.description && (

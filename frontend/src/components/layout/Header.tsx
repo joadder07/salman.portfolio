@@ -124,7 +124,6 @@ export const Header: React.FC = () => {
     { label: 'Videos', href: '/#videos' },
     { label: 'Art', href: '/#art' },
     { label: 'Hobbies & Pets', href: '/#hobbies' },
-    { label: 'Achievements', href: '/#achievements' },
   ];
 
   return (
@@ -135,10 +134,10 @@ export const Header: React.FC = () => {
           : 'bg-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-8 lg:px-12 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Signature Brand/Logo in Hero Brush Font - Hidden at top of home, appears on scroll/subpages */}
         <div
-          className={`flex items-center transition-all duration-300 ease-in-out ${
+          className={`flex items-center transition-all duration-300 ease-in-out min-w-0 flex-1 overflow-visible py-1 ${
             isScrolled || location.pathname !== '/'
               ? 'opacity-100 translate-y-0 pointer-events-auto'
               : 'opacity-0 -translate-y-2 pointer-events-none'
@@ -147,7 +146,7 @@ export const Header: React.FC = () => {
           <Link
             to="/"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="font-brush text-xl sm:text-2xl md:text-3xl text-white tracking-wide uppercase hover:opacity-85 transition-opacity whitespace-nowrap select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+            className="font-brush text-[11px] min-[375px]:text-xs xs:text-[13px] sm:text-2xl md:text-3xl text-white tracking-normal sm:tracking-wide uppercase hover:opacity-85 transition-opacity whitespace-nowrap select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] py-1 sm:py-2 leading-normal sm:leading-relaxed overflow-visible inline-block"
             style={{
               fontFamily: "'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive",
             }}
@@ -157,7 +156,7 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Right Area: Navigation Links */}
-        <div className="flex items-center gap-6 sm:gap-8 md:gap-10">
+        <div className="flex items-center gap-2 xs:gap-3 sm:gap-8 md:gap-10 shrink-0">
           {/* Desktop Navigation Links: DASHBOARD -> PORTFOLIO -> CONTACT -> ABOUT SALMAN */}
           <nav className="hidden md:flex items-center gap-7 lg:gap-10 text-xs sm:text-[13px] font-bold tracking-[0.22em] uppercase text-white">
             {/* 1. Dashboard (with lock icon) */}
@@ -314,7 +313,7 @@ export const Header: React.FC = () => {
           </nav>
 
           {/* Mobile Menu Hamburger Button */}
-          <div className="flex md:hidden items-center gap-3">
+          <div className="flex md:hidden items-center gap-2 xs:gap-2.5 shrink-0">
             <Link
               to={user ? '/admin' : '/admin/login'}
               className="text-[10px] tracking-wider uppercase font-bold text-white/70 hover:text-white p-1"

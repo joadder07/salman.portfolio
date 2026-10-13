@@ -83,23 +83,45 @@ export const HobbiesPetsSection: React.FC = () => {
   return (
     <section
       id="hobbies"
-      className="relative py-24 sm:py-28 px-6 sm:px-10 lg:px-12 bg-white text-black overflow-hidden select-none shadow-xs"
+      className="relative py-28 sm:py-40 md:py-52 px-4 sm:px-8 lg:px-12 bg-black text-black overflow-hidden select-none"
     >
       {/* Anchor for pets link navigation */}
       <div id="pets" className="absolute -top-24" />
 
-      {/* Unified Inverted Dark-Texture Grain Layer (Matches dark sections exactly) */}
+      {/* Seamless white canvas background that starts and ends in deep black to eliminate any dividing hairline seam */}
       <div
-        className="absolute inset-0 texture-inverted-grain bg-[url('/images/dark-texture.jpg')] bg-cover bg-fixed bg-center pointer-events-none invert mix-blend-multiply"
-        style={{ filter: 'invert(1)', mixBlendMode: 'multiply' }}
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{
+          background:
+            'linear-gradient(to bottom, #000000 0%, #000000 1%, #ffffff 12%, #ffffff 88%, #000000 99%, #000000 100%)',
+        }}
+      />
+
+      {/* Top smooth organic scrim blend from preceding black section into white section */}
+      <div className="absolute -top-1 left-0 right-0 h-40 sm:h-64 md:h-80 lg:h-96 scrim-gradient-to-bottom pointer-events-none z-10" />
+
+      {/* Bottom smooth organic scrim blend from white section into succeeding black section */}
+      <div className="absolute -bottom-1 left-0 right-0 h-40 sm:h-64 md:h-80 lg:h-96 scrim-gradient-to-top pointer-events-none z-10" />
+
+      {/* Subtle texture layer with soft edge mask so it never casts a hard line */}
+      <div
+        className="absolute inset-0 bg-[url('/images/dark-texture.jpg')] bg-cover sm:bg-fixed bg-center pointer-events-none opacity-40 z-[1]"
+        style={{
+          filter: 'invert(1)',
+          mixBlendMode: 'multiply',
+          WebkitMaskImage:
+            'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+          maskImage:
+            'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+        }}
         aria-hidden="true"
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 max-w-7xl mx-auto my-4 sm:my-6">
         {/* ============================================================== */}
         {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 md:grid-cols-2)           */}
         {/* ============================================================== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-center">
           {/* ------------------------------------------------------------ */}
           {/* TEXT COLUMN: Typography & Call to Action (Left)              */}
           {/* ------------------------------------------------------------ */}
@@ -110,21 +132,16 @@ export const HobbiesPetsSection: React.FC = () => {
             transition={{ duration: 0.85, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
             className="w-full flex flex-col justify-center items-start text-left order-2 md:order-1"
           >
-            <span className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-600 mb-3">
-              Passions &amp; Companions
-            </span>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-black leading-none font-heading">
-              <span className="title-highlight-dark">
-                Hobbies &amp; Pets
-              </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-black leading-tight font-heading">
+              Hobbies &amp; Pets
             </h2>
-            <p className="mt-5 text-base sm:text-lg text-neutral-700 font-light leading-relaxed tracking-wide max-w-xl">
-              Creative pursuits, personal interests, and the cherished companions who bring joy to everyday life. Exploring technology, tinkering with hardware, and caring for animal friends.
+            <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-neutral-700 font-light leading-relaxed tracking-wide max-w-xl">
+              Creative pursuits, personal interests, and the cherished companions who bring joy to everyday life. Caring for animals, gardening, culinary experiments, and exploring new places through travel
             </p>
             <button
               type="button"
               onClick={() => setIsGalleryOpen(true)}
-              className="mt-8 inline-flex items-center gap-2 text-sm sm:text-base font-black uppercase tracking-[0.25em] text-black hover:text-neutral-600 transition-colors group cursor-pointer"
+              className="mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-black hover:text-neutral-600 transition-colors group cursor-pointer"
             >
               <span>DISCOVER MORE</span>
               <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
@@ -144,7 +161,7 @@ export const HobbiesPetsSection: React.FC = () => {
             <CameraViewfinderCarousel
               images={carouselImages}
               intervalMs={3500}
-              bracketColorClass="border-white"
+              bracketColorClass="border-black"
               onClickImage={() => setIsGalleryOpen(true)}
             />
           </motion.div>
@@ -168,7 +185,7 @@ export const HobbiesPetsSection: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <div>
                   <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
-                    <span className="title-highlight">Hobbies &amp; Pets Archive</span>
+                    Hobbies &amp; Pets Archive
                   </h3>
                   <p className="text-xs text-neutral-400 font-mono">
                     {combinedItems.length} Entries Recorded
@@ -270,7 +287,7 @@ export const HobbiesPetsSection: React.FC = () => {
                               <img
                                 src={imageUrl}
                                 alt={name}
-                                className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-transform duration-700 ease-out group-hover:scale-105"
+                                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                 loading="lazy"
                               />
                               <span className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase bg-black/80 backdrop-blur-md text-white border border-white/10 tracking-widest">

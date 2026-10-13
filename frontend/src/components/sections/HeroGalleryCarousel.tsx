@@ -183,7 +183,7 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ custom
                     src={item.url}
                     alt={item.title || `Gallery #${(idx % total) + 1}`}
                     loading="lazy"
-                    className="w-full h-full object-cover grayscale contrast-125 group-hover/box:grayscale-0 group-hover/box:scale-105 transition-all duration-500 ease-out"
+                    className="w-full h-full object-cover group-hover/box:scale-105 transition-all duration-500 ease-out"
                   />
 
                   {/* Gradient Overlay */}

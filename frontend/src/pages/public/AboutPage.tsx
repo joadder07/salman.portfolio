@@ -34,11 +34,9 @@ export const AboutPage: React.FC = () => {
           Biography &amp; Life Story
         </p>
         <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black uppercase tracking-tight text-white leading-none font-heading">
-          <span className="title-highlight">
-            ABOUT SALMAN
-          </span>
+          ABOUT SALMAN
         </h1>
-        <div className="w-20 h-0.5 bg-white/20 mt-6 sm:mt-8" />
+        <div className="hidden sm:block w-20 h-0.5 bg-white/20 mt-6 sm:mt-8" />
       </FadeUpHeading>
 
       {/* Intro Lead Block & Opening Philosophy */}
@@ -70,11 +68,9 @@ export const AboutPage: React.FC = () => {
       {/* Main Narrative Chapters with Generous Spacing */}
       <div className="space-y-16 sm:space-y-24">
         {/* Chapter 1: My Journey */}
-        <FadeUpHeading className="space-y-6 pt-6 border-t border-white/10">
+        <FadeUpHeading className="space-y-6 pt-6 border-t-0 sm:border-t border-white/10">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wider text-white font-heading">
-            <span className="title-highlight">
-              My Journey
-            </span>
+            My Journey
           </h2>
           <div className="space-y-5 text-lg sm:text-xl text-neutral-300 font-light leading-relaxed">
             <p>
@@ -96,11 +92,9 @@ export const AboutPage: React.FC = () => {
         </FadeUpHeading>
 
         {/* Chapter 2: Research, Technology & Innovation */}
-        <FadeUpHeading className="space-y-6 pt-6 border-t border-white/10">
+        <FadeUpHeading className="space-y-6 pt-6 border-t-0 sm:border-t border-white/10">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wider text-white font-heading">
-            <span className="title-highlight">
-              Research, Technology &amp; Innovation
-            </span>
+            Research, Technology &amp; Innovation
           </h2>
           <div className="space-y-5 text-lg sm:text-xl text-neutral-300 font-light leading-relaxed">
             <p>
@@ -116,11 +110,9 @@ export const AboutPage: React.FC = () => {
         </FadeUpHeading>
 
         {/* Chapter 3: Behind the Camera */}
-        <FadeUpHeading className="space-y-6 pt-6 border-t border-white/10">
+        <FadeUpHeading className="space-y-6 pt-6 border-t-0 sm:border-t border-white/10">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wider text-white font-heading">
-            <span className="title-highlight">
-              Behind the Camera
-            </span>
+            Behind the Camera
           </h2>
           <div className="space-y-5 text-lg sm:text-xl text-neutral-300 font-light leading-relaxed">
             <p className="text-white font-normal italic">
@@ -139,11 +131,9 @@ export const AboutPage: React.FC = () => {
         </FadeUpHeading>
 
         {/* Chapter 4: The Little Things That Make Life Beautiful */}
-        <FadeUpHeading className="space-y-6 pt-6 border-t border-white/10">
+        <FadeUpHeading className="space-y-6 pt-6 border-t-0 sm:border-t border-white/10">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wider text-white font-heading">
-            <span className="title-highlight">
-              The Little Things That Make Life Beautiful
-            </span>
+            The Little Things That Make Life Beautiful
           </h2>
           <div className="space-y-5 text-lg sm:text-xl text-neutral-300 font-light leading-relaxed">
             <p>
@@ -159,11 +149,9 @@ export const AboutPage: React.FC = () => {
         </FadeUpHeading>
 
         {/* Chapter 5: My Roots, My Family */}
-        <FadeUpHeading className="space-y-6 pt-6 border-t border-white/10">
+        <FadeUpHeading className="space-y-6 pt-6 border-t-0 sm:border-t border-white/10">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wider text-white font-heading">
-            <span className="title-highlight">
-              My Roots, My Family
-            </span>
+            My Roots, My Family
           </h2>
           <div className="space-y-5 text-lg sm:text-xl text-neutral-300 font-light leading-relaxed">
             <p>
@@ -185,11 +173,9 @@ export const AboutPage: React.FC = () => {
         </FadeUpHeading>
 
         {/* Chapter 6: Dreams Beyond the Horizon */}
-        <FadeUpHeading className="space-y-6 pt-6 border-t border-white/10">
+        <FadeUpHeading className="space-y-6 pt-6 border-t-0 sm:border-t border-white/10">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wider text-white font-heading">
-            <span className="title-highlight">
-              Dreams Beyond the Horizon
-            </span>
+            Dreams Beyond the Horizon
           </h2>
           <div className="space-y-5 text-lg sm:text-xl text-neutral-300 font-light leading-relaxed">
             <p>
@@ -208,11 +194,9 @@ export const AboutPage: React.FC = () => {
         </FadeUpHeading>
 
         {/* Chapter 7: Still Becoming Who I Want to Be */}
-        <FadeUpHeading className="space-y-6 pt-6 border-t border-white/10">
+        <FadeUpHeading className="space-y-6 pt-6 border-t-0 sm:border-t border-white/10">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wider text-white font-heading">
-            <span className="title-highlight">
-              Still Becoming Who I Want to Be
-            </span>
+            Still Becoming Who I Want to Be
           </h2>
           <div className="space-y-5 text-lg sm:text-xl text-neutral-300 font-light leading-relaxed">
             <p className="text-white font-normal italic">

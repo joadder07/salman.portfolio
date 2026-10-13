@@ -5,7 +5,6 @@ import {
   Camera,
   Video,
   PawPrint,
-  Award,
   MessageSquare,
   Mail,
   ArrowRight,
@@ -20,7 +19,6 @@ import {
   artApi,
   hobbyApi,
   petApi,
-  achievementApi,
 } from '@/api/content.api';
 import { usePendingCommentsCount, useUnreadMessagesCount } from '@/api/interactions.api';
 
@@ -31,7 +29,6 @@ export const DashboardPage: React.FC = () => {
   const { data: art = [] } = artApi.useGetAll();
   const { data: hobbies = [] } = hobbyApi.useGetAll();
   const { data: pets = [] } = petApi.useGetAll();
-  const { data: achievements = [] } = achievementApi.useGetAll();
 
   const { data: pendingComments = 0 } = usePendingCommentsCount();
   const { data: unreadMessages = 0 } = useUnreadMessagesCount();
@@ -44,7 +41,6 @@ export const DashboardPage: React.FC = () => {
     { label: 'Video Showcase', count: videos.length, to: '/admin/videos', icon: <Video className="w-5 h-5" /> },
     { label: 'Art & Hobbies', count: art.length + hobbies.length, to: '/admin/art-and-hobbies', icon: <Palette className="w-5 h-5 text-primary" /> },
     { label: 'Pets', count: pets.length, to: '/admin/pets', icon: <PawPrint className="w-5 h-5" /> },
-    { label: 'Achievements', count: achievements.length, to: '/admin/achievements', icon: <Award className="w-5 h-5" /> },
   ];
 
   return (

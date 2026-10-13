@@ -127,28 +127,6 @@ export interface Pet {
   order: number;
 }
 
-export interface Book {
-  id: string;
-  title: string;
-  author: string;
-  coverUrl?: string;
-  review?: string;
-  rating?: number;
-  readDate?: string;
-  genre?: string;
-  order: number;
-}
-
-export interface Achievement {
-  id: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  date?: string;
-  category?: string;
-  link?: string;
-  order: number;
-}
 
 export interface Art {
   id: string;
@@ -168,5 +146,3 @@ export const videoApi = createContentHooks<Video>('videos');
 export const artApi = createContentHooks<Art>('art');
 export const hobbyApi = createContentHooks<Hobby>('hobbies');
 export const petApi = createContentHooks<Pet>('pets');
-export const bookApi = createContentHooks<Book>('books');
-export const achievementApi = createContentHooks<Achievement>('achievements');

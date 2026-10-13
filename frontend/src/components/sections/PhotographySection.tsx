@@ -65,11 +65,11 @@ export const PhotographySection: React.FC = () => {
   );
 
   return (
-    <section id="photography" className="py-24 sm:py-28 px-6 sm:px-10 lg:px-12 max-w-7xl mx-auto">
+    <section id="photography" className="py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
       {/* ============================================================== */}
       {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 md:grid-cols-2)           */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-center">
         {/* ------------------------------------------------------------ */}
         {/* MEDIA COLUMN: Camera Viewfinder Auto-playing Carousel (Left) */}
         {/* ------------------------------------------------------------ */}
@@ -98,21 +98,16 @@ export const PhotographySection: React.FC = () => {
           transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="w-full flex flex-col justify-center items-start text-left order-2 md:order-2"
         >
-          <span className="text-xs uppercase font-bold tracking-[0.3em] text-neutral-400 mb-3">
-            Visual Perspectives
-          </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-none">
-            <span className="title-highlight">
-              Photography &amp; Captures
-            </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-tight font-heading">
+            Photography &amp; Captures
           </h2>
-          <p className="mt-5 text-base sm:text-lg text-neutral-400 font-light leading-relaxed tracking-wide max-w-xl">
-            Moments captured across conferences, travels, and cityscapes. From intimate portraits to high-energy street visuals, this collection highlights the faces, stories, and geometries that define my visual journey.
+          <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-neutral-400 font-light leading-relaxed tracking-wide max-w-xl">
+            Moments captured across forests, wildlife, and natural landscapes. From green nature to raw wildlife portraits, this collection highlights the colors, textures, and serenity that define my visual journey.
           </p>
           <button
             type="button"
             onClick={() => setIsGalleryOpen(true)}
-            className="mt-8 inline-flex items-center gap-2 text-sm sm:text-base font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
+            className="mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
           >
             <span>DISCOVER MORE</span>
             <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
@@ -137,7 +132,7 @@ export const PhotographySection: React.FC = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <div>
                   <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
-                    <span className="title-highlight">Photography Archive</span>
+                    Photography Archive
                   </h3>
                   <p className="text-xs text-neutral-400 font-mono">
                     {photos?.length || 0} Captures Available
@@ -186,7 +181,7 @@ export const PhotographySection: React.FC = () => {
                       <img
                         src={photo.imageUrl}
                         alt={photo.title}
-                        className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">

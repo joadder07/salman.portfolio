@@ -316,7 +316,7 @@ export const SettingsPage: React.FC = () => {
               <img
                 src={heroBackgroundImage}
                 alt="Hero Background Preview"
-                className="w-full h-full object-cover grayscale contrast-125"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-6 text-center space-y-2">
