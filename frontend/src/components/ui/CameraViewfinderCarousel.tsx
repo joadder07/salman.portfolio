@@ -55,7 +55,7 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
     setIsLightBg(false);
   }, []);
 
-  const activeBracketColor = bracketColorClass || (isLightBg ? 'border-black' : 'border-white');
+  const activeBracketColor = 'border-white';
 
   // Auto-playing carousel: cycles at relaxed pace (3.5s) with smooth crossfade
   useEffect(() => {
@@ -75,11 +75,11 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
 
   return (
     <div ref={containerRef} className={`relative p-3.5 sm:p-5 md:p-6 w-full select-none ${className}`}>
-      {/* Absolute Dynamic Viewfinder Corner Indicators (White on dark, Black on light) */}
-      <div className={`absolute top-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-l-2 ${activeBracketColor} pointer-events-none z-20 transition-colors duration-200`} />
-      <div className={`absolute top-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-r-2 ${activeBracketColor} pointer-events-none z-20 transition-colors duration-200`} />
-      <div className={`absolute bottom-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-l-2 ${activeBracketColor} pointer-events-none z-20`} />
-      <div className={`absolute bottom-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-r-2 ${activeBracketColor} pointer-events-none z-20`} />
+      {/* Absolute Solid White Viewfinder Corner Indicators */}
+      <div className="absolute top-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-l-2 border-white pointer-events-none z-20 transition-colors duration-200" />
+      <div className="absolute top-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-r-2 border-white pointer-events-none z-20 transition-colors duration-200" />
+      <div className="absolute bottom-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-l-2 border-white pointer-events-none z-20 transition-colors duration-200" />
+      <div className="absolute bottom-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-r-2 border-white pointer-events-none z-20 transition-colors duration-200" />
 
       {/* ============================================================== */}
       {/* INNER IMAGE CAROUSEL CONTAINER (Clean Edge-to-Edge Image View) */}

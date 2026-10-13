@@ -4,23 +4,22 @@ import {
   GraduationCap,
   Camera,
   Video,
-  Heart,
   PawPrint,
-  BookOpen,
   Award,
   MessageSquare,
   Mail,
   ArrowRight,
   Sparkles,
+  Palette,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import {
   educationApi,
   photographyApi,
   videoApi,
+  artApi,
   hobbyApi,
   petApi,
-  bookApi,
   achievementApi,
 } from '@/api/content.api';
 import { usePendingCommentsCount, useUnreadMessagesCount } from '@/api/interactions.api';
@@ -29,9 +28,9 @@ export const DashboardPage: React.FC = () => {
   const { data: education = [] } = educationApi.useGetAll();
   const { data: photos = [] } = photographyApi.useGetAll();
   const { data: videos = [] } = videoApi.useGetAll();
+  const { data: art = [] } = artApi.useGetAll();
   const { data: hobbies = [] } = hobbyApi.useGetAll();
   const { data: pets = [] } = petApi.useGetAll();
-  const { data: books = [] } = bookApi.useGetAll();
   const { data: achievements = [] } = achievementApi.useGetAll();
 
   const { data: pendingComments = 0 } = usePendingCommentsCount();
@@ -39,13 +38,12 @@ export const DashboardPage: React.FC = () => {
 
   const metrics = [
     { label: 'Unread Messages', count: unreadMessages, to: '/admin/messages', color: 'text-primary', alert: unreadMessages > 0 },
-    { label: 'Pending Comments', count: pendingComments, to: '/admin/comments', color: 'text-amber-400', alert: pendingComments > 0 },
+    { label: 'Pending Comments', count: pendingComments, to: '/admin/comments', color: 'text-white', alert: pendingComments > 0 },
     { label: 'Education Milestones', count: education.length, to: '/admin/education', icon: <GraduationCap className="w-5 h-5" /> },
     { label: 'Photos in Gallery', count: photos.length, to: '/admin/photography', icon: <Camera className="w-5 h-5" /> },
     { label: 'Video Showcase', count: videos.length, to: '/admin/videos', icon: <Video className="w-5 h-5" /> },
-    { label: 'Hobbies & Interests', count: hobbies.length, to: '/admin/hobbies', icon: <Heart className="w-5 h-5" /> },
+    { label: 'Art & Hobbies', count: art.length + hobbies.length, to: '/admin/art-and-hobbies', icon: <Palette className="w-5 h-5 text-primary" /> },
     { label: 'Pets', count: pets.length, to: '/admin/pets', icon: <PawPrint className="w-5 h-5" /> },
-    { label: 'Books Reviewed', count: books.length, to: '/admin/books', icon: <BookOpen className="w-5 h-5" /> },
     { label: 'Achievements', count: achievements.length, to: '/admin/achievements', icon: <Award className="w-5 h-5" /> },
   ];
 
@@ -65,9 +63,9 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {unreadMessages > 0 && (
             <Link to="/admin/messages">
-              <Card className="border-primary/40 bg-primary/10 flex items-center justify-between hover:bg-primary/15 transition-colors">
+              <Card className="border-white/20 bg-white/5 flex items-center justify-between hover:bg-white/10 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-primary text-primary-foreground">
+                  <div className="p-2.5 rounded-xl bg-white text-black">
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
@@ -77,16 +75,16 @@ export const DashboardPage: React.FC = () => {
                     <p className="text-xs text-muted-foreground">Click to review inbox</p>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-primary" />
+                <ArrowRight className="w-4 h-4 text-white" />
               </Card>
             </Link>
           )}
 
           {pendingComments > 0 && (
             <Link to="/admin/comments">
-              <Card className="border-amber-500/40 bg-amber-500/10 flex items-center justify-between hover:bg-amber-500/15 transition-colors">
+              <Card className="border-white/20 bg-white/5 flex items-center justify-between hover:bg-white/10 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-amber-500 text-white">
+                  <div className="p-2.5 rounded-xl bg-white text-black">
                     <MessageSquare className="w-5 h-5" />
                   </div>
                   <div>
@@ -96,7 +94,7 @@ export const DashboardPage: React.FC = () => {
                     <p className="text-xs text-muted-foreground">Click to approve or reject</p>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-amber-500" />
+                <ArrowRight className="w-4 h-4 text-white" />
               </Card>
             </Link>
           )}

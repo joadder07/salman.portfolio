@@ -5,9 +5,7 @@ import {
   GraduationCap,
   Camera,
   Video,
-  Heart,
   PawPrint,
-  BookOpen,
   Award,
   MessageSquare,
   Mail,
@@ -21,20 +19,17 @@ import {
 } from 'lucide-react';
 import { useCurrentUser, useLogout } from '@/api/auth.api';
 import { usePendingCommentsCount, useUnreadMessagesCount } from '@/api/interactions.api';
-import { useTheme } from '@/themes/ThemeProvider';
 import toast from 'react-hot-toast';
 
 export const AdminLayout: React.FC = () => {
   const { data: user } = useCurrentUser();
   const logoutMutation = useLogout();
   const navigate = useNavigate();
-  const { theme, setTheme, availableThemes } = useTheme();
 
   const { data: pendingComments = 0 } = usePendingCommentsCount();
   const { data: unreadMessages = 0 } = useUnreadMessagesCount();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -53,24 +48,22 @@ export const AdminLayout: React.FC = () => {
     { label: 'Education', to: '/admin/education', icon: <GraduationCap className="w-4 h-4" /> },
     { label: 'Photography', to: '/admin/photography', icon: <Camera className="w-4 h-4" /> },
     { label: 'Videos', to: '/admin/videos', icon: <Video className="w-4 h-4" /> },
-    { label: 'Art', to: '/admin/art', icon: <Palette className="w-4 h-4" /> },
-    { label: 'Hobbies', to: '/admin/hobbies', icon: <Heart className="w-4 h-4" /> },
+    { label: 'Art & Hobbies', to: '/admin/art-and-hobbies', icon: <Palette className="w-4 h-4" /> },
     { label: 'Pets', to: '/admin/pets', icon: <PawPrint className="w-4 h-4" /> },
-    { label: 'Books', to: '/admin/books', icon: <BookOpen className="w-4 h-4" /> },
     { label: 'Achievements', to: '/admin/achievements', icon: <Award className="w-4 h-4" /> },
     {
       label: 'Comments',
       to: '/admin/comments',
       icon: <MessageSquare className="w-4 h-4" />,
       badge: pendingComments > 0 ? pendingComments : undefined,
-      badgeColor: 'bg-amber-500',
+      badgeColor: 'bg-white text-black font-semibold',
     },
     {
       label: 'Messages',
       to: '/admin/messages',
       icon: <Mail className="w-4 h-4" />,
       badge: unreadMessages > 0 ? unreadMessages : undefined,
-      badgeColor: 'bg-primary',
+      badgeColor: 'bg-white text-black font-semibold',
     },
   ];
 
@@ -197,41 +190,15 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Theme selector */}
-            <div className="relative">
-              <button
-                onClick={() => setIsThemeOpen(!isThemeOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/10 bg-background/50 text-xs font-medium text-foreground hover:bg-muted/50 transition-all cursor-pointer"
-              >
-                <Palette className="w-3.5 h-3.5 text-primary" />
-                <span className="capitalize font-mono text-[11px]">{theme}</span>
-              </button>
-
-              {isThemeOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-44 rounded-2xl glass p-2 shadow-2xl border border-white/10 z-50 text-xs space-y-1"
-                  onClick={() => setIsThemeOpen(false)}
-                >
-                  {availableThemes.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => setTheme(t.id)}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left transition-all ${
-                        theme === t.id
-                          ? 'bg-primary/20 text-primary font-semibold'
-                          : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      <span>{t.name}</span>
-                      <span
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: t.color }}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Link
+              to="/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Live Site</span>
+            </Link>
           </div>
         </header>
 

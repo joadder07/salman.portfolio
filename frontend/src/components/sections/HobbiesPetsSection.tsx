@@ -144,7 +144,7 @@ export const HobbiesPetsSection: React.FC = () => {
             <CameraViewfinderCarousel
               images={carouselImages}
               intervalMs={3500}
-              bracketColorClass="border-black"
+              bracketColorClass="border-white"
               onClickImage={() => setIsGalleryOpen(true)}
             />
           </motion.div>
@@ -276,7 +276,7 @@ export const HobbiesPetsSection: React.FC = () => {
                               <span className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase bg-black/80 backdrop-blur-md text-white border border-white/10 tracking-widest">
                                 {isPet ? (
                                   <>
-                                    <PawPrint className="w-3 h-3 text-amber-400" />
+                                    <PawPrint className="w-3 h-3 text-white" />
                                     <span>Pet</span>
                                   </>
                                 ) : (

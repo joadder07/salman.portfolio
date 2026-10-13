@@ -40,17 +40,11 @@ const PhotographyManager = lazy(() =>
 const VideoManager = lazy(() =>
   import('@/pages/admin/VideoManager').then((m) => ({ default: m.VideoManager }))
 );
-const ArtManager = lazy(() =>
-  import('@/pages/admin/ArtManager').then((m) => ({ default: m.ArtManager }))
-);
-const HobbyManager = lazy(() =>
-  import('@/pages/admin/HobbyManager').then((m) => ({ default: m.HobbyManager }))
+const ArtAndHobbiesManager = lazy(() =>
+  import('@/pages/admin/ArtAndHobbiesManager').then((m) => ({ default: m.ArtAndHobbiesManager }))
 );
 const PetManager = lazy(() =>
   import('@/pages/admin/PetManager').then((m) => ({ default: m.PetManager }))
-);
-const BookManager = lazy(() =>
-  import('@/pages/admin/BookManager').then((m) => ({ default: m.BookManager }))
 );
 const AchievementManager = lazy(() =>
   import('@/pages/admin/AchievementManager').then((m) => ({ default: m.AchievementManager }))
@@ -92,10 +86,10 @@ export const AppRoutes: React.FC = () => {
             <Route path="education" element={<EducationManager />} />
             <Route path="photography" element={<PhotographyManager />} />
             <Route path="videos" element={<VideoManager />} />
-            <Route path="art" element={<ArtManager />} />
-            <Route path="hobbies" element={<HobbyManager />} />
+            <Route path="art-and-hobbies" element={<ArtAndHobbiesManager />} />
+            <Route path="art" element={<ArtAndHobbiesManager />} />
+            <Route path="hobbies" element={<ArtAndHobbiesManager />} />
             <Route path="pets" element={<PetManager />} />
-            <Route path="books" element={<BookManager />} />
             <Route path="achievements" element={<AchievementManager />} />
             <Route path="comments" element={<CommentModeration />} />
             <Route path="messages" element={<MessageInbox />} />

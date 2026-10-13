@@ -91,7 +91,7 @@ export const CommentModeration: React.FC = () => {
                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                         : comment.status === 'REJECTED'
                         ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                        : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                        : 'bg-white/10 text-white border border-white/20'
                     }`}
                   >
                     {comment.status}

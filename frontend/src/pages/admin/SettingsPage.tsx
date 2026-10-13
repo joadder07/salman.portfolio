@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useCurrentUser, useUpdateProfile } from '@/api/auth.api';
 import { useSiteSettings, useUpdateSettings, useUploadMedia } from '@/api/settings.api';
-import { useTheme } from '@/themes/ThemeProvider';
 import toast from 'react-hot-toast';
 
 export const SettingsPage: React.FC = () => {
@@ -16,7 +15,6 @@ export const SettingsPage: React.FC = () => {
   const { data: settings } = useSiteSettings();
   const updateSettings = useUpdateSettings();
   const uploadMedia = useUploadMedia();
-  const { availableThemes } = useTheme();
 
   // Profile Form State
   const [name, setName] = useState('');
@@ -430,22 +428,6 @@ export const SettingsPage: React.FC = () => {
             />
           </div>
 
-          <div className="space-y-1.5 text-left">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
-              Default Theme
-            </label>
-            <select
-              value={activeTheme}
-              onChange={(e) => setActiveTheme(e.target.value)}
-              className="w-full h-10 rounded-xl border border-border/80 bg-background/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-            >
-              {availableThemes.map((t) => (
-                <option key={t.id} value={t.id} className="bg-card text-foreground">
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
 
           <div className="space-y-1.5 text-left">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">

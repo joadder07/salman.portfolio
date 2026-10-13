@@ -16,7 +16,7 @@ interface CommentListProps {
 
 const AVATAR_GRADIENTS = [
   'from-rose-500 to-indigo-500',
-  'from-amber-500 to-pink-500',
+  'from-neutral-700 to-neutral-500',
   'from-emerald-400 to-cyan-500',
   'from-blue-500 to-violet-600',
   'from-fuchsia-500 to-purple-600',
