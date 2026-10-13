@@ -69,6 +69,15 @@ h2:not(.font-brush) {
 
 .font-brush {
   font-family: 'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive !important;
+  outline: none !important;
+  border: none !important;
+}
+
+.font-brush:focus,
+.font-brush:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Glassmorphism helpers for dark minimalist aesthetic */

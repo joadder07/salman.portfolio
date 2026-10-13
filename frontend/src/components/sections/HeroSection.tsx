@@ -53,8 +53,8 @@ export const HeroSection: React.FC = () => {
         {/* Seamless bottom organic scrim fade into deep black page background */}
         <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-36 md:h-3/5 scrim-gradient-to-top z-[2] pointer-events-none" />
 
-        {/* Main Name: 'SALMAN SAJID' positioned nicely over upper image on mobile, left-aligned on desktop */}
-        <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center px-4 pt-8 md:pt-0 md:items-start md:text-left md:pl-20 lg:pl-28 md:pr-6 pointer-events-none select-none">
+        {/* Main Name: 'SALMAN SAJID' positioned as a single-line continuous string visually centered vertically on the left-hand side */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-4 xs:left-6 sm:left-10 md:left-12 lg:left-16 z-10 pointer-events-none select-none border-none outline-none ring-0">
           <motion.h1
             initial={{ opacity: 0, y: 24, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -63,7 +63,7 @@ export const HeroSection: React.FC = () => {
               delay: 0.25,
               ease: [0.16, 1, 0.3, 1],
             }}
-            className="font-brush text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white tracking-normal uppercase leading-tight max-w-3xl drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)] will-change-[transform,opacity,filter]"
+            className="font-brush text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white tracking-normal uppercase leading-tight whitespace-nowrap drop-shadow-[0_4px_18px_rgba(0,0,0,0.95)] will-change-[transform,opacity,filter] border-none outline-none ring-0"
             style={{
               fontFamily: "'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive",
             }}

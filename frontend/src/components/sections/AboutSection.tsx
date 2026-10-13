@@ -137,8 +137,7 @@ export const AboutSection: React.FC = () => {
           {/* Clean Flow into Bio Text Immediately Below Roles */}
           <p className="mt-5 sm:mt-6 text-sm sm:text-base text-neutral-300 font-light leading-relaxed max-w-xl">
             {settings?.aboutText ||
-              settings?.adminBio ||
-              'Salman Sajid is a filmmaker, photographer, and researcher driven by the art of capturing authentic, honest moments. Through love, curiosity, adventure, and everything in between, he documents real stories and explores the intersection of human health, visual arts, and technology.'}
+              'Researcher at IntelliNova Research Team | Public Health Student at Daffodil International University | Videographer & Storyteller capturing perspectives beyond the lens.'}
           </p>
 
           {/* Salman's Story Link */}

@@ -115,7 +115,7 @@ async function main() {
       tagline: existingSettings?.tagline || 'Researching Public Health, Data Systems & Healthcare Innovations',
       heroTitle: existingSettings?.heroTitle || 'Think. Create. Innovate',
       heroSubtitle: existingSettings?.heroSubtitle || 'A Curious Mind in Health Science, Research, Photography, Art, and Exploration',
-      aboutText: existingSettings?.aboutText || 'Researcher at IntelliNova research team and the Department of Public Health at Daffodil International University. Dedicated to advancing public health research, computational modeling, and innovative healthcare systems.',
+      aboutText: existingSettings?.aboutText || 'Researcher at IntelliNova Research Team | Public Health Student at Daffodil International University | Videographer & Storyteller capturing perspectives beyond the lens.',
       activeTheme: existingSettings?.activeTheme || 'midnight',
       socialLinks: JSON.stringify({
         facebook: 'https://facebook.com',
@@ -133,7 +133,7 @@ async function main() {
       tagline: 'Researching Public Health, Data Systems & Healthcare Innovations',
       heroTitle: 'Think. Create. Innovate',
       heroSubtitle: 'A Curious Mind in Health Science, Research, Photography, Art, and Exploration',
-      aboutText: 'Researcher at IntelliNova research team and the Department of Public Health at Daffodil International University. Dedicated to advancing public health research, computational modeling, and innovative healthcare systems.',
+      aboutText: 'Researcher at IntelliNova Research Team | Public Health Student at Daffodil International University | Videographer & Storyteller capturing perspectives beyond the lens.',
       activeTheme: 'midnight',
       socialLinks: JSON.stringify({
         facebook: 'https://facebook.com',

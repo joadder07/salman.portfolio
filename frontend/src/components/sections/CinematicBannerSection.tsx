@@ -61,46 +61,47 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
           aria-label={altText}
         />
 
-        {/* Stylized Quote Overlay positioned neatly in the sky area (top-right / top-center) */}
+        {/* Stylized Quote Overlay Centered in Middle of Section */}
         <motion.div
-          initial={{ opacity: 0, y: 18 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute top-6 sm:top-10 md:top-14 right-4 sm:right-8 md:right-14 lg:right-20 z-10 max-w-[280px] xs:max-w-[340px] sm:max-w-md md:max-w-lg lg:max-w-xl text-left pointer-events-none select-none"
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none select-none p-6 sm:p-10 max-w-4xl mx-auto"
         >
-          {/* Large Stylized Quotation Mark (❝) exactly matching image_16.png */}
+          {/* Large Stylized Quotation Mark (❝) */}
           <svg
             viewBox="0 0 100 80"
-            className="w-10 h-8 sm:w-13 sm:h-10 md:w-16 md:h-13 fill-black text-black mb-2.5 sm:mb-3.5 select-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]"
+            className="w-8 h-6 sm:w-11 sm:h-9 md:w-14 md:h-11 fill-white text-white mb-2.5 sm:mb-3.5 select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]"
             aria-hidden="true"
           >
             <path d="M0,48 C0,22 14,0 42,0 L44,12 C28,14 18,25 18,36 C21,34 25,32 30,32 C40,32 48,40 48,52 C48,65 38,76 24,76 C11,76 0,64 0,48 Z M52,48 C52,22 66,0 94,0 L96,12 C80,14 70,25 70,36 C73,34 77,32 82,32 C92,32 100,40 100,52 C100,65 90,76 76,76 C63,76 52,64 52,48 Z" />
           </svg>
 
-          {/* Main Primary Quote Line in bold uppercase sans-serif font matching image_16.png with subtle highlighter */}
+          {/* 1st Line: Noticeably Bolder (Bold / Extra-Bold) */}
           <h3
-            className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-bold uppercase tracking-tight text-black leading-[1.14] drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]"
+            className="text-base xs:text-lg sm:text-xl md:text-2xl lg:text-[28px] font-black uppercase tracking-wide text-white leading-tight sm:leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-3xl"
             style={{
               fontFamily: "'Oswald', 'Bebas Neue', sans-serif",
             }}
           >
-            <span className="bg-black/10 backdrop-blur-[1px] px-1.5 py-0.5 box-decoration-clone inline">
-              {activeQuote}
-            </span>
+            EACH SHOT IS A REFLECTION OF MY TRUE SELF.
           </h3>
 
-          {/* Secondary Quote Subtext in bold uppercase sans-serif font matching image_16.png */}
-          {activeQuoteSubtext && (
-            <p
-              className="mt-2.5 sm:mt-3.5 text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl font-bold uppercase leading-snug sm:leading-relaxed text-black tracking-normal max-w-lg drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]"
-              style={{
-                fontFamily: "'Oswald', 'Bebas Neue', sans-serif",
-              }}
-            >
-              {activeQuoteSubtext}
-            </p>
-          )}
+          {/* 2nd & 3rd Lines: Lighter / Medium Font Weight */}
+          <div
+            className="mt-1.5 sm:mt-2.5 text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl font-normal sm:font-medium uppercase tracking-wide text-white/90 leading-snug sm:leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-2xl"
+            style={{
+              fontFamily: "'Oswald', 'Bebas Neue', sans-serif",
+            }}
+          >
+            <span className="block whitespace-nowrap">
+              IT’S BEEN A WAY FOR ME TO EXPRESS MYSELF
+            </span>
+            <span className="block whitespace-nowrap">
+              AND SHOW OTHERS HOW I SEE THE WORLD.
+            </span>
+          </div>
         </motion.div>
       </motion.div>
     </section>

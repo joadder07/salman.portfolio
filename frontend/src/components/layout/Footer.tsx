@@ -23,21 +23,21 @@ export const Footer: React.FC = () => {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center text-center"
       >
-        {/* Handwritten Signature in a Compact Horizontal Line */}
-        <h2 className="font-brush text-white tracking-normal uppercase select-none mb-6 sm:mb-8 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-center max-w-full px-2">
-          <span className="text-xs sm:text-base font-brush opacity-80 mt-0.5">
+        {/* Handwritten Signature Scaled Down & Centered */}
+        <h2 className="font-brush text-white tracking-normal uppercase select-none mb-4 sm:mb-6 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-center max-w-full px-2">
+          <span className="text-[10px] sm:text-xs font-brush opacity-80 mt-0.5">
             A
           </span>
-          <span className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-brush tracking-wide">
+          <span className="text-xs xs:text-sm sm:text-base md:text-lg font-brush tracking-wide">
             SALMAN SAJID JOADDER
           </span>
-          <span className="text-xs sm:text-base font-brush opacity-80 mt-0.5">
+          <span className="text-[10px] sm:text-xs font-brush opacity-80 mt-0.5">
             VISION
           </span>
         </h2>
 
         {/* Social Media Icons (Centered, Instagram, YouTube, Facebook, LinkedIn) */}
-        <div className="flex items-center justify-center gap-6 text-white/80 mb-8 sm:mb-10">
+        <div className="flex items-center justify-center gap-6 text-white/80 mb-6 sm:mb-8">
           {links.instagram && (
             <a
               href={links.instagram}

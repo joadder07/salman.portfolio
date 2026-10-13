@@ -401,12 +401,12 @@ export const SettingsPage: React.FC = () => {
             <div className="absolute inset-0 bg-black/35" />
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-            <div className="absolute inset-0 p-6 sm:p-10 flex flex-col justify-center items-start pointer-events-none">
-              <span className="text-[9px] uppercase tracking-[0.3em] text-white/60 mb-1 font-semibold">
+            <div className="absolute top-1/2 -translate-y-1/2 left-3 sm:left-5 md:left-6 z-10 pointer-events-none flex flex-col items-start border-none outline-none ring-0">
+              <span className="text-[9px] uppercase tracking-[0.3em] text-white/60 mb-0.5 font-semibold">
                 Hero Section Overlay
               </span>
               <h1
-                className="font-brush text-xl sm:text-3xl md:text-4xl text-white tracking-normal uppercase leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]"
+                className="font-brush text-base xs:text-xl sm:text-2xl md:text-3xl text-white tracking-normal uppercase leading-tight whitespace-nowrap drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] border-none outline-none ring-0"
                 style={{
                   fontFamily: "'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive",
                 }}
@@ -560,31 +560,32 @@ export const SettingsPage: React.FC = () => {
               style={{ backgroundImage: `url(${previewBanner})` }}
             />
 
-            {/* Stylized Quote Overlay in Sky Area matching image_16.png */}
-            <div className="absolute top-3 sm:top-5 right-3 sm:right-6 z-10 max-w-[220px] sm:max-w-xs text-left pointer-events-none">
+            {/* Stylized Quote Overlay Centered in Section */}
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none p-4 sm:p-6 max-w-lg mx-auto">
               <svg
                 viewBox="0 0 100 80"
-                className="w-7 h-5 sm:w-9 sm:h-7 fill-black text-black mb-1 sm:mb-1.5 select-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]"
+                className="w-5 h-4 sm:w-7 sm:h-5 fill-white text-white mb-1.5 sm:mb-2 select-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
                 aria-hidden="true"
               >
                 <path d="M0,48 C0,22 14,0 42,0 L44,12 C28,14 18,25 18,36 C21,34 25,32 30,32 C40,32 48,40 48,52 C48,65 38,76 24,76 C11,76 0,64 0,48 Z M52,48 C52,22 66,0 94,0 L96,12 C80,14 70,25 70,36 C73,34 77,32 82,32 C92,32 100,40 100,52 C100,65 90,76 76,76 C63,76 52,64 52,48 Z" />
               </svg>
               <h4
-                className="text-[11px] sm:text-xs md:text-sm font-bold uppercase tracking-tight text-black leading-tight drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]"
+                className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-wide text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
                 style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
               >
-                <span className="bg-black/10 backdrop-blur-[1px] px-1 py-0.2 box-decoration-clone inline">
-                  {bannerQuote}
-                </span>
+                EACH SHOT IS A REFLECTION OF MY TRUE SELF.
               </h4>
-              {bannerQuoteSubtext && (
-                <p
-                  className="mt-1 text-[8px] sm:text-[10px] font-bold uppercase leading-snug text-black drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]"
-                  style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
-                >
-                  {bannerQuoteSubtext}
-                </p>
-              )}
+              <div
+                className="mt-1 sm:mt-1.5 text-[8px] sm:text-[10px] md:text-xs font-normal sm:font-medium uppercase tracking-wide text-white/90 leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+                style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
+              >
+                <span className="block whitespace-nowrap">
+                  IT’S BEEN A WAY FOR ME TO EXPRESS MYSELF
+                </span>
+                <span className="block whitespace-nowrap">
+                  AND SHOW OTHERS HOW I SEE THE WORLD.
+                </span>
+              </div>
             </div>
 
             {/* Loading spinner overlay */}

@@ -146,7 +146,7 @@ export const Header: React.FC = () => {
           <Link
             to="/"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="font-brush text-[11px] min-[375px]:text-xs xs:text-[13px] sm:text-2xl md:text-3xl text-white tracking-normal sm:tracking-wide uppercase hover:opacity-85 transition-opacity whitespace-nowrap select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] py-1 sm:py-2 leading-normal sm:leading-relaxed overflow-visible inline-block"
+            className="font-brush text-[11px] min-[375px]:text-xs xs:text-[13px] sm:text-2xl md:text-3xl text-white tracking-normal sm:tracking-wide uppercase hover:opacity-85 transition-opacity whitespace-nowrap select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] py-1 sm:py-2 leading-normal sm:leading-relaxed overflow-visible inline-block outline-none focus:outline-none focus-visible:outline-none ring-0 border-none"
             style={{
               fontFamily: "'Rock Salt', 'Permanent Marker', 'Caveat Brush', cursive",
             }}
@@ -162,11 +162,11 @@ export const Header: React.FC = () => {
             {/* 1. Dashboard (with lock icon) */}
             <Link
               to={user ? '/admin' : '/admin/login'}
-              className="text-[11px] sm:text-xs tracking-[0.22em] uppercase font-bold text-white/80 hover:text-white transition-colors flex items-center gap-1.5 py-1"
+              className="text-xs sm:text-[13px] tracking-[0.22em] uppercase font-bold text-white hover:text-white/80 transition-colors flex items-center gap-1.5 py-1"
               title="Admin Dashboard"
             >
-              <Lock className="w-3.5 h-3.5 text-white/70" />
-              <span>Dashboard</span>
+              <Lock className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+              <span>DASHBOARD</span>
             </Link>
 
             {/* 2. Portfolio Dropdown */}
@@ -179,14 +179,14 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={handlePortfolioToggle}
-                className="flex items-center gap-1.5 font-bold tracking-[0.22em] text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
+                className="flex items-center gap-1.5 text-xs sm:text-[13px] font-bold tracking-[0.22em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
                 aria-haspopup="true"
                 aria-expanded={isPortfolioOpen}
               >
                 <span>PORTFOLIO</span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 text-white/80 ${
-                    isPortfolioOpen ? 'rotate-180 text-white' : ''
+                  className={`w-3.5 h-3.5 stroke-[2.5] transition-transform duration-200 text-white ${
+                    isPortfolioOpen ? 'rotate-180' : ''
                   }`}
                 />
               </button>
@@ -223,14 +223,14 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={handleContactToggle}
-                className="flex items-center gap-1.5 font-bold tracking-[0.22em] text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
+                className="flex items-center gap-1.5 text-xs sm:text-[13px] font-bold tracking-[0.22em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
                 aria-haspopup="true"
                 aria-expanded={isContactOpen}
               >
                 <span>CONTACT</span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 text-white/80 ${
-                    isContactOpen ? 'rotate-180 text-white' : ''
+                  className={`w-3.5 h-3.5 stroke-[2.5] transition-transform duration-200 text-white ${
+                    isContactOpen ? 'rotate-180' : ''
                   }`}
                 />
               </button>
@@ -298,13 +298,13 @@ export const Header: React.FC = () => {
             <div className="pl-4 md:pl-5 border-l border-white/20">
               <Link
                 to="/about"
-                className={`text-white hover:text-white/80 transition-colors duration-200 py-1 relative group/nav whitespace-nowrap block ${
+                className={`text-xs sm:text-[13px] font-bold tracking-[0.22em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 relative group/nav whitespace-nowrap block ${
                   location.pathname === '/about' ? 'text-white' : ''
                 }`}
               >
                 <span>ABOUT SALMAN</span>
                 <span
-                  className={`absolute bottom-0 left-0 h-[1.5px] bg-white transition-all duration-200 ${
+                  className={`absolute bottom-0 left-0 h-[2px] bg-white transition-all duration-200 ${
                     location.pathname === '/about' ? 'w-full' : 'w-0 group-hover/nav:w-full'
                   }`}
                 />
