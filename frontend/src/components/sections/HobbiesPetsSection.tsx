@@ -83,36 +83,10 @@ export const HobbiesPetsSection: React.FC = () => {
   return (
     <section
       id="hobbies"
-      className="relative pt-24 sm:pt-36 md:pt-48 pb-14 sm:pb-20 px-4 sm:px-8 lg:px-12 bg-white text-black overflow-hidden select-none"
+      className="relative py-16 sm:py-24 px-4 sm:px-8 lg:px-12 bg-light-paper text-black overflow-hidden select-none"
     >
       {/* Anchor for pets link navigation */}
       <div id="pets" className="absolute -top-24" />
-
-      {/* Seamless white canvas background that starts smoothly from previous section and stays clean, solid white to the bottom */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0"
-        style={{
-          background:
-            'linear-gradient(to bottom, #000000 0%, #000000 1%, #ffffff 12%, #ffffff 100%)',
-        }}
-      />
-
-      {/* Top smooth organic scrim blend from preceding black section into white section */}
-      <div className="absolute -top-1 left-0 right-0 h-40 sm:h-64 md:h-80 lg:h-96 scrim-gradient-to-bottom pointer-events-none z-10" />
-
-      {/* Subtle texture layer with soft edge mask at top only */}
-      <div
-        className="absolute inset-0 bg-[url('/images/dark-texture.jpg')] bg-cover sm:bg-fixed bg-center pointer-events-none opacity-40 z-[1]"
-        style={{
-          filter: 'invert(1)',
-          mixBlendMode: 'multiply',
-          WebkitMaskImage:
-            'linear-gradient(to bottom, transparent 0%, black 15%, black 100%)',
-          maskImage:
-            'linear-gradient(to bottom, transparent 0%, black 15%, black 100%)',
-        }}
-        aria-hidden="true"
-      />
 
       <div className="relative z-10 max-w-7xl mx-auto my-4 sm:my-6">
         {/* ============================================================== */}
@@ -123,22 +97,22 @@ export const HobbiesPetsSection: React.FC = () => {
           {/* TEXT COLUMN: Typography & Call to Action (Left)              */}
           {/* ------------------------------------------------------------ */}
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.85, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, margin: '-10px' }}
+            transition={{ duration: 0.85, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
             className="w-full flex flex-col justify-center items-start text-left order-2 md:order-1"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-black leading-tight font-heading">
+            <h2 className="scroll-reveal text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-black leading-tight font-heading">
               Hobbies &amp; Pets
             </h2>
-            <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-neutral-700 font-light leading-relaxed tracking-wide max-w-xl">
+            <p className="scroll-reveal scroll-delay-1 mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-neutral-700 font-light leading-relaxed tracking-wide max-w-xl">
               Creative pursuits, personal interests, and the cherished companions who bring joy to everyday life. Caring for animals, gardening, culinary experiments, and exploring new places through travel
             </p>
             <button
               type="button"
               onClick={() => setIsGalleryOpen(true)}
-              className="mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-black hover:text-neutral-600 transition-colors group cursor-pointer"
+              className="scroll-reveal scroll-delay-2 mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-black hover:text-neutral-600 transition-colors group cursor-pointer"
             >
               <span>DISCOVER MORE</span>
               <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
@@ -149,11 +123,11 @@ export const HobbiesPetsSection: React.FC = () => {
           {/* MEDIA COLUMN: Camera Viewfinder Auto-playing Carousel (Right)*/}
           {/* ------------------------------------------------------------ */}
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full flex items-center justify-center order-1 md:order-2"
+            viewport={{ once: true, margin: '-10px' }}
+            transition={{ duration: 0.85, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="scroll-reveal scroll-reveal-scale scroll-delay-2 w-full flex items-center justify-center order-1 md:order-2"
           >
             <CameraViewfinderCarousel
               images={carouselImages}

@@ -104,7 +104,7 @@ export const AboutSection: React.FC = () => {
   const idx3 = (currentIndex + 2) % carouselImages.length;
 
   return (
-    <section id="about" className="pt-6 sm:pt-10 lg:pt-28 pb-16 sm:pb-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full overflow-hidden">
+    <section id="about" className="relative bg-dark-grunge pt-6 sm:pt-10 lg:pt-28 pb-16 sm:pb-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full overflow-hidden">
       {/* ============================================================== */}
       {/* RESPONSIVE SPLIT LAYOUT (grid-cols-1 lg:grid-cols-12 gap-8)    */}
       {/* ============================================================== */}
@@ -113,18 +113,18 @@ export const AboutSection: React.FC = () => {
         {/* LEFT COLUMN: Multi-line Roles, Bio Text & Salman's Story Link */}
         {/* ------------------------------------------------------------ */}
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.85, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.85, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           className="w-full lg:col-span-5 xl:col-span-4 flex flex-col justify-center items-start text-left"
         >
           {/* Multi-line Roles Stack */}
-          <div className="flex flex-col items-start text-left select-none space-y-0.5 sm:space-y-1 w-full">
+          <div className="scroll-reveal flex flex-col items-start text-left select-none space-y-0.5 sm:space-y-1 w-full">
             {ROLES.map((role) => (
               <h2
                 key={role}
-                className="text-3xl xs:text-4xl sm:text-4xl md:text-5xl lg:text-[2.85rem] font-black uppercase text-white font-heading leading-[0.96] tracking-tight whitespace-normal sm:whitespace-nowrap break-words hover:text-neutral-300 transition-colors duration-200"
+                className="text-[28px] min-[360px]:text-3xl xs:text-4xl sm:text-4xl md:text-5xl lg:text-[2.85rem] font-black uppercase text-white font-heading leading-[0.96] tracking-tight whitespace-normal sm:whitespace-nowrap break-words hover:text-neutral-300 transition-colors duration-200"
                 style={{
                   fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
                 }}
@@ -135,7 +135,7 @@ export const AboutSection: React.FC = () => {
           </div>
 
           {/* Clean Flow into Bio Text Immediately Below Roles */}
-          <p className="mt-5 sm:mt-6 text-sm sm:text-base text-neutral-300 font-light leading-relaxed max-w-xl">
+          <p className="scroll-reveal scroll-delay-1 mt-5 sm:mt-6 text-sm sm:text-base text-neutral-300 font-light leading-relaxed max-w-xl">
             {settings?.aboutText ||
               'Researcher at IntelliNova Research Team | Public Health Student at Daffodil International University | Videographer & Storyteller capturing perspectives beyond the lens.'}
           </p>
@@ -143,7 +143,7 @@ export const AboutSection: React.FC = () => {
           {/* Salman's Story Link */}
           <Link
             to="/about"
-            className="mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
+            className="scroll-reveal scroll-delay-2 mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
           >
             <span>SALMAN&apos;S STORY</span>
             <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
@@ -154,11 +154,11 @@ export const AboutSection: React.FC = () => {
         {/* RIGHT COLUMN: 3-Box Horizontal Viewfinder Frame With Controls */}
         {/* ------------------------------------------------------------ */}
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full lg:col-span-7 xl:col-span-8 flex flex-col justify-center"
+          viewport={{ once: true }}
+          transition={{ duration: 0.85, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="scroll-reveal scroll-reveal-scale scroll-delay-2 w-full lg:col-span-7 xl:col-span-8 flex flex-col justify-center"
         >
           <div
             className="w-full select-none"
@@ -219,6 +219,20 @@ export const AboutSection: React.FC = () => {
                     loading="lazy"
                   />
                 ))}
+
+                {/* Slider Navigation Arrow: Vertically centered along the right edge of 3rd image */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNext();
+                  }}
+                  className="absolute top-1/2 -translate-y-1/2 right-1.5 xs:right-2 sm:right-3 z-20 w-7 h-7 xs:w-8 xs:h-8 sm:w-9 sm:h-9 rounded-full bg-black/60 hover:bg-white text-white hover:text-black border border-white/25 hover:border-white transition-all duration-200 flex items-center justify-center backdrop-blur-md cursor-pointer shadow-lg group/nav active:scale-95"
+                  title="Next Slide"
+                  aria-label="Next slide"
+                >
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 group-hover/nav:translate-x-0.5" />
+                </button>
               </div>
             </div>
 
@@ -231,19 +245,6 @@ export const AboutSection: React.FC = () => {
               >
                 <span>DISCOVER MORE</span>
                 <span className="group-hover:translate-x-1.5 transition-transform duration-200">→</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNext();
-                }}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/80 hover:bg-white text-white hover:text-black border border-white/30 hover:border-white transition-all duration-200 flex items-center justify-center backdrop-blur-md cursor-pointer shadow-xl group active:scale-95"
-                title="Next Slide"
-                aria-label="Next slide"
-              >
-                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
               </button>
             </div>
           </div>
@@ -262,14 +263,14 @@ export const AboutSection: React.FC = () => {
             className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col overflow-hidden text-white"
           >
             {/* Modal Top Bar */}
-            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-black/60">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between px-4 xs:px-6 sm:px-10 py-4 sm:py-5 border-b border-white/10 shrink-0 bg-black/60">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <div>
-                  <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
+                  <h3 className="text-base sm:text-xl font-black uppercase tracking-wider text-white">
                     Showcase Visuals Archive
                   </h3>
-                  <p className="text-xs text-neutral-400 font-mono">
+                  <p className="text-[11px] sm:text-xs text-neutral-400 font-mono">
                     {carouselImages.length} Visuals Loaded
                   </p>
                 </div>
@@ -278,15 +279,15 @@ export const AboutSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsGalleryOpen(false)}
-                className="p-2.5 rounded-none border border-white/20 text-white/80 hover:text-white hover:border-white transition-colors cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-none border border-white/20 text-white/80 hover:text-white hover:border-white transition-colors cursor-pointer"
                 title="Close Gallery"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
             {/* Modal Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-6 sm:px-10 py-10 max-w-7xl mx-auto w-full">
+            <div className="flex-1 overflow-y-auto px-4 xs:px-6 sm:px-10 py-6 sm:py-10 max-w-7xl mx-auto w-full">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {carouselImages.map((item, idx) => (
                   <motion.div

@@ -10,7 +10,7 @@ export const AboutPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full min-h-screen py-28 sm:py-36 px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto">
+    <div className="w-full min-h-screen py-20 sm:py-36 px-4 xs:px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto">
       {/* Top Navigation: Back to Home */}
       <motion.div
         initial={{ opacity: 0, x: -10 }}
@@ -30,30 +30,20 @@ export const AboutPage: React.FC = () => {
 
       {/* Main Header with tall, bold, condensed typography */}
       <FadeUpHeading className="mb-14 sm:mb-20">
-        <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] text-neutral-400 mb-3">
+        <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] text-neutral-400 mb-2 sm:mb-3">
           Biography &amp; Life Story
         </p>
-        <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black uppercase tracking-tight text-white leading-none font-heading">
+        <h1 className="text-4xl xs:text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black uppercase tracking-tight text-white leading-none font-heading">
           ABOUT SALMAN
         </h1>
         <div className="hidden sm:block w-20 h-0.5 bg-white/20 mt-6 sm:mt-8" />
       </FadeUpHeading>
 
       {/* Intro Lead Block & Opening Philosophy */}
-      <FadeUpHeading className="mb-16 sm:mb-20 space-y-8">
-        {/* Core Tagline Quote */}
-        <div className="p-6 sm:p-8 rounded-none border border-white/10 bg-black/40 backdrop-blur-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1.5 h-full bg-white" />
-          <p className="text-xl sm:text-2xl md:text-3xl text-white font-medium italic tracking-wide leading-relaxed">
-            &ldquo;A Curious Mind, A Creative Soul, and a Life Full of Stories.&rdquo;
-          </p>
-          <p className="text-xs uppercase tracking-[0.2em] text-neutral-400 mt-4 font-mono">
-            — Salman Sajid Joadder
-          </p>
-        </div>
+      <FadeUpHeading className="mb-16 sm:mb-20">
 
-        <div className="space-y-6 text-lg sm:text-xl text-neutral-200 font-light leading-relaxed">
-          <p className="text-xl sm:text-2xl font-normal text-white italic">
+        <div className="space-y-5 sm:space-y-6 text-base sm:text-lg md:text-xl text-neutral-200 font-light leading-relaxed">
+          <p className="text-lg xs:text-xl sm:text-2xl font-normal text-white italic">
             What happens when a curious mind refuses to stay in one box?
           </p>
           <p>

@@ -13,7 +13,7 @@ import {
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full bg-dark-grunge relative">
       <HeroSection />
       <AboutSection />
       <EducationSection />

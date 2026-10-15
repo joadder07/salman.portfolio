@@ -55,7 +55,10 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
     setIsLightBg(false);
   }, []);
 
-  const activeBracketColor = 'border-white';
+  // Determine clean, solid corner bracket styling (pure solid #ffffff for dark/black backgrounds)
+  const isLight = bracketColorClass?.includes('black') || (isLightBg && !bracketColorClass?.includes('white'));
+  const bracketBorderColor = isLight ? '#000000' : '#ffffff';
+  const bracketBorderClass = isLight ? '!border-black' : '!border-white';
 
   // Auto-playing carousel: cycles at relaxed pace (3.5s) with smooth crossfade
   useEffect(() => {
@@ -74,12 +77,24 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
   }, [images, currentIndex]);
 
   return (
-    <div ref={containerRef} className={`relative p-0 sm:p-5 md:p-6 w-full select-none ${className}`}>
+    <div ref={containerRef} className={`relative p-0 sm:p-5 md:p-6 w-full select-none scroll-reveal scroll-reveal-scale ${className}`}>
       {/* Absolute Solid Viewfinder Corner Indicators (Desktop only - clean borderless on mobile) */}
-      <div className={`hidden sm:block absolute top-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-l-2 ${bracketColorClass || 'border-white'} pointer-events-none z-20 transition-colors duration-200`} />
-      <div className={`hidden sm:block absolute top-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-r-2 ${bracketColorClass || 'border-white'} pointer-events-none z-20 transition-colors duration-200`} />
-      <div className={`hidden sm:block absolute bottom-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-l-2 ${bracketColorClass || 'border-white'} pointer-events-none z-20 transition-colors duration-200`} />
-      <div className={`hidden sm:block absolute bottom-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-r-2 ${bracketColorClass || 'border-white'} pointer-events-none z-20 transition-colors duration-200`} />
+      <div
+        style={{ borderColor: bracketBorderColor }}
+        className={`hidden sm:block absolute top-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-l-2 ${bracketBorderClass} viewfinder-bracket viewfinder-bracket-tl pointer-events-none z-20 transition-colors duration-200`}
+      />
+      <div
+        style={{ borderColor: bracketBorderColor }}
+        className={`hidden sm:block absolute top-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-t-2 border-r-2 ${bracketBorderClass} viewfinder-bracket viewfinder-bracket-tr pointer-events-none z-20 transition-colors duration-200`}
+      />
+      <div
+        style={{ borderColor: bracketBorderColor }}
+        className={`hidden sm:block absolute bottom-0 left-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-l-2 ${bracketBorderClass} viewfinder-bracket viewfinder-bracket-bl pointer-events-none z-20 transition-colors duration-200`}
+      />
+      <div
+        style={{ borderColor: bracketBorderColor }}
+        className={`hidden sm:block absolute bottom-0 right-0 w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-r-2 ${bracketBorderClass} viewfinder-bracket viewfinder-bracket-br pointer-events-none z-20 transition-colors duration-200`}
+      />
 
       {/* ============================================================== */}
       {/* INNER IMAGE CAROUSEL CONTAINER (Clean Edge-to-Edge Image View) */}

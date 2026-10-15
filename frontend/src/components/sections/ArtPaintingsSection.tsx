@@ -87,11 +87,11 @@ export const ArtPaintingsSection: React.FC = () => {
         {/* MEDIA COLUMN: Camera Viewfinder Auto-playing Carousel (Left) */}
         {/* ------------------------------------------------------------ */}
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.85, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full flex items-center justify-center order-1 md:order-1"
+          viewport={{ once: true, margin: '-10px' }}
+          transition={{ duration: 0.85, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+          className="scroll-reveal scroll-reveal-scale w-full flex items-center justify-center order-1 md:order-1"
         >
           <CameraViewfinderCarousel
             images={carouselImages}
@@ -105,22 +105,22 @@ export const ArtPaintingsSection: React.FC = () => {
         {/* TEXT COLUMN: Typography & Call to Action (Right)             */}
         {/* ------------------------------------------------------------ */}
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: '-10px' }}
+          transition={{ duration: 0.85, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           className="w-full flex flex-col justify-center items-start text-left order-2 md:order-2"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-tight font-heading">
+          <h2 className="scroll-reveal scroll-delay-1 text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-tight font-heading">
             Art &amp; Paintings
           </h2>
-          <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-neutral-400 font-light leading-relaxed tracking-wide max-w-xl">
+          <p className="scroll-reveal scroll-delay-2 mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-neutral-400 font-light leading-relaxed tracking-wide max-w-xl">
             I want to learn many things, including painting. I used to hide my work for perfection, hoping to inspire other artists to overcome their fears of not being good enough.
           </p>
           <button
             type="button"
             onClick={() => setIsGalleryOpen(true)}
-            className="mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
+            className="scroll-reveal scroll-delay-3 mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
           >
             <span>DISCOVER MORE</span>
             <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>

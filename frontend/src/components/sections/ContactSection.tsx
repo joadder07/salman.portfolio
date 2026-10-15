@@ -61,9 +61,9 @@ export const ContactSection: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.8, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-        className="max-w-4xl lg:max-w-5xl mx-auto mb-4 sm:mb-6 flex flex-col md:flex-row md:items-end justify-between gap-3 text-left"
+        viewport={{ once: true, margin: '-10px' }}
+        transition={{ duration: 0.8, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+        className="scroll-reveal max-w-4xl lg:max-w-5xl mx-auto mb-4 sm:mb-6 flex flex-col md:flex-row md:items-end justify-between gap-3 text-left"
       >
         <div>
           <span className="text-[11px] uppercase font-bold tracking-[0.25em] text-neutral-400 mb-1 block">
@@ -84,9 +84,9 @@ export const ContactSection: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-4xl lg:max-w-5xl mx-auto"
+        viewport={{ once: true, margin: '-10px' }}
+        transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        className="scroll-reveal scroll-delay-2 w-full max-w-4xl lg:max-w-5xl mx-auto"
       >
         <div className="w-full rounded-none bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl p-3.5 sm:p-5 lg:p-6">
           {/* Mode Toggle Header: Full-width Horizontal Bar */}
@@ -130,7 +130,7 @@ export const ContactSection: React.FC = () => {
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
                   required={!isAnonymous}
-                  className="h-9 sm:h-9.5 text-xs py-1.5 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
+                  className="h-10 sm:h-9.5 text-xs py-2 sm:py-1.5 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
                 />
                 <Input
                   label="Email *"
@@ -139,7 +139,7 @@ export const ContactSection: React.FC = () => {
                   value={senderEmail}
                   onChange={(e) => setSenderEmail(e.target.value)}
                   required={!isAnonymous}
-                  className="h-9 sm:h-9.5 text-xs py-1.5 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
+                  className="h-10 sm:h-9.5 text-xs py-2 sm:py-1.5 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
                 />
                 <div className="sm:col-span-2 lg:col-span-1">
                   <Input
@@ -147,7 +147,7 @@ export const ContactSection: React.FC = () => {
                     placeholder="e.g. Collaboration / Inquiry"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="h-9 sm:h-9.5 text-xs py-1.5 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
+                    className="h-10 sm:h-9.5 text-xs py-2 sm:py-1.5 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
                   />
                 </div>
               </div>
@@ -158,7 +158,7 @@ export const ContactSection: React.FC = () => {
                   placeholder="e.g. Anonymous Feedback / Inquiry"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="h-9 sm:h-9.5 text-xs py-1.5 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
+                  className="h-10 sm:h-9.5 text-xs py-2 sm:py-1.5 px-3 rounded-none bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-neutral-500 focus:bg-white/10 focus:border-white/20 focus:ring-0 transition-colors"
                 />
               </div>
             )}
@@ -186,7 +186,7 @@ export const ContactSection: React.FC = () => {
             <button
               type="submit"
               disabled={sendMessage.isPending}
-              className="w-full py-2.5 sm:py-3 rounded-none bg-white text-black font-bold uppercase tracking-[0.2em] text-xs hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1 shadow-xl"
+              className="w-full py-3 rounded-none bg-white text-black font-bold uppercase tracking-[0.2em] text-xs hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1 shadow-xl active:scale-[0.99]"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{sendMessage.isPending ? 'Transmitting...' : 'Send Message'}</span>

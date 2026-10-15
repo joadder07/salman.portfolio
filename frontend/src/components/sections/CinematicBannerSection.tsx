@@ -46,17 +46,11 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
   }, [imageUrl, settings?.bannerImage]);
 
   return (
-    <section className="relative w-full overflow-hidden select-none bg-black my-0">
-      <motion.div
-        initial={{ opacity: 0, y: 28 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full h-[60vh] sm:h-[75vh] md:h-[90vh] min-h-[420px] sm:min-h-[520px] overflow-hidden flex items-center justify-center"
-      >
-        {/* Full-bleed Edge-to-Edge Image displaying cleanly and directly */}
+    <section className="relative w-full overflow-hidden select-none bg-dark-grunge my-0">
+      <div className="relative w-full h-[60vh] sm:h-[75vh] md:h-[90vh] min-h-[420px] sm:min-h-[520px] overflow-hidden flex items-center justify-center">
+        {/* Full-bleed Edge-to-Edge Image displaying cleanly, immediately and solidly without black flash */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 transition-all duration-700 ease-out"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
           style={{ backgroundImage: `url(${activeImage})` }}
           aria-label={altText}
         />
@@ -66,7 +60,7 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.85, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none select-none p-6 sm:p-10 max-w-4xl mx-auto"
         >
           {/* Large Stylized Quotation Mark (❝) */}
@@ -80,7 +74,7 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
 
           {/* 1st Line: Noticeably Bolder (Bold / Extra-Bold) */}
           <h3
-            className="text-base xs:text-lg sm:text-xl md:text-2xl lg:text-[28px] font-black uppercase tracking-wide text-white leading-tight sm:leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-3xl"
+            className="text-sm xs:text-base sm:text-xl md:text-2xl lg:text-[28px] font-black uppercase tracking-wide text-white leading-tight sm:leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-3xl"
             style={{
               fontFamily: "'Oswald', 'Bebas Neue', sans-serif",
             }}
@@ -90,20 +84,20 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
 
           {/* 2nd & 3rd Lines: Lighter / Medium Font Weight */}
           <div
-            className="mt-1.5 sm:mt-2.5 text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl font-normal sm:font-medium uppercase tracking-wide text-white/90 leading-snug sm:leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-2xl"
+            className="mt-1.5 sm:mt-2.5 text-[11px] xs:text-xs sm:text-base md:text-lg lg:text-xl font-normal sm:font-medium uppercase tracking-wide text-white/90 leading-snug sm:leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-2xl"
             style={{
               fontFamily: "'Oswald', 'Bebas Neue', sans-serif",
             }}
           >
-            <span className="block whitespace-nowrap">
+            <span className="block whitespace-normal sm:whitespace-nowrap break-words">
               IT’S BEEN A WAY FOR ME TO EXPRESS MYSELF
             </span>
-            <span className="block whitespace-nowrap">
+            <span className="block whitespace-normal sm:whitespace-nowrap break-words">
               AND SHOW OTHERS HOW I SEE THE WORLD.
             </span>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 };
