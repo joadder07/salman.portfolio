@@ -135,7 +135,7 @@ export const PhotographySection: React.FC = () => {
                     Photography Archive
                   </h3>
                   <p className="text-xs text-neutral-400 font-mono">
-                    {photos?.length || 0} Captures Available
+                    Unlimited Captures
                   </p>
                 </div>
               </div>
