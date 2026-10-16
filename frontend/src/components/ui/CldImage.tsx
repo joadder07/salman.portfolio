@@ -78,22 +78,44 @@ export function buildCloudinaryUrl(
 
   // Case 1: src is already a full Cloudinary URL
   if (src.includes('res.cloudinary.com')) {
-    // If it already has /upload/, inject or append our optimizations
     if (src.includes('/upload/')) {
+      const uploadIdx = src.indexOf('/upload/');
+      const afterUpload = src.substring(uploadIdx + 8);
+      // Check if afterUpload already starts with a transformation block before the version or folder
+      if (/^(?:f_|w_|h_|c_|q_|g_)[^/]+\//.test(afterUpload)) {
+        return src.replace(/\/upload\/(?:f_|w_|h_|c_|q_|g_)[^/]+\//, `/upload/${transformString}/`);
+      }
       return src.replace('/upload/', `/upload/${transformString}/`);
     }
     return src;
   }
 
-  // Case 2: src is an external URL (e.g. Unsplash or external CDN)
+  // Case 2: Unsplash image URL
+  if (src.includes('images.unsplash.com')) {
+    try {
+      const url = new URL(src);
+      if (options.width) url.searchParams.set('w', String(options.width));
+      if (options.height) url.searchParams.set('h', String(options.height));
+      url.searchParams.set('auto', 'format');
+      url.searchParams.set('fit', 'crop');
+      url.searchParams.set('q', typeof options.quality === 'number' ? String(options.quality) : '80');
+      return url.toString();
+    } catch {
+      return src;
+    }
+  }
+
+  // Case 3: Other external URL (e.g. general CDN)
   if (src.startsWith('http://') || src.startsWith('https://')) {
     return src;
   }
 
-  // Case 3: src is a Cloudinary public_id (e.g. "cld-sample-5" or "portfolio/images/xyz")
+  // Case 4: Cloudinary public_id (e.g. "cld-sample-5" or "portfolio/images/xyz")
   const cleanPublicId = src.startsWith('/') ? src.slice(1) : src;
   return `https://res.cloudinary.com/${cloudName}/image/upload/${transformString}/${cleanPublicId}`;
 }
+
+export const getOptimizedImageUrl = buildCloudinaryUrl;
 
 /**
  * CldImage Component for React + Vite.

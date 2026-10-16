@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getOptimizedImageUrl } from './CldImage';
 
 export interface ViewfinderImage {
   id?: string | number;
@@ -105,19 +106,44 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
           onClickImage ? 'cursor-pointer group' : ''
         }`}
       >
-        {images.map((item, idx) => (
-          <img
-            key={item.id || item.url || idx}
-            src={item.url}
-            alt={item.title || 'Showcase image'}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-              idx === currentIndex
-                ? 'opacity-100 z-10'
-                : 'opacity-0 z-0 pointer-events-none'
-            }`}
-            loading="lazy"
-          />
-        ))}
+        {images.map((item, idx) => {
+          // Only render active, previous, and next slides to keep DOM light and prevent GPU memory spikes
+          const total = images.length;
+          const isCurrent = idx === currentIndex;
+          const isNext = idx === (currentIndex + 1) % total;
+          const isPrev = idx === (currentIndex - 1 + total) % total;
+
+          if (!isCurrent && !isNext && !isPrev) {
+            return null;
+          }
+
+          const optimizedSrc = getOptimizedImageUrl(item.url, {
+            width: 1100,
+            height: 825,
+            crop: 'fill',
+            quality: 'auto',
+            format: 'auto',
+          });
+
+          return (
+            <img
+              key={item.id || item.url || idx}
+              src={optimizedSrc}
+              alt={item.title || 'Showcase image'}
+              decoding="async"
+              style={{
+                willChange: 'opacity',
+                transform: 'translateZ(0)',
+              }}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                isCurrent
+                  ? 'opacity-100 z-10'
+                  : 'opacity-0 z-0 pointer-events-none'
+              }`}
+              loading={isCurrent ? 'eager' : 'lazy'}
+            />
+          );
+        })}
 
         {/* Fallback if no images provided */}
         {(!images || images.length === 0) && (

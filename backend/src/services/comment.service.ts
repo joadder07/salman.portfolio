@@ -5,7 +5,7 @@ import type { CommentStatus } from '@prisma/client';
 
 export class CommentService {
   /** List all comments (admin) — filterable by status */
-  static async findAll(params: PaginationParams, filters?: { status?: CommentStatus }) {
+  static async findAll(params?: PaginationParams, filters?: { status?: CommentStatus }) {
     const where: Record<string, unknown> = {};
     if (filters?.status) where.status = filters.status;
 
@@ -13,8 +13,7 @@ export class CommentService {
       prisma.comment.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: params.skip,
-        take: params.limit,
+        ...(params && { skip: params.skip, take: params.limit }),
         include: {
           photography: { select: { id: true, title: true } },
           video: { select: { id: true, title: true } },

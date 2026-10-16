@@ -6,6 +6,7 @@ import { photographyApi } from '@/api/content.api';
 import { CommentList, CommentForm } from '@/components/comments';
 import { Skeleton, LoadingSpinner } from '@/components/shared';
 import { Button } from '@/components/ui/Button';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 import toast from 'react-hot-toast';
 
 export const PhotographyPage: React.FC = () => {
@@ -83,8 +84,14 @@ export const PhotographyPage: React.FC = () => {
           className="lg:col-span-7 bg-black/60 rounded-3xl overflow-hidden border border-white/10 shadow-2xl glass"
         >
           <img
-            src={photo.imageUrl}
+            src={getOptimizedImageUrl(photo.imageUrl, {
+              width: 1600,
+              crop: 'limit',
+              quality: 'auto',
+              format: 'auto',
+            })}
             alt={photo.title}
+            decoding="async"
             className="w-full max-h-[75vh] object-contain mx-auto"
           />
         </motion.div>

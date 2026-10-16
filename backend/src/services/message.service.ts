@@ -4,7 +4,7 @@ import type { PaginationParams } from '../helpers/pagination';
 
 export class MessageService {
   /** List all messages (admin inbox) */
-  static async findAll(params: PaginationParams, filters?: { isRead?: boolean }) {
+  static async findAll(params?: PaginationParams, filters?: { isRead?: boolean }) {
     const where: Record<string, unknown> = {};
     if (filters?.isRead !== undefined) where.isRead = filters.isRead;
 
@@ -12,8 +12,7 @@ export class MessageService {
       prisma.message.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: params.skip,
-        take: params.limit,
+        ...(params && { skip: params.skip, take: params.limit }),
       }),
       prisma.message.count({ where }),
     ]);

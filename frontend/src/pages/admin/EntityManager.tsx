@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useUploadMedia } from '@/api/settings.api';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 import toast from 'react-hot-toast';
 
 export interface FieldConfig {
@@ -37,7 +38,7 @@ export function EntityManager<T extends { id: string }>({
   useCreate,
   useUpdate,
   useDelete,
-  renderListItem,
+  _renderListItem,
 }: EntityManagerProps<T>) {
   const { data: items = [], isLoading } = useGetAll();
   const createMutation = useCreate();
@@ -117,12 +118,23 @@ export function EntityManager<T extends { id: string }>({
     return String(titleVal).toLowerCase().includes(search.toLowerCase());
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number | 'all'>(20);
+
+  const totalPages = pageSize === 'all' ? 1 : Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const displayedItems = pageSize === 'all'
+    ? filteredItems
+    : filteredItems.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             {icon} {title}
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-mono font-medium">
+              {filteredItems.length} total
+            </span>
           </h1>
           <p className="text-xs text-muted-foreground mt-1">{description}</p>
         </div>
@@ -134,7 +146,10 @@ export function EntityManager<T extends { id: string }>({
               type="text"
               placeholder="Search items..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
               className="h-10 pl-9 pr-4 rounded-xl border border-border/80 bg-background/50 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
@@ -159,49 +174,115 @@ export function EntityManager<T extends { id: string }>({
           <p className="text-xs text-muted-foreground mt-1">Click "Add {singularTitle}" to create one.</p>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {filteredItems.map((item: any) => (
-            <Card key={item.id} className="flex items-center justify-between p-4 hover:border-primary/40 transition-colors">
-              <div className="flex items-center gap-4 min-w-0">
-                {(item.imageUrl || item.thumbnailUrl || item.coverUrl || item.logoUrl) && (
-                  <img
-                    src={item.imageUrl || item.thumbnailUrl || item.coverUrl || item.logoUrl}
-                    alt="Preview"
-                    className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0"
-                  />
-                )}
-                <div className="min-w-0">
-                  <h4 className="text-sm font-bold text-foreground truncate">
-                    {item.title || item.name || item.degree || 'Untitled'}
-                  </h4>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {item.institution || item.author || item.category || item.species || item.description || ''}
-                  </p>
+        <div className="space-y-4">
+          <div className="space-y-3">
+            {displayedItems.map((item: any) => (
+              <Card key={item.id} className="flex items-center justify-between p-4 hover:border-primary/40 transition-colors">
+                <div className="flex items-center gap-4 min-w-0">
+                  {(item.imageUrl || item.thumbnailUrl || item.coverUrl || item.logoUrl) && (
+                    <img
+                      src={getOptimizedImageUrl(
+                        item.imageUrl || item.thumbnailUrl || item.coverUrl || item.logoUrl,
+                        { width: 120, height: 120, crop: 'thumb', quality: 'auto', format: 'auto' }
+                      )}
+                      alt="Preview"
+                      loading="lazy"
+                      decoding="async"
+                      className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-foreground truncate">
+                      {item.title || item.name || item.degree || 'Untitled'}
+                    </h4>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {item.institution || item.author || item.category || item.species || item.description || ''}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="p-2"
+                    onClick={() => handleOpenEdit(item)}
+                    title="Edit"
+                  >
+                    <Edit className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="p-2 text-muted-foreground hover:text-destructive"
+                    onClick={() => handleDelete(item.id)}
+                    title="Delete"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Admin Pagination Controls */}
+          {filteredItems.length > 20 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-border/60 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span>
+                  Showing {pageSize === 'all' ? 1 : (currentPage - 1) * (pageSize as number) + 1}–
+                  {pageSize === 'all' ? filteredItems.length : Math.min(currentPage * (pageSize as number), filteredItems.length)} of {filteredItems.length}
+                </span>
+                <span className="text-muted-foreground/40">&bull;</span>
+                <div className="flex items-center gap-1 font-mono">
+                  <span>Per page:</span>
+                  {[20, 50, 'all'].map((size) => (
+                    <button
+                      key={String(size)}
+                      type="button"
+                      onClick={() => {
+                        setPageSize(size as any);
+                        setCurrentPage(1);
+                      }}
+                      className={`px-2 py-0.5 rounded-md text-[11px] ${
+                        pageSize === size
+                          ? 'bg-primary text-primary-foreground font-semibold'
+                          : 'bg-muted/60 hover:bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {size === 'all' ? 'All' : size}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 shrink-0">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="p-2"
-                  onClick={() => handleOpenEdit(item)}
-                  title="Edit"
-                >
-                  <Edit className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="p-2 text-muted-foreground hover:text-destructive"
-                  onClick={() => handleDelete(item.id)}
-                  title="Delete"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </Card>
-          ))}
+              {pageSize !== 'all' && totalPages > 1 && (
+                <div className="flex items-center gap-1.5 font-mono">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2.5 text-xs"
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous
+                  </Button>
+                  <span className="px-2 text-xs">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2.5 text-xs"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
