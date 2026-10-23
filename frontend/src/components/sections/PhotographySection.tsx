@@ -370,14 +370,9 @@ export const PhotographySection: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 sm:px-10 py-4 sm:py-5 border-b border-white/10 shrink-0 bg-black/80 backdrop-blur-md gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse shrink-0" />
-                <div>
-                  <h3 className="text-base sm:text-lg lg:text-xl font-black uppercase tracking-wider text-white">
-                    Photography Archive
-                  </h3>
-                  <p className="text-xs text-neutral-400 font-mono">
-                    {photos?.length ?? 0} {photos?.length === 1 ? 'Capture' : 'Captures'} &bull; 60 FPS Optimized Gallery
-                  </p>
-                </div>
+                <h3 className="text-base sm:text-lg lg:text-xl font-black uppercase tracking-wider text-white">
+                  Photography Archive
+                </h3>
               </div>
 
               {/* Controls: Search, View Mode, Close */}

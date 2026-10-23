@@ -163,14 +163,9 @@ export const ArtPaintingsSection: React.FC = () => {
             <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-neutral-950/90 backdrop-blur-md z-10">
               <div className="flex items-center gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
-                    Art &amp; Paintings Archive
-                  </h3>
-                  <p className="text-xs text-neutral-400 font-mono">
-                    {artworks.length} Original Works
-                  </p>
-                </div>
+                <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
+                  Art &amp; Paintings Archive
+                </h3>
               </div>
 
               <button

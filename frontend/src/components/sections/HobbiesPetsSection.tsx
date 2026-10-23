@@ -190,22 +190,13 @@ export const HobbiesPetsSection: React.FC = () => {
                 ) : (
                   <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 )}
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
-                    {selectedCategory === 'pets'
-                      ? 'Pets Archive'
-                      : selectedCategory === 'hobbies'
-                      ? 'Hobbies Archive'
-                      : 'Hobbies & Pets Archive'}
-                  </h3>
-                  <p className="text-xs text-neutral-400 font-mono">
-                    {selectedCategory === 'pets'
-                      ? `${pets.length} Pet Companions Recorded`
-                      : selectedCategory === 'hobbies'
-                      ? `${hobbies.length} Hobbies Recorded`
-                      : 'Select an archive gateway to explore'}
-                  </p>
-                </div>
+                <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
+                  {selectedCategory === 'pets'
+                    ? 'Pets Archive'
+                    : selectedCategory === 'hobbies'
+                    ? 'Hobbies Archive'
+                    : 'Hobbies & Pets Archive'}
+                </h3>
               </div>
 
               <div className="flex items-center gap-4">

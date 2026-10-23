@@ -269,14 +269,9 @@ export const AboutSection: React.FC = () => {
             <div className="flex items-center justify-between px-4 xs:px-6 sm:px-10 py-4 sm:py-5 border-b border-white/10 shrink-0 bg-black/60">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-                <div>
-                  <h3 className="text-base sm:text-xl font-black uppercase tracking-wider text-white">
-                    Showcase Visuals Archive
-                  </h3>
-                  <p className="text-[11px] sm:text-xs text-neutral-400 font-mono">
-                    {carouselImages.length} Visuals Loaded
-                  </p>
-                </div>
+                <h3 className="text-base sm:text-xl font-black uppercase tracking-wider text-white">
+                  Showcase Visuals Archive
+                </h3>
               </div>
 
               <button

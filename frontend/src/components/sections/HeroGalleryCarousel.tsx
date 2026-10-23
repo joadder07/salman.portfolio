@@ -255,15 +255,10 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ custom
         >
           {/* Modal Header */}
           <div className="flex items-center justify-between pb-4 border-b border-white/10 max-w-7xl w-full mx-auto shrink-0">
-            <div>
-              <h4 className="text-sm font-bold uppercase tracking-[0.25em] text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-white" />
-                Hero Gallery Highlights
-              </h4>
-              <p className="text-xs text-neutral-400 font-mono mt-1">
-                Showing all {images.length} featured gallery photographs
-              </p>
-            </div>
+            <h4 className="text-sm font-bold uppercase tracking-[0.25em] text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-white" />
+              Hero Gallery Highlights
+            </h4>
 
             <button
               type="button"
