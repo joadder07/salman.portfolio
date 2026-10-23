@@ -40,11 +40,18 @@ const FALLBACK_HOBBIES_PETS: ViewfinderImage[] = [
 export const HobbiesPetsSection: React.FC = () => {
   const { data: hobbies = [], isLoading: isLoadingHobbies } = hobbyApi.useGetAll();
   const { data: pets = [], isLoading: isLoadingPets } = petApi.useGetAll();
-  const [filter, setFilter] = useState<'all' | 'hobbies' | 'pets'>('all');
+  const [filter, setFilter] = useState<'hobbies' | 'pets'>('hobbies');
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<UnifiedItem | null>(null);
 
   const isLoading = isLoadingHobbies || isLoadingPets;
+
+  // Automatically default to 'pets' if user anchored to #pets, otherwise 'hobbies'
+  useEffect(() => {
+    if (window.location.hash === '#pets') {
+      setFilter('pets');
+    }
+  }, []);
 
   // Unify items
   const combinedItems: UnifiedItem[] = [
@@ -55,7 +62,7 @@ export const HobbiesPetsSection: React.FC = () => {
   const filteredItems = combinedItems.filter((item) => {
     if (filter === 'hobbies') return item.type === 'hobby';
     if (filter === 'pets') return item.type === 'pet';
-    return true;
+    return false;
   });
 
   // Map to viewfinder carousel images
@@ -179,17 +186,17 @@ export const HobbiesPetsSection: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                {/* Filter Pills inside modal */}
-                <div className="hidden sm:flex items-center gap-2">
-                  {(['all', 'hobbies', 'pets'] as const).map((tab) => (
+                {/* Filter Pills inside modal (HOBBIES & PETS only) */}
+                <div className="hidden sm:flex items-center gap-1.5 p-1 border border-white/10 bg-neutral-900/60">
+                  {(['hobbies', 'pets'] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
                       onClick={() => setFilter(tab)}
-                      className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                      className={`px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                         filter === tab
-                          ? 'bg-white text-black'
-                          : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+                          ? 'bg-white text-black shadow-sm'
+                          : 'bg-transparent text-neutral-400 hover:text-white'
                       }`}
                     >
                       {tab}
@@ -208,16 +215,16 @@ export const HobbiesPetsSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Mobile Filter Row */}
+            {/* Mobile Filter Row (HOBBIES & PETS only) */}
             <div className="sm:hidden flex items-center justify-center gap-2 px-6 py-3 border-b border-white/10 bg-neutral-950">
-              {(['all', 'hobbies', 'pets'] as const).map((tab) => (
+              {(['hobbies', 'pets'] as const).map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setFilter(tab)}
-                  className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                  className={`flex-1 max-w-[140px] py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     filter === tab
-                      ? 'bg-white text-black'
+                      ? 'bg-white text-black shadow-sm'
                       : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
                   }`}
                 >
