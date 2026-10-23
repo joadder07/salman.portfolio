@@ -243,14 +243,11 @@ export const VideosSection: React.FC = () => {
 
                       {/* Video Info */}
                       <div className="p-4 flex flex-col flex-1">
-                        <span className="text-[10px] font-mono uppercase text-neutral-400">
-                          {video.category || 'Tech Talk'}
-                        </span>
-                        <h4 className="text-sm font-bold uppercase text-white mt-1 line-clamp-1">
+                        <h4 className="text-sm font-bold uppercase text-white line-clamp-1 group-hover:text-primary transition-colors">
                           {video.title}
                         </h4>
                         {video.description && (
-                          <p className="text-xs text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-neutral-400 mt-1.5 line-clamp-2 leading-relaxed">
                             {video.description}
                           </p>
                         )}
