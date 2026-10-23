@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, PawPrint, Sparkles, X, Maximize2 } from 'lucide-react';
+import { Heart, PawPrint, Sparkles, X, Maximize2, ArrowLeft } from 'lucide-react';
 import { hobbyApi, petApi, Hobby, Pet } from '@/api/content.api';
 import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
 import { getOptimizedImageUrl } from '@/components/ui/CldImage';
@@ -40,18 +40,11 @@ const FALLBACK_HOBBIES_PETS: ViewfinderImage[] = [
 export const HobbiesPetsSection: React.FC = () => {
   const { data: hobbies = [], isLoading: isLoadingHobbies } = hobbyApi.useGetAll();
   const { data: pets = [], isLoading: isLoadingPets } = petApi.useGetAll();
-  const [filter, setFilter] = useState<'hobbies' | 'pets'>('hobbies');
+  const [selectedCategory, setSelectedCategory] = useState<'hobbies' | 'pets' | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<UnifiedItem | null>(null);
 
   const isLoading = isLoadingHobbies || isLoadingPets;
-
-  // Automatically default to 'pets' if user anchored to #pets, otherwise 'hobbies'
-  useEffect(() => {
-    if (window.location.hash === '#pets') {
-      setFilter('pets');
-    }
-  }, []);
 
   // Unify items
   const combinedItems: UnifiedItem[] = [
@@ -59,11 +52,23 @@ export const HobbiesPetsSection: React.FC = () => {
     ...pets.map((p): UnifiedItem => ({ type: 'pet', data: p })),
   ];
 
-  const filteredItems = combinedItems.filter((item) => {
-    if (filter === 'hobbies') return item.type === 'hobby';
-    if (filter === 'pets') return item.type === 'pet';
-    return false;
-  });
+  const filteredItems =
+    selectedCategory === 'pets'
+      ? pets.map((p): UnifiedItem => ({ type: 'pet', data: p }))
+      : selectedCategory === 'hobbies'
+      ? hobbies.map((h): UnifiedItem => ({ type: 'hobby', data: h }))
+      : [];
+
+  const handleOpenDiscover = (category: 'hobbies' | 'pets' | null = null) => {
+    setSelectedCategory(category);
+    setIsGalleryOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsGalleryOpen(false);
+    setSelectedCategory(null);
+    setSelectedItem(null);
+  };
 
   // Map to viewfinder carousel images
   const dbImages: ViewfinderImage[] = combinedItems
@@ -84,6 +89,8 @@ export const HobbiesPetsSection: React.FC = () => {
       if (e.key === 'Escape') {
         if (selectedItem) {
           setSelectedItem(null);
+        } else if (selectedCategory !== null) {
+          setSelectedCategory(null);
         } else if (isGalleryOpen) {
           setIsGalleryOpen(false);
         }
@@ -93,7 +100,7 @@ export const HobbiesPetsSection: React.FC = () => {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isGalleryOpen, selectedItem]);
+  }, [isGalleryOpen, selectedItem, selectedCategory]);
 
   return (
     <section
@@ -126,7 +133,7 @@ export const HobbiesPetsSection: React.FC = () => {
             </p>
             <button
               type="button"
-              onClick={() => setIsGalleryOpen(true)}
+              onClick={() => handleOpenDiscover(null)}
               className="scroll-reveal scroll-delay-2 mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-black hover:text-neutral-600 transition-colors group cursor-pointer"
             >
               <span>DISCOVER MORE</span>
@@ -148,7 +155,7 @@ export const HobbiesPetsSection: React.FC = () => {
               images={carouselImages}
               intervalMs={3500}
               bracketColorClass="border-black"
-              onClickImage={() => setIsGalleryOpen(true)}
+              onClickImage={() => handleOpenDiscover(null)}
             />
           </motion.div>
         </div>
@@ -170,43 +177,61 @@ export const HobbiesPetsSection: React.FC = () => {
             {/* Modal Top Bar */}
             <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-neutral-950/90 backdrop-blur-md z-10">
               <div className="flex items-center gap-4">
-                <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+                {selectedCategory !== null ? (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory(null)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono uppercase tracking-wider text-neutral-300 hover:text-white border border-white/20 hover:border-white bg-neutral-900/80 transition-all cursor-pointer group"
+                    title="Back to Selection Gateway"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                    <span>Categories</span>
+                  </button>
+                ) : (
+                  <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+                )}
                 <div>
                   <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
-                    Hobbies &amp; Pets Archive
+                    {selectedCategory === 'pets'
+                      ? 'Pets Archive'
+                      : selectedCategory === 'hobbies'
+                      ? 'Hobbies Archive'
+                      : 'Hobbies & Pets Archive'}
                   </h3>
                   <p className="text-xs text-neutral-400 font-mono">
-                    {filter === 'pets'
+                    {selectedCategory === 'pets'
                       ? `${pets.length} Pet Companions Recorded`
-                      : filter === 'hobbies'
+                      : selectedCategory === 'hobbies'
                       ? `${hobbies.length} Hobbies Recorded`
-                      : `${combinedItems.length} Entries Recorded`}
+                      : 'Select an archive gateway to explore'}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-4">
-                {/* Filter Pills inside modal (HOBBIES & PETS only) */}
-                <div className="hidden sm:flex items-center gap-1.5 p-1 border border-white/10 bg-neutral-900/60">
-                  {(['hobbies', 'pets'] as const).map((tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => setFilter(tab)}
-                      className={`px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                        filter === tab
-                          ? 'bg-white text-black shadow-sm'
-                          : 'bg-transparent text-neutral-400 hover:text-white'
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
+                {/* Filter Pills inside modal (only shown in collection view) */}
+                {selectedCategory !== null && (
+                  <div className="hidden sm:flex items-center gap-1.5 p-1 border border-white/10 bg-neutral-900/60">
+                    {(['hobbies', 'pets'] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setSelectedCategory(tab)}
+                        className={`px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                          selectedCategory === tab
+                            ? 'bg-white text-black shadow-sm'
+                            : 'bg-transparent text-neutral-400 hover:text-white'
+                        }`}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <button
                   type="button"
-                  onClick={() => setIsGalleryOpen(false)}
+                  onClick={handleCloseModal}
                   className="p-2.5 rounded-none border border-white/20 text-white/80 hover:text-white hover:border-white transition-colors cursor-pointer"
                   title="Close Gallery"
                 >
@@ -215,37 +240,142 @@ export const HobbiesPetsSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Mobile Filter Row (HOBBIES & PETS only) */}
-            <div className="sm:hidden flex items-center justify-center gap-2 px-6 py-3 border-b border-white/10 bg-neutral-950">
-              {(['hobbies', 'pets'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setFilter(tab)}
-                  className={`flex-1 max-w-[140px] py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                    filter === tab
-                      ? 'bg-white text-black shadow-sm'
-                      : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
+            {/* Mobile Filter Row (only shown in collection view) */}
+            {selectedCategory !== null && (
+              <div className="sm:hidden flex items-center justify-center gap-2 px-6 py-3 border-b border-white/10 bg-neutral-950">
+                {(['hobbies', 'pets'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setSelectedCategory(tab)}
+                    className={`flex-1 max-w-[140px] py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                      selectedCategory === tab
+                        ? 'bg-white text-black shadow-sm'
+                        : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Modal Scrollable Content - Hardware Accelerated Smooth Scrolling */}
-            <div
-              className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-8 lg:px-10 py-8 sm:py-10 max-w-7xl mx-auto w-full smooth-scroll-viewport"
-              style={{
-                WebkitOverflowScrolling: 'touch',
-                scrollBehavior: 'smooth',
-                transform: 'translate3d(0, 0, 0)',
-                willChange: 'scroll-position',
-              }}
-            >
-              {/* Pets Description Info Block (Active specifically when PETS filter is selected) */}
-              <AnimatePresence>
-                {filter === 'pets' && (
+            {selectedCategory === null ? (
+              /* LANDING / SELECTION GATEWAY VIEW */
+              <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 max-w-5xl mx-auto w-full overflow-y-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-full text-center mb-8 sm:mb-12"
+                >
+                  <span className="text-xs font-mono uppercase tracking-[0.25em] text-neutral-400 font-semibold">
+                    Archive Gateway
+                  </span>
+                  <h3 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white mt-2 font-heading">
+                    Choose an Archive
+                  </h3>
+                  <p className="mt-3 text-sm sm:text-base text-neutral-400 max-w-lg mx-auto font-light leading-relaxed">
+                    Select a collection below to view detailed photo records, descriptions, and creative journeys.
+                  </p>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full">
+                  {/* OPTION 1: HOBBIES */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                    whileHover={{ scale: 1.015 }}
+                    whileTap={{ scale: 0.985 }}
+                    onClick={() => setSelectedCategory('hobbies')}
+                    className="group relative border border-neutral-800 hover:border-white bg-neutral-900/50 hover:bg-neutral-900/80 p-8 sm:p-10 flex flex-col justify-between cursor-pointer transition-all duration-300 shadow-2xl gpu-accelerated-card"
+                  >
+                    <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+
+                    <div>
+                      <div className="flex items-center justify-between mb-8">
+                        <div className="w-14 h-14 bg-neutral-950 border border-neutral-800 group-hover:border-rose-500/50 flex items-center justify-center transition-colors">
+                          <Heart className="w-7 h-7 text-rose-400 group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="px-3 py-1 font-mono text-[11px] uppercase tracking-wider bg-neutral-950 border border-neutral-800 text-neutral-400">
+                          {hobbies.length} {hobbies.length === 1 ? 'Pursuit' : 'Pursuits'}
+                        </span>
+                      </div>
+
+                      <h4 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-white font-heading group-hover:text-rose-400 transition-colors">
+                        HOBBIES
+                      </h4>
+                      <p className="mt-3 text-sm text-neutral-400 font-light leading-relaxed">
+                        Creative pursuits, personal interests, astronomy, electronics, mechanical keyboards, and ongoing technical experiments.
+                      </p>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-neutral-800/80 flex items-center justify-between">
+                      <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-white group-hover:translate-x-1 transition-transform">
+                        Explore Hobbies
+                      </span>
+                      <span className="text-base font-bold text-rose-400 group-hover:translate-x-2 transition-transform duration-200">
+                        →
+                      </span>
+                    </div>
+                  </motion.div>
+
+                  {/* OPTION 2: PETS */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+                    whileHover={{ scale: 1.015 }}
+                    whileTap={{ scale: 0.985 }}
+                    onClick={() => setSelectedCategory('pets')}
+                    className="group relative border border-neutral-800 hover:border-white bg-neutral-900/50 hover:bg-neutral-900/80 p-8 sm:p-10 flex flex-col justify-between cursor-pointer transition-all duration-300 shadow-2xl gpu-accelerated-card"
+                  >
+                    <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-400 opacity-60 group-hover:opacity-100 transition-opacity" />
+
+                    <div>
+                      <div className="flex items-center justify-between mb-8">
+                        <div className="w-14 h-14 bg-neutral-950 border border-neutral-800 group-hover:border-amber-400/50 flex items-center justify-center transition-colors">
+                          <PawPrint className="w-7 h-7 text-amber-300 group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="px-3 py-1 font-mono text-[11px] uppercase tracking-wider bg-neutral-950 border border-neutral-800 text-neutral-400">
+                          {pets.length} {pets.length === 1 ? 'Companion' : 'Companions'}
+                        </span>
+                      </div>
+
+                      <h4 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-white font-heading group-hover:text-amber-300 transition-colors">
+                        PETS
+                      </h4>
+                      <p className="mt-3 text-sm text-neutral-400 font-light leading-relaxed">
+                        Beloved companion animals, childhood memories, and faithful friends who bring warmth and joy to everyday life.
+                      </p>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-neutral-800/80 flex items-center justify-between">
+                      <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-white group-hover:translate-x-1 transition-transform">
+                        Explore Pets
+                      </span>
+                      <span className="text-base font-bold text-amber-300 group-hover:translate-x-2 transition-transform duration-200">
+                        →
+                      </span>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            ) : (
+              /* SPECIFIC COLLECTION GRID VIEW */
+              <div
+                className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-8 lg:px-10 py-8 sm:py-10 max-w-7xl mx-auto w-full smooth-scroll-viewport"
+                style={{
+                  WebkitOverflowScrolling: 'touch',
+                  scrollBehavior: 'smooth',
+                  transform: 'translate3d(0, 0, 0)',
+                  willChange: 'scroll-position',
+                }}
+              >
+                {/* Pets Description Info Block (Active specifically when PETS filter is selected) */}
+                <AnimatePresence>
+                  {selectedCategory === 'pets' && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -399,6 +529,7 @@ export const HobbiesPetsSection: React.FC = () => {
                 </div>
               )}
             </div>
+          )}
           </motion.div>
         )}
       </AnimatePresence>
