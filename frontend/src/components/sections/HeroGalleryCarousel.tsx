@@ -88,6 +88,11 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ custom
   const [enableTransition, setEnableTransition] = useState<boolean>(true);
   const transitionDuration = 700; // ms smooth slide
 
+  // Sync index when total number of images changes
+  useEffect(() => {
+    setCurrentIndex(total);
+  }, [total]);
+
   // Auto-slide every 3.5 seconds (3500ms): comfortable viewing time
   useEffect(() => {
     if (isPaused || isModalOpen) return;

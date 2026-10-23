@@ -61,9 +61,27 @@ export const SettingsPage: React.FC = () => {
   const [isUploadingHeroBg, setIsUploadingHeroBg] = useState(false);
 
   // Showcase Banner Section (above Contact section) State
+  const DEFAULT_BANNER_PRESETS = [
+    DEFAULT_CIRCUIT_BOARD_HERO,
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1600&auto=format&fit=crop',
+  ];
+
   const [bannerImage, setBannerImage] = useState('');
   const [manualBannerUrl, setManualBannerUrl] = useState('');
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [bannerGallery, setBannerGallery] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('portfolio_showcase_banners');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return DEFAULT_BANNER_PRESETS;
+  });
   const [bannerQuote, setBannerQuote] = useState('Each shot is a reflection of my true self.');
   const [bannerQuoteSubtext, setBannerQuoteSubtext] = useState(
     'It’s been a way for me to express myself and show others how I see the world.'
@@ -250,9 +268,18 @@ export const SettingsPage: React.FC = () => {
       setBannerImage(newUrl);
       setManualBannerUrl(newUrl);
 
+      // Add to banner gallery library
+      setBannerGallery((prev) => {
+        const updated = [newUrl, ...prev.filter((u) => u !== newUrl)];
+        try {
+          localStorage.setItem('portfolio_showcase_banners', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
       toast.loading('Saving showcase banner setting...', { id: 'banner-upload' });
       await updateSettings.mutateAsync({ bannerImage: newUrl });
-      toast.success('Showcase banner updated and saved!', { id: 'banner-upload' });
+      toast.success('Showcase banner uploaded and saved to library!', { id: 'banner-upload' });
     } catch (err) {
       console.error('Failed to upload showcase banner:', err);
       toast.error('Failed to upload banner image. Try entering a direct image URL.', {
@@ -273,11 +300,50 @@ export const SettingsPage: React.FC = () => {
     try {
       toast.loading('Applying showcase banner URL...', { id: 'banner-url' });
       setBannerImage(url);
+
+      // Add to banner gallery library
+      setBannerGallery((prev) => {
+        const updated = [url, ...prev.filter((u) => u !== url)];
+        try {
+          localStorage.setItem('portfolio_showcase_banners', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
       await updateSettings.mutateAsync({ bannerImage: url });
-      toast.success('Showcase banner updated!', { id: 'banner-url' });
+      toast.success('Showcase banner updated and added to library!', { id: 'banner-url' });
     } catch {
       toast.error('Failed to apply image URL', { id: 'banner-url' });
     }
+  };
+
+  const handleSelectBannerFromGallery = async (url: string) => {
+    try {
+      toast.loading('Applying showcase banner...', { id: 'banner-select' });
+      const isDefault = url === DEFAULT_CIRCUIT_BOARD_HERO;
+      const val = isDefault ? '' : url;
+      setBannerImage(val);
+      setManualBannerUrl(val);
+      await updateSettings.mutateAsync({ bannerImage: val });
+      toast.success('Active showcase banner updated!', { id: 'banner-select' });
+    } catch {
+      toast.error('Failed to apply showcase banner', { id: 'banner-select' });
+    }
+  };
+
+  const handleDeleteFromBannerGallery = (urlToDelete: string) => {
+    if (urlToDelete === DEFAULT_CIRCUIT_BOARD_HERO) {
+      toast.error('Cannot delete the default circuit board preset');
+      return;
+    }
+    setBannerGallery((prev) => {
+      const updated = prev.filter((u) => u !== urlToDelete);
+      try {
+        localStorage.setItem('portfolio_showcase_banners', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    toast.success('Removed banner from library');
   };
 
   const handleResetBanner = async () => {
@@ -724,6 +790,86 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Unlimited Showcase Banner Library Grid */}
+        <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-primary" /> Showcase Banner Library ({bannerGallery.length} Items)
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono font-semibold">
+                Unlimited Uploads
+              </span>
+            </div>
+            <span className="text-[11px] text-muted-foreground">Click any banner to set as active</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-72 overflow-y-auto pr-1">
+            {bannerGallery.map((url, idx) => {
+              const isActive =
+                (bannerImage && bannerImage === url) ||
+                (!bannerImage && url === DEFAULT_CIRCUIT_BOARD_HERO);
+
+              return (
+                <div
+                  key={`${url}-${idx}`}
+                  className={`relative aspect-[16/10] rounded-xl overflow-hidden border transition-all duration-300 group cursor-pointer ${
+                    isActive
+                      ? 'border-emerald-400 ring-2 ring-emerald-400/30 shadow-lg shadow-emerald-500/10'
+                      : 'border-white/15 hover:border-white/40 bg-black/40'
+                  }`}
+                  onClick={() => handleSelectBannerFromGallery(url)}
+                >
+                  <img
+                    src={url}
+                    alt={`Showcase banner ${idx + 1}`}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+
+                  {/* Top Badge: Active Status */}
+                  <div className="absolute top-1.5 left-1.5 z-10">
+                    {isActive ? (
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-500 text-black text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-md">
+                        <CheckCircle2 className="w-2.5 h-2.5" /> Active
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/20 text-[9px] font-mono text-white/80">
+                        #{idx + 1}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Delete Button (if not default circuit board) */}
+                  {url !== DEFAULT_CIRCUIT_BOARD_HERO && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteFromBannerGallery(url);
+                      }}
+                      className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/70 hover:bg-destructive text-white hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10"
+                      title="Remove from library"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+
+                  {/* Bottom Text / Click Indicator */}
+                  <div className="absolute bottom-1.5 left-1.5 right-1.5 text-center pointer-events-none">
+                    <span className="text-[10px] font-bold text-white drop-shadow-md truncate block">
+                      {url === DEFAULT_CIRCUIT_BOARD_HERO ? 'Default Circuit' : `Banner #${idx + 1}`}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Fallback Guarantee Note */}
         <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-start gap-3 text-xs text-muted-foreground">
           <CheckCircle2 className="w-4 h-4 text-white/70 shrink-0 mt-0.5" />
@@ -801,21 +947,21 @@ export const SettingsPage: React.FC = () => {
                 <Images className="w-5 h-5 text-primary" />
                 <div>
                   <h2 className="text-base font-bold text-foreground">
-                    Hero Viewfinder Carousel (8 Photo Slots)
+                    Hero Viewfinder Carousel (Unlimited Image Gallery)
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    Auto-scrolling photographic gallery displayed below the main hero title.
+                    Auto-scrolling photographic gallery displayed below the main hero title with unlimited image uploads.
                   </p>
                 </div>
               </div>
               <Link to="/admin/hero-gallery">
                 <Button size="sm" className="gap-2 text-xs shrink-0 bg-white text-black hover:bg-white/90">
-                  Manage 8 Image Slots <ArrowRight className="w-3.5 h-3.5" />
+                  Manage Hero Gallery (Unlimited) <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </Link>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              In addition to the fullscreen hero background, your portfolio features an 8-slot interactive camera viewfinder carousel with technical corner brackets and custom captions. Click above to modify the individual photos in the gallery.
+              In addition to the fullscreen hero background, your portfolio features an interactive camera viewfinder carousel with technical corner brackets and custom captions supporting unlimited uploads. Click above to add, delete, and reorder photos in the gallery.
             </p>
           </Card>
         </div>
