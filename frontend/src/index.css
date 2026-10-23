@@ -530,6 +530,39 @@ h2:not(.font-brush) {
   transform: translate3d(5px, 5px, 0);
 }
 
+/* ============================================================== */
+/* HARDWARE-ACCELERATED MODAL & GALLERY SCROLL PERFORMANCE        */
+/* Zero-stutter, 60/120fps scrolling on Desktop and Mobile        */
+/* ============================================================== */
+.smooth-scroll-viewport {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  contain: paint layout;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: scroll-position;
+}
+
+.gpu-accelerated-card {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 320px;
+}
+
+.gpu-accelerated-image {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+  image-rendering: auto;
+}
+
 
 
 

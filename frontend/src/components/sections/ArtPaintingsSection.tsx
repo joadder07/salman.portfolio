@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, X, Maximize2, Brush, Layers, Sparkles } from 'lucide-react';
 import { artApi } from '@/api/content.api';
 import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 
 interface Artwork {
   id: string | number;
@@ -77,6 +78,23 @@ export const ArtPaintingsSection: React.FC = () => {
   const carouselImages =
     dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_ARTWORKS.slice(dbImages.length)];
 
+  // Close modal or lightbox on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selected) {
+          setSelected(null);
+        } else if (isGalleryOpen) {
+          setIsGalleryOpen(false);
+        }
+      }
+    };
+    if (isGalleryOpen || selected) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isGalleryOpen, selected]);
+
   return (
     <section id="art" className="py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
       {/* ============================================================== */}
@@ -137,10 +155,12 @@ export const ArtPaintingsSection: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col overflow-hidden"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col overflow-hidden transform-gpu"
+            style={{ transform: 'translate3d(0, 0, 0)' }}
           >
             {/* Modal Top Bar */}
-            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-black/60">
+            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-neutral-950/90 backdrop-blur-md z-10">
               <div className="flex items-center gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <div>
@@ -154,6 +174,7 @@ export const ArtPaintingsSection: React.FC = () => {
               </div>
 
               <button
+                type="button"
                 onClick={() => setIsGalleryOpen(false)}
                 className="p-2 sm:p-2.5 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-2 text-xs uppercase font-bold tracking-wider"
               >
@@ -162,8 +183,16 @@ export const ArtPaintingsSection: React.FC = () => {
               </button>
             </div>
 
-            {/* Gallery Grid Content */}
-            <div className="flex-1 overflow-y-auto p-6 sm:p-10">
+            {/* Gallery Grid Content - Hardware-Accelerated Smooth Scrolling */}
+            <div
+              className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-8 lg:p-10 smooth-scroll-viewport"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                scrollBehavior: 'smooth',
+                transform: 'translate3d(0, 0, 0)',
+                willChange: 'scroll-position',
+              }}
+            >
               {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -182,59 +211,83 @@ export const ArtPaintingsSection: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {artworks.map((artwork, idx) => (
-                    <motion.div
-                      key={artwork.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
-                      onClick={() => setSelected(artwork)}
-                      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-all cursor-pointer flex flex-col"
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden bg-neutral-900">
-                        <img
-                          src={artwork.imageUrl}
-                          alt={artwork.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="absolute top-3 right-3 w-8 h-8 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Maximize2 className="w-3.5 h-3.5 text-white" />
-                        </div>
-                      </div>
+                  {artworks.map((artwork, idx) => {
+                    const thumbUrl = getOptimizedImageUrl(artwork.imageUrl, {
+                      width: 640,
+                      height: 480,
+                      crop: 'fill',
+                      quality: 'auto',
+                      format: 'auto',
+                    });
 
-                      <div className="p-4 flex flex-col flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] font-mono uppercase text-neutral-400">
-                            {artwork.medium}
-                          </span>
-                          <span className="text-[10px] font-mono text-neutral-400">
-                            {artwork.year}
-                          </span>
-                        </div>
-                        <h4 className="text-sm font-bold uppercase text-white truncate">
-                          {artwork.title}
-                        </h4>
-                        {artwork.description && (
-                          <p className="mt-1 text-xs text-neutral-400 line-clamp-2 leading-relaxed">
-                            {artwork.description}
-                          </p>
-                        )}
-                        {artwork.palette && artwork.palette.length > 0 && (
-                          <div className="flex items-center gap-1.5 mt-3">
-                            {artwork.palette.map((color, cIdx) => (
-                              <span
-                                key={cIdx}
-                                className="w-2.5 h-2.5 rounded-full ring-1 ring-white/20"
-                                style={{ backgroundColor: color }}
-                              />
-                            ))}
+                    return (
+                      <motion.div
+                        key={artwork.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.35,
+                          delay: Math.min(idx * 0.02, 0.16),
+                          ease: [0.16, 1, 0.3, 1],
+                        }}
+                        onClick={() => setSelected(artwork)}
+                        className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-colors cursor-pointer flex flex-col gpu-accelerated-card"
+                        style={{
+                          transform: 'translate3d(0, 0, 0)',
+                          willChange: 'transform',
+                        }}
+                      >
+                        <div className="relative aspect-[4/3] overflow-hidden bg-neutral-900">
+                          <img
+                            src={thumbUrl}
+                            alt={artwork.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out gpu-accelerated-image"
+                            loading="lazy"
+                            decoding="async"
+                            style={{
+                              transform: 'translate3d(0, 0, 0)',
+                              backfaceVisibility: 'hidden',
+                              WebkitBackfaceVisibility: 'hidden',
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          <div className="absolute top-3 right-3 w-8 h-8 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Maximize2 className="w-3.5 h-3.5 text-white" />
                           </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
+                        </div>
+
+                        <div className="p-4 flex flex-col flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] font-mono uppercase text-neutral-400">
+                              {artwork.medium}
+                            </span>
+                            <span className="text-[10px] font-mono text-neutral-400">
+                              {artwork.year}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-bold uppercase text-white truncate">
+                            {artwork.title}
+                          </h4>
+                          {artwork.description && (
+                            <p className="mt-1 text-xs text-neutral-400 line-clamp-2 leading-relaxed font-light">
+                              {artwork.description}
+                            </p>
+                          )}
+                          {artwork.palette && artwork.palette.length > 0 && (
+                            <div className="flex items-center gap-1.5 mt-3">
+                              {artwork.palette.map((color, cIdx) => (
+                                <span
+                                  key={cIdx}
+                                  className="w-2.5 h-2.5 rounded-full ring-1 ring-white/20"
+                                  style={{ backgroundColor: color }}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -243,7 +296,7 @@ export const ArtPaintingsSection: React.FC = () => {
       </AnimatePresence>
 
       {/* ============================================================== */}
-      {/* ARTWORK LIGHTBOX MODAL                                         */}
+      {/* ARTWORK LIGHTBOX MODAL (Smooth Hardware Accelerated)           */}
       {/* ============================================================== */}
       <AnimatePresence>
         {selected && (
@@ -252,31 +305,43 @@ export const ArtPaintingsSection: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 transform-gpu"
+            style={{ transform: 'translate3d(0, 0, 0)' }}
             onClick={() => setSelected(null)}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-3xl bg-neutral-950 border border-neutral-800 rounded-none overflow-hidden shadow-2xl"
+              className="relative w-full max-w-3xl bg-neutral-950 border border-neutral-800 rounded-none overflow-hidden shadow-2xl gpu-accelerated-card"
             >
               {/* Close Button */}
               <button
+                type="button"
                 onClick={() => setSelected(null)}
                 className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-black/80 border border-neutral-800 text-neutral-400 hover:text-white transition-all cursor-pointer"
+                title="Close"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Full Image */}
-              <img
-                src={selected.imageUrl}
-                alt={selected.title}
-                className="w-full max-h-[60vh] object-cover"
-              />
+              {/* Full Image - Optimized and Asynchronously Decoded */}
+              <div className="w-full max-h-[65vh] bg-black flex items-center justify-center overflow-hidden">
+                <img
+                  src={getOptimizedImageUrl(selected.imageUrl, {
+                    width: 1400,
+                    quality: 'auto',
+                    format: 'auto',
+                  })}
+                  alt={selected.title}
+                  className="w-full h-full max-h-[65vh] object-contain gpu-accelerated-image"
+                  decoding="async"
+                  style={{ transform: 'translate3d(0, 0, 0)' }}
+                />
+              </div>
 
               {/* Modal Details */}
               <div className="p-6">
@@ -300,7 +365,7 @@ export const ArtPaintingsSection: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                <p className="text-sm text-neutral-400 leading-relaxed">
+                <p className="text-sm text-neutral-400 leading-relaxed font-light">
                   {selected.description}
                 </p>
               </div>

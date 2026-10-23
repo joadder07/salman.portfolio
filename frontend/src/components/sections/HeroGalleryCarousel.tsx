@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ArrowRight, X, ExternalLink, Sparkles, Maximize2 } from 'lucide-react';
 import { HeroImageSlot, useSiteSettings } from '@/api/settings.api';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 
 const DEFAULT_HERO_IMAGES: HeroImageSlot[] = [
   {
@@ -243,7 +244,8 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ custom
       {/* Full-screen Modal to view all pictures at once */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col p-4 sm:p-8 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col p-4 sm:p-8 animate-in fade-in duration-200 transform-gpu"
+          style={{ transform: 'translate3d(0, 0, 0)' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setIsModalOpen(false);
@@ -252,7 +254,7 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ custom
           }}
         >
           {/* Modal Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-white/10 max-w-7xl w-full mx-auto">
+          <div className="flex items-center justify-between pb-4 border-b border-white/10 max-w-7xl w-full mx-auto shrink-0">
             <div>
               <h4 className="text-sm font-bold uppercase tracking-[0.25em] text-white flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-white" />
@@ -276,30 +278,56 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ custom
             </button>
           </div>
 
-          {/* Modal Grid of All Pictures */}
-          <div className="flex-1 overflow-y-auto py-6 max-w-7xl w-full mx-auto">
+          {/* Modal Grid of All Pictures - Hardware Accelerated Smooth Scrolling */}
+          <div
+            className="flex-1 overflow-y-auto overscroll-contain py-6 max-w-7xl w-full mx-auto smooth-scroll-viewport"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              scrollBehavior: 'smooth',
+              transform: 'translate3d(0, 0, 0)',
+              willChange: 'scroll-position',
+            }}
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {images.map((img, i) => (
-                <div
-                  key={img.id || i}
-                  className="relative group rounded-lg overflow-hidden border border-white/10 bg-neutral-900 aspect-[4/3]"
-                >
-                  <img
-                    src={img.url}
-                    alt={img.title || `Gallery photo ${i + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                  <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 border border-white/10 text-[9px] font-mono text-white">
-                    0{i + 1}
+              {images.map((img, i) => {
+                const optUrl = getOptimizedImageUrl(img.url, {
+                  width: 600,
+                  height: 450,
+                  crop: 'fill',
+                  quality: 'auto',
+                  format: 'auto',
+                });
+
+                return (
+                  <div
+                    key={img.id || i}
+                    className="relative group rounded-lg overflow-hidden border border-white/10 bg-neutral-900 aspect-[4/3] gpu-accelerated-card"
+                    style={{ transform: 'translate3d(0, 0, 0)' }}
+                  >
+                    <img
+                      src={optUrl}
+                      alt={img.title || `Gallery photo ${i + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 gpu-accelerated-image"
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        transform: 'translate3d(0, 0, 0)',
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 border border-white/10 text-[9px] font-mono text-white">
+                      0{i + 1}
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-white">
+                        {img.title || `Highlight #0${i + 1}`}
+                      </p>
+                    </div>
                   </div>
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <p className="text-xs font-bold uppercase tracking-wider text-white">
-                      {img.title || `Highlight #0${i + 1}`}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Bottom button in modal linking to full photography portfolio section */}

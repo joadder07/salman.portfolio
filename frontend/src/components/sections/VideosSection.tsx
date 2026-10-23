@@ -128,10 +128,12 @@ export const VideosSection: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col overflow-hidden"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col overflow-hidden transform-gpu"
+            style={{ transform: 'translate3d(0, 0, 0)' }}
           >
             {/* Modal Top Bar */}
-            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-black/60">
+            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-neutral-950/90 backdrop-blur-md z-10">
               <div className="flex items-center gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <div>
@@ -145,6 +147,7 @@ export const VideosSection: React.FC = () => {
               </div>
 
               <button
+                type="button"
                 onClick={() => setIsGalleryOpen(false)}
                 className="p-2 sm:p-2.5 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-2 text-xs uppercase font-bold tracking-wider"
               >
@@ -153,8 +156,16 @@ export const VideosSection: React.FC = () => {
               </button>
             </div>
 
-            {/* Showcase Grid Content */}
-            <div className="flex-1 overflow-y-auto p-6 sm:p-10">
+            {/* Showcase Grid Content - Hardware-Accelerated Smooth Scrolling */}
+            <div
+              className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-8 lg:p-10 smooth-scroll-viewport"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                scrollBehavior: 'smooth',
+                transform: 'translate3d(0, 0, 0)',
+                willChange: 'scroll-position',
+              }}
+            >
               {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -176,11 +187,19 @@ export const VideosSection: React.FC = () => {
                   {videos.map((video, idx) => (
                     <motion.div
                       key={video.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{
+                        duration: 0.35,
+                        delay: Math.min(idx * 0.02, 0.16),
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
                       onClick={() => setSelectedVideo(video)}
-                      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-all cursor-pointer flex flex-col"
+                      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-colors cursor-pointer flex flex-col gpu-accelerated-card"
+                      style={{
+                        transform: 'translate3d(0, 0, 0)',
+                        willChange: 'transform',
+                      }}
                     >
                       {/* Video Thumbnail */}
                       <div className="relative aspect-video overflow-hidden bg-neutral-900 flex items-center justify-center">
@@ -188,8 +207,14 @@ export const VideosSection: React.FC = () => {
                           <img
                             src={video.thumbnailUrl || getYouTubeThumbnail(video.videoUrl)}
                             alt={video.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out gpu-accelerated-image"
                             loading="lazy"
+                            decoding="async"
+                            style={{
+                              transform: 'translate3d(0, 0, 0)',
+                              backfaceVisibility: 'hidden',
+                              WebkitBackfaceVisibility: 'hidden',
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900 text-neutral-500">

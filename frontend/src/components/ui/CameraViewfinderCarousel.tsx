@@ -132,10 +132,12 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
               alt={item.title || 'Showcase image'}
               decoding="async"
               style={{
-                willChange: 'opacity',
-                transform: 'translateZ(0)',
+                willChange: 'opacity, transform',
+                transform: 'translate3d(0, 0, 0)',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
               }}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out gpu-accelerated-image ${
                 isCurrent
                   ? 'opacity-100 z-10'
                   : 'opacity-0 z-0 pointer-events-none'

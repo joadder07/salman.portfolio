@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, PawPrint, Sparkles, X } from 'lucide-react';
+import { Heart, PawPrint, Sparkles, X, Maximize2 } from 'lucide-react';
 import { hobbyApi, petApi, Hobby, Pet } from '@/api/content.api';
 import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 import { Skeleton } from '@/components/shared';
 
 type UnifiedItem =
@@ -41,6 +42,7 @@ export const HobbiesPetsSection: React.FC = () => {
   const { data: pets = [], isLoading: isLoadingPets } = petApi.useGetAll();
   const [filter, setFilter] = useState<'all' | 'hobbies' | 'pets'>('all');
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<UnifiedItem | null>(null);
 
   const isLoading = isLoadingHobbies || isLoadingPets;
 
@@ -69,16 +71,22 @@ export const HobbiesPetsSection: React.FC = () => {
   const carouselImages =
     dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_HOBBIES_PETS.slice(dbImages.length)];
 
-  // Close modal on escape
+  // Close modal or lightbox on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsGalleryOpen(false);
+      if (e.key === 'Escape') {
+        if (selectedItem) {
+          setSelectedItem(null);
+        } else if (isGalleryOpen) {
+          setIsGalleryOpen(false);
+        }
+      }
     };
-    if (isGalleryOpen) {
+    if (isGalleryOpen || selectedItem) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isGalleryOpen]);
+  }, [isGalleryOpen, selectedItem]);
 
   return (
     <section
@@ -148,10 +156,12 @@ export const HobbiesPetsSection: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col overflow-hidden text-white"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col overflow-hidden text-white transform-gpu"
+            style={{ transform: 'translate3d(0, 0, 0)' }}
           >
             {/* Modal Top Bar */}
-            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-black/60">
+            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-neutral-950/90 backdrop-blur-md z-10">
               <div className="flex items-center gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <div>
@@ -170,8 +180,9 @@ export const HobbiesPetsSection: React.FC = () => {
                   {(['all', 'hobbies', 'pets'] as const).map((tab) => (
                     <button
                       key={tab}
+                      type="button"
                       onClick={() => setFilter(tab)}
-                      className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                      className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
                         filter === tab
                           ? 'bg-white text-black'
                           : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
@@ -198,6 +209,7 @@ export const HobbiesPetsSection: React.FC = () => {
               {(['all', 'hobbies', 'pets'] as const).map((tab) => (
                 <button
                   key={tab}
+                  type="button"
                   onClick={() => setFilter(tab)}
                   className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                     filter === tab
@@ -210,8 +222,16 @@ export const HobbiesPetsSection: React.FC = () => {
               ))}
             </div>
 
-            {/* Modal Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-6 sm:px-10 py-10 max-w-7xl mx-auto w-full">
+            {/* Modal Scrollable Content - Hardware Accelerated Smooth Scrolling */}
+            <div
+              className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-8 lg:px-10 py-8 sm:py-10 max-w-7xl mx-auto w-full smooth-scroll-viewport"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                scrollBehavior: 'smooth',
+                transform: 'translate3d(0, 0, 0)',
+                willChange: 'scroll-position',
+              }}
+            >
               {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[1, 2, 3].map((i) => (
@@ -244,23 +264,52 @@ export const HobbiesPetsSection: React.FC = () => {
                     const description = item.data.description;
                     const imageUrl = item.data.imageUrl;
 
+                    const thumbUrl = imageUrl
+                      ? getOptimizedImageUrl(imageUrl, {
+                          width: 640,
+                          height: 420,
+                          crop: 'fill',
+                          quality: 'auto',
+                          format: 'auto',
+                        })
+                      : '';
+
                     return (
                       <motion.div
                         key={id}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
-                        className="rounded-none border border-neutral-850 bg-neutral-950 p-5 hover:border-neutral-500 transition-colors flex flex-col justify-between group"
+                        transition={{
+                          duration: 0.35,
+                          delay: Math.min(idx * 0.02, 0.16),
+                          ease: [0.16, 1, 0.3, 1],
+                        }}
+                        onClick={() => setSelectedItem(item)}
+                        className="rounded-none border border-neutral-850 bg-neutral-950 p-5 hover:border-neutral-500 transition-colors flex flex-col justify-between group cursor-pointer gpu-accelerated-card"
+                        style={{
+                          transform: 'translate3d(0, 0, 0)',
+                          willChange: 'transform',
+                        }}
                       >
                         <div>
                           {imageUrl ? (
                             <div className="w-full h-48 rounded-none overflow-hidden mb-4 bg-neutral-900 relative">
                               <img
-                                src={imageUrl}
+                                src={thumbUrl}
                                 alt={name}
-                                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 gpu-accelerated-image"
                                 loading="lazy"
+                                decoding="async"
+                                style={{
+                                  transform: 'translate3d(0, 0, 0)',
+                                  backfaceVisibility: 'hidden',
+                                  WebkitBackfaceVisibility: 'hidden',
+                                }}
                               />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                              <div className="absolute top-2.5 left-2.5 w-7 h-7 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Maximize2 className="w-3.5 h-3.5 text-white" />
+                              </div>
                               <span className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase bg-black/80 backdrop-blur-md text-white border border-white/10 tracking-widest">
                                 {isPet ? (
                                   <>
@@ -278,7 +327,7 @@ export const HobbiesPetsSection: React.FC = () => {
                           ) : null}
 
                           <div className="flex items-center justify-between gap-3">
-                            <h4 className="text-base sm:text-lg font-bold uppercase tracking-wider text-white font-heading line-clamp-1 flex items-center gap-2">
+                            <h4 className="text-base sm:text-lg font-bold uppercase tracking-wider text-white font-heading line-clamp-1 flex items-center gap-2 group-hover:text-primary transition-colors">
                               {isPet ? (
                                 <PawPrint className="w-4 h-4 text-neutral-400 shrink-0" />
                               ) : (
@@ -307,6 +356,97 @@ export const HobbiesPetsSection: React.FC = () => {
                 </div>
               )}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ============================================================== */}
+      {/* PET / HOBBY LIGHTBOX MODAL (Smooth Hardware Accelerated)       */}
+      {/* ============================================================== */}
+      <AnimatePresence>
+        {selectedItem && (
+          <motion.div
+            key="item-lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 transform-gpu"
+            style={{ transform: 'translate3d(0, 0, 0)' }}
+            onClick={() => setSelectedItem(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-3xl bg-neutral-950 border border-neutral-800 rounded-none overflow-hidden shadow-2xl gpu-accelerated-card"
+            >
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setSelectedItem(null)}
+                className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-black/80 border border-neutral-800 text-neutral-400 hover:text-white transition-all cursor-pointer"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Full Image */}
+              {selectedItem.data.imageUrl && (
+                <div className="w-full max-h-[65vh] bg-black flex items-center justify-center overflow-hidden">
+                  <img
+                    src={getOptimizedImageUrl(selectedItem.data.imageUrl, {
+                      width: 1400,
+                      quality: 'auto',
+                      format: 'auto',
+                    })}
+                    alt={selectedItem.data.name}
+                    className="w-full h-full max-h-[65vh] object-contain gpu-accelerated-image"
+                    decoding="async"
+                    style={{ transform: 'translate3d(0, 0, 0)' }}
+                  />
+                </div>
+              )}
+
+              {/* Modal Details */}
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <h3 className="text-xl font-black uppercase tracking-wider text-white flex items-center gap-2">
+                      {selectedItem.type === 'pet' ? (
+                        <PawPrint className="w-5 h-5 text-neutral-400" />
+                      ) : (
+                        <Heart className="w-5 h-5 text-rose-400" />
+                      )}
+                      {selectedItem.data.name}
+                    </h3>
+                    <p className="text-xs uppercase font-mono tracking-widest text-neutral-400 mt-1">
+                      {selectedItem.type === 'pet' ? (
+                        <>
+                          {(selectedItem.data as Pet).species}
+                          {(selectedItem.data as Pet).breed
+                            ? ` • ${(selectedItem.data as Pet).breed}`
+                            : ''}
+                        </>
+                      ) : (
+                        'Creative Hobby & Passion'
+                      )}
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono uppercase bg-neutral-900 text-neutral-300 px-3 py-1 border border-neutral-800 tracking-wider">
+                    {selectedItem.type === 'pet' ? 'Pet Profile' : 'Hobby'}
+                  </span>
+                </div>
+
+                {selectedItem.data.description && (
+                  <p className="text-sm text-neutral-400 leading-relaxed font-light mt-3">
+                    {selectedItem.data.description}
+                  </p>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

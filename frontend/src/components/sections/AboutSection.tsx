@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight } from 'lucide-react';
 import { useSiteSettings } from '@/api/settings.api';
 import { ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 
 const ROLES = [
   'PHOTOGRAPHER.',
@@ -260,7 +261,9 @@ export const AboutSection: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col overflow-hidden text-white"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col overflow-hidden text-white transform-gpu"
+            style={{ transform: 'translate3d(0, 0, 0)' }}
           >
             {/* Modal Top Bar */}
             <div className="flex items-center justify-between px-4 xs:px-6 sm:px-10 py-4 sm:py-5 border-b border-white/10 shrink-0 bg-black/60">
@@ -286,32 +289,64 @@ export const AboutSection: React.FC = () => {
               </button>
             </div>
 
-            {/* Modal Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-4 xs:px-6 sm:px-10 py-6 sm:py-10 max-w-7xl mx-auto w-full">
+            {/* Modal Scrollable Content - Hardware Accelerated Smooth Scrolling */}
+            <div
+              className="flex-1 overflow-y-auto overscroll-contain px-4 xs:px-6 sm:px-10 py-6 sm:py-10 max-w-7xl mx-auto w-full smooth-scroll-viewport"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                scrollBehavior: 'smooth',
+                transform: 'translate3d(0, 0, 0)',
+                willChange: 'scroll-position',
+              }}
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {carouselImages.map((item, idx) => (
-                  <motion.div
-                    key={`${item.id}-${idx}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
-                    className="rounded-none border border-neutral-850 bg-neutral-950 p-4 hover:border-neutral-500 transition-colors group"
-                  >
-                    <div className="w-full h-56 rounded-none overflow-hidden bg-neutral-900 border border-neutral-800">
-                      <img
-                        src={item.url}
-                        alt={item.title || 'Visual'}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                        loading="lazy"
-                      />
-                    </div>
-                    {item.title && (
-                      <h4 className="mt-3 text-sm font-bold uppercase tracking-wider text-white truncate">
-                        {item.title}
-                      </h4>
-                    )}
-                  </motion.div>
-                ))}
+                {carouselImages.map((item, idx) => {
+                  const optUrl = getOptimizedImageUrl(item.url, {
+                    width: 600,
+                    height: 450,
+                    crop: 'fill',
+                    quality: 'auto',
+                    format: 'auto',
+                  });
+
+                  return (
+                    <motion.div
+                      key={`${item.id}-${idx}`}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.35,
+                        delay: Math.min(idx * 0.02, 0.16),
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                      className="rounded-none border border-neutral-850 bg-neutral-950 p-4 hover:border-neutral-500 transition-colors group gpu-accelerated-card"
+                      style={{
+                        transform: 'translate3d(0, 0, 0)',
+                        willChange: 'transform',
+                      }}
+                    >
+                      <div className="w-full h-56 rounded-none overflow-hidden bg-neutral-900 border border-neutral-800">
+                        <img
+                          src={optUrl}
+                          alt={item.title || 'Visual'}
+                          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 gpu-accelerated-image"
+                          loading="lazy"
+                          decoding="async"
+                          style={{
+                            transform: 'translate3d(0, 0, 0)',
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                          }}
+                        />
+                      </div>
+                      {item.title && (
+                        <h4 className="mt-3 text-sm font-bold uppercase tracking-wider text-white truncate">
+                          {item.title}
+                        </h4>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </motion.div>

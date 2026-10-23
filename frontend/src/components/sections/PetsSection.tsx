@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { FadeUpHeading } from '@/components/ui';
 import { petApi } from '@/api/content.api';
 import { Skeleton } from '@/components/shared';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 
 export const PetsSection: React.FC = () => {
   const { data: pets, isLoading } = petApi.useGetAll();
@@ -50,9 +51,18 @@ export const PetsSection: React.FC = () => {
                   {pet.imageUrl && (
                     <div className="w-full h-48 rounded-none overflow-hidden mb-4 bg-neutral-900">
                       <img
-                        src={pet.imageUrl}
+                        src={getOptimizedImageUrl(pet.imageUrl, {
+                          width: 600,
+                          height: 400,
+                          crop: 'fill',
+                          quality: 'auto',
+                          format: 'auto',
+                        })}
                         alt={pet.name}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 gpu-accelerated-image"
+                        loading="lazy"
+                        decoding="async"
+                        style={{ transform: 'translate3d(0, 0, 0)' }}
                       />
                     </div>
                   )}

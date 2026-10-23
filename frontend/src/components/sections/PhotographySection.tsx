@@ -455,7 +455,7 @@ export const PhotographySection: React.FC = () => {
             <div
               ref={galleryScrollRef}
               onScroll={handleScroll}
-              className="flex-1 overflow-y-auto p-6 sm:p-10 scroll-smooth will-change-scroll"
+              className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-10 smooth-scroll-viewport"
             >
               {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

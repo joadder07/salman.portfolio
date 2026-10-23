@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { FadeUpHeading } from '@/components/ui';
 import { hobbyApi } from '@/api/content.api';
 import { Skeleton } from '@/components/shared';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 
 export const HobbiesSection: React.FC = () => {
   const { data: hobbies, isLoading } = hobbyApi.useGetAll();
@@ -53,9 +54,18 @@ export const HobbiesSection: React.FC = () => {
                   {hobby.imageUrl && (
                     <div className="w-full h-44 rounded-none overflow-hidden mb-4 bg-neutral-900">
                       <img
-                        src={hobby.imageUrl}
+                        src={getOptimizedImageUrl(hobby.imageUrl, {
+                          width: 600,
+                          height: 400,
+                          crop: 'fill',
+                          quality: 'auto',
+                          format: 'auto',
+                        })}
                         alt={hobby.name}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 gpu-accelerated-image"
+                        loading="lazy"
+                        decoding="async"
+                        style={{ transform: 'translate3d(0, 0, 0)' }}
                       />
                     </div>
                   )}
