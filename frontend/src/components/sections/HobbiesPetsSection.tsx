@@ -294,7 +294,7 @@ export const HobbiesPetsSection: React.FC = () => {
                     <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-500 opacity-60 group-hover:opacity-100 transition-opacity" />
 
                     <div>
-                      <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center justify-between mb-6 sm:mb-8">
                         <div className="w-14 h-14 bg-neutral-950 border border-neutral-800 group-hover:border-rose-500/50 flex items-center justify-center transition-colors">
                           <Heart className="w-7 h-7 text-rose-400 group-hover:scale-110 transition-transform duration-300" />
                         </div>
@@ -306,9 +306,6 @@ export const HobbiesPetsSection: React.FC = () => {
                       <h4 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-white font-heading group-hover:text-rose-400 transition-colors">
                         HOBBIES
                       </h4>
-                      <p className="mt-3 text-sm text-neutral-400 font-light leading-relaxed">
-                        Creative pursuits, personal interests, astronomy, electronics, mechanical keyboards, and ongoing technical experiments.
-                      </p>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-neutral-800/80 flex items-center justify-between">
@@ -334,7 +331,7 @@ export const HobbiesPetsSection: React.FC = () => {
                     <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-400 opacity-60 group-hover:opacity-100 transition-opacity" />
 
                     <div>
-                      <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center justify-between mb-6 sm:mb-8">
                         <div className="w-14 h-14 bg-neutral-950 border border-neutral-800 group-hover:border-amber-400/50 flex items-center justify-center transition-colors">
                           <PawPrint className="w-7 h-7 text-amber-300 group-hover:scale-110 transition-transform duration-300" />
                         </div>
@@ -346,9 +343,6 @@ export const HobbiesPetsSection: React.FC = () => {
                       <h4 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-white font-heading group-hover:text-amber-300 transition-colors">
                         PETS
                       </h4>
-                      <p className="mt-3 text-sm text-neutral-400 font-light leading-relaxed">
-                        Beloved companion animals, childhood memories, and faithful friends who bring warmth and joy to everyday life.
-                      </p>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-neutral-800/80 flex items-center justify-between">
