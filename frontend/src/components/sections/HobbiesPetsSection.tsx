@@ -169,7 +169,11 @@ export const HobbiesPetsSection: React.FC = () => {
                     Hobbies &amp; Pets Archive
                   </h3>
                   <p className="text-xs text-neutral-400 font-mono">
-                    {combinedItems.length} Entries Recorded
+                    {filter === 'pets'
+                      ? `${pets.length} Pet Companions Recorded`
+                      : filter === 'hobbies'
+                      ? `${hobbies.length} Hobbies Recorded`
+                      : `${combinedItems.length} Entries Recorded`}
                   </p>
                 </div>
               </div>
@@ -232,6 +236,38 @@ export const HobbiesPetsSection: React.FC = () => {
                 willChange: 'scroll-position',
               }}
             >
+              {/* Pets Description Info Block (Active specifically when PETS filter is selected) */}
+              <AnimatePresence>
+                {filter === 'pets' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="mb-8 p-5 sm:p-6 rounded-none border border-neutral-800 bg-neutral-950/80 relative overflow-hidden shadow-2xl gpu-accelerated-card"
+                  >
+                    <div className="absolute top-0 left-0 w-1 sm:w-1.5 h-full bg-white" />
+                    <div className="flex items-start gap-4">
+                      <div className="p-2.5 bg-neutral-900 border border-neutral-800 text-neutral-300 shrink-0 mt-0.5 rounded-none">
+                        <PawPrint className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      </div>
+                      <div className="space-y-1.5 max-w-4xl">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-neutral-400 font-bold">
+                            Cherished Companions Archive
+                          </span>
+                          <span className="text-[9px] px-2 py-0.5 font-mono text-neutral-400 bg-neutral-900 border border-neutral-800 uppercase tracking-wider">
+                            Childhood Memories
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed font-light tracking-wide">
+                          This collection holds around 60% of the pets I’ve had since childhood. Unfortunately, photos of the rest have somehow been lost over time, but the memories of them will always remain with me.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[1, 2, 3].map((i) => (
