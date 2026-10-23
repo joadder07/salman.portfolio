@@ -6,6 +6,7 @@ import { videoApi } from '@/api/content.api';
 import { CommentList, CommentForm } from '@/components/comments';
 import { Skeleton } from '@/components/shared';
 import { Button } from '@/components/ui/Button';
+import { getYouTubeEmbedUrl, getYouTubeWatchUrl, YouTubeIcon } from '@/utils/youtube';
 import toast from 'react-hot-toast';
 
 export const VideoPage: React.FC = () => {
@@ -52,7 +53,7 @@ export const VideoPage: React.FC = () => {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
       {/* Navigation Top Bar */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <Link
           to="/#videos"
           className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors glass px-4 py-2 rounded-xl"
@@ -60,14 +61,26 @@ export const VideoPage: React.FC = () => {
           <ArrowLeft className="w-4 h-4" /> Back to Videos
         </Link>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleShare}
-          className="gap-2 text-xs"
-        >
-          <Share2 className="w-3.5 h-3.5 text-primary" /> Share Video
-        </Button>
+        <div className="flex items-center gap-2">
+          <a
+            href={getYouTubeWatchUrl(video.videoUrl)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white transition-all text-xs font-semibold shadow-sm"
+            title="Open on YouTube"
+          >
+            <YouTubeIcon className="w-3.5 h-3.5" /> Watch on YouTube
+          </a>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            className="gap-2 text-xs"
+          >
+            <Share2 className="w-3.5 h-3.5 text-primary" /> Share Video
+          </Button>
+        </div>
       </div>
 
       {/* Main Video Player Container */}
@@ -76,22 +89,13 @@ export const VideoPage: React.FC = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="aspect-video w-full bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl glass mb-8"
       >
-        {video.videoUrl.includes('youtube.com') || video.videoUrl.includes('youtu.be') ? (
-          <iframe
-            src={video.videoUrl.replace('watch?v=', 'embed/')}
-            title={video.title}
-            className="w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        ) : (
-          <video
-            src={video.videoUrl}
-            controls
-            autoPlay
-            className="w-full h-full object-contain"
-          />
-        )}
+        <iframe
+          src={getYouTubeEmbedUrl(video.videoUrl, true)}
+          title={video.title}
+          className="w-full h-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
       </motion.div>
 
       {/* Video Details Card */}

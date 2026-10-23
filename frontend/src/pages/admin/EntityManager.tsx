@@ -13,18 +13,28 @@ import {
   List,
   Layers,
   Image as ImageIcon,
+  Play,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useUploadMedia } from '@/api/settings.api';
 import { getOptimizedImageUrl } from '@/components/ui/CldImage';
+import {
+  extractYouTubeId,
+  getYouTubeThumbnail,
+  isValidYouTubeUrl,
+  getYouTubeEmbedUrl,
+  YouTubeIcon,
+} from '@/utils/youtube';
 import toast from 'react-hot-toast';
 
 export interface FieldConfig {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'date' | 'image' | 'audio' | 'video' | 'boolean';
+  type: 'text' | 'textarea' | 'number' | 'date' | 'image' | 'audio' | 'video' | 'youtube' | 'boolean';
   placeholder?: string;
   required?: boolean;
 }
@@ -61,7 +71,9 @@ export function EntityManager<T extends { id: string }>({
   const deleteMutation = useDelete();
   const uploadMedia = useUploadMedia();
 
-  const hasMedia = fields.some((f) => f.type === 'image' || f.type === 'video');
+  const hasMedia = fields.some(
+    (f) => f.type === 'image' || f.type === 'video' || f.type === 'youtube'
+  );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(hasMedia ? 'grid' : 'list');
 
   const [search, setSearch] = useState('');
@@ -69,6 +81,7 @@ export function EntityManager<T extends { id: string }>({
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [previewVideo, setPreviewVideo] = useState<{ url: string; title: string } | null>(null);
 
   // Unlimited by default! No rigid 20-slot cap
   const [pageSize, setPageSize] = useState<number | 'all'>('all');
@@ -115,12 +128,35 @@ export function EntityManager<T extends { id: string }>({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const payload = { ...formData };
+
+    // Strictly validate YouTube links and ensure automatic thumbnail generation
+    for (const field of fields) {
+      if (field.type === 'youtube') {
+        const val = payload[field.key];
+        if (field.required && (!val || !val.trim())) {
+          toast.error(`${field.label} is required`);
+          return;
+        }
+        if (val && val.trim()) {
+          if (!isValidYouTubeUrl(val)) {
+            toast.error('Please enter a valid YouTube video link (e.g. youtube.com/watch?v=... or youtu.be/...)');
+            return;
+          }
+          // Auto-generate thumbnail if missing
+          if (!payload.thumbnailUrl || payload.thumbnailUrl.trim() === '') {
+            payload.thumbnailUrl = getYouTubeThumbnail(val);
+          }
+        }
+      }
+    }
+
     try {
       if (editingItem) {
-        await updateMutation.mutateAsync({ id: editingItem.id, data: formData });
+        await updateMutation.mutateAsync({ id: editingItem.id, data: payload });
         toast.success(`${singularTitle} updated!`);
       } else {
-        await createMutation.mutateAsync(formData);
+        await createMutation.mutateAsync(payload);
         toast.success(`${singularTitle} created!`);
       }
       setModalOpen(false);
@@ -256,8 +292,10 @@ export function EntityManager<T extends { id: string }>({
           {viewMode === 'grid' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {displayedItems.map((item: any, idx: number) => {
+                const isYouTube = Boolean(item.videoUrl && (item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be') || extractYouTubeId(item.videoUrl)));
+                const ytThumb = isYouTube ? getYouTubeThumbnail(item.videoUrl) : '';
                 const mediaUrl =
-                  item.imageUrl || item.thumbnailUrl || item.coverUrl || item.logoUrl || item.videoUrl;
+                  item.imageUrl || item.thumbnailUrl || ytThumb || item.coverUrl || item.logoUrl;
                 const itemTitle = item.title || item.name || item.degree || 'Untitled';
                 const itemSubtitle =
                   item.category || item.species || item.medium || item.institution || item.author || '';
@@ -291,6 +329,20 @@ export function EntityManager<T extends { id: string }>({
                           </div>
                         )}
 
+                        {/* YouTube Play Overlay */}
+                        {item.videoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewVideo({ url: item.videoUrl, title: itemTitle })}
+                            className="absolute inset-0 bg-black/40 hover:bg-black/20 flex items-center justify-center transition-colors group/play cursor-pointer"
+                            title="Play YouTube Video"
+                          >
+                            <div className="w-11 h-11 rounded-full bg-red-600 text-white flex items-center justify-center shadow-2xl group-hover/play:scale-110 transition-transform">
+                              <Play className="w-5 h-5 fill-current ml-0.5" />
+                            </div>
+                          </button>
+                        )}
+
                         {/* Slide / Item Badge */}
                         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md border border-white/15 text-[10px] font-mono text-white font-semibold">
                           #{idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
@@ -321,6 +373,17 @@ export function EntityManager<T extends { id: string }>({
                         {item.year || item.tags ? (item.year || String(item.tags).slice(0, 15)) : 'Active'}
                       </span>
                       <div className="flex items-center gap-1.5">
+                        {item.videoUrl && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="p-1.5 h-7 w-7 rounded-lg text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                            onClick={() => setPreviewVideo({ url: item.videoUrl, title: itemTitle })}
+                            title="Play Video"
+                          >
+                            <Play className="w-3.5 h-3.5 fill-current" />
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
@@ -351,8 +414,10 @@ export function EntityManager<T extends { id: string }>({
           {viewMode === 'list' && (
             <div className="space-y-3">
               {displayedItems.map((item: any, idx: number) => {
+                const isYouTube = Boolean(item.videoUrl && (item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be') || extractYouTubeId(item.videoUrl)));
+                const ytThumb = isYouTube ? getYouTubeThumbnail(item.videoUrl) : '';
                 const mediaUrl =
-                  item.imageUrl || item.thumbnailUrl || item.coverUrl || item.logoUrl || item.videoUrl;
+                  item.imageUrl || item.thumbnailUrl || ytThumb || item.coverUrl || item.logoUrl;
                 const itemTitle = item.title || item.name || item.degree || 'Untitled';
                 const itemSubtitle =
                   item.institution || item.author || item.category || item.species || item.medium || item.description || '';
@@ -367,19 +432,26 @@ export function EntityManager<T extends { id: string }>({
                         #{idx + 1}
                       </span>
                       {mediaUrl && (
-                        <img
-                          src={getOptimizedImageUrl(mediaUrl, {
-                            width: 120,
-                            height: 120,
-                            crop: 'thumb',
-                            quality: 'auto',
-                            format: 'auto',
-                          })}
-                          alt="Preview"
-                          loading="lazy"
-                          decoding="async"
-                          className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0 border border-white/10"
-                        />
+                        <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-muted shrink-0 border border-white/10">
+                          <img
+                            src={getOptimizedImageUrl(mediaUrl, {
+                              width: 120,
+                              height: 120,
+                              crop: 'thumb',
+                              quality: 'auto',
+                              format: 'auto',
+                            })}
+                            alt="Preview"
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover"
+                          />
+                          {item.videoUrl && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                              <Play className="w-3.5 h-3.5 text-white fill-white" />
+                            </div>
+                          )}
+                        </div>
                       )}
                       <div className="min-w-0">
                         <h4 className="text-sm font-bold text-foreground truncate">
@@ -392,6 +464,17 @@ export function EntityManager<T extends { id: string }>({
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                      {item.videoUrl && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="p-2 h-8 w-8 rounded-lg text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                          onClick={() => setPreviewVideo({ url: item.videoUrl, title: itemTitle })}
+                          title="Play YouTube Video"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"
@@ -657,6 +740,77 @@ export function EntityManager<T extends { id: string }>({
                     </div>
                   )}
 
+                  {field.type === 'youtube' && (
+                    <div className="p-4 rounded-2xl bg-red-500/[0.04] border border-red-500/20 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                          <YouTubeIcon className="w-4 h-4 text-red-500" />
+                          <span>{field.label} {field.required ? '*' : ''}</span>
+                        </label>
+                        <span className="text-[10px] font-mono text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20 font-semibold">
+                          YouTube Links Only
+                        </span>
+                      </div>
+
+                      <Input
+                        placeholder={field.placeholder || "https://www.youtube.com/watch?v=... or https://youtu.be/..."}
+                        value={formData[field.key] || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const ytId = extractYouTubeId(val);
+                          setFormData((prev) => ({
+                            ...prev,
+                            [field.key]: val,
+                            ...(ytId && (!prev.thumbnailUrl || prev.thumbnailUrl.includes('img.youtube.com'))
+                              ? { thumbnailUrl: getYouTubeThumbnail(val) }
+                              : {}),
+                          }));
+                        }}
+                        className="text-xs h-9 bg-background/80"
+                        required={field.required}
+                      />
+
+                      {/* Live Thumbnail Preview & Validation Feedback */}
+                      {Boolean(formData[field.key]?.trim()) && (
+                        <div>
+                          {isValidYouTubeUrl(formData[field.key]) ? (
+                            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-background/70 border border-emerald-500/30 shadow-sm">
+                              <div className="relative w-24 aspect-video rounded-lg overflow-hidden bg-black shrink-0 border border-white/10 shadow-md">
+                                <img
+                                  src={getYouTubeThumbnail(formData[field.key])}
+                                  alt="Auto-generated YouTube Thumbnail"
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                  <div className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg">
+                                    <Play className="w-3 h-3 fill-current ml-0.5" />
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="space-y-0.5 min-w-0 flex-1">
+                                <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  <span>YouTube Link Verified</span>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground truncate font-mono">
+                                  ID: <code className="text-foreground">{extractYouTubeId(formData[field.key])}</code>
+                                </p>
+                                <p className="text-[10px] text-emerald-400/90 font-medium">
+                                  ✓ Thumbnail generated automatically from YouTube
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                              <AlertCircle className="w-4 h-4 shrink-0" />
+                              <span>Invalid YouTube link. Please paste a link from youtube.com or youtu.be</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {field.type === 'video' && (
                     <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2.5">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
@@ -699,6 +853,35 @@ export function EntityManager<T extends { id: string }>({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* YouTube Video Seamless Playback Modal */}
+      {previewVideo && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setPreviewVideo(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden bg-black border border-white/20 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewVideo(null)}
+              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/80 hover:bg-white text-white hover:text-black border border-white/20 transition-all cursor-pointer shadow-lg"
+              title="Close Player"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <iframe
+              src={getYouTubeEmbedUrl(previewVideo.url, true)}
+              title={previewVideo.title}
+              className="w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
           </div>
         </div>
       )}

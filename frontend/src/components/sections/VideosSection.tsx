@@ -5,6 +5,7 @@ import { Video as VideoIcon, Play, MessageSquare, X, ExternalLink } from 'lucide
 import { videoApi, Video } from '@/api/content.api';
 import { CommentList, CommentForm } from '@/components/comments';
 import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
+import { getYouTubeThumbnail, getYouTubeEmbedUrl, getYouTubeWatchUrl, YouTubeIcon } from '@/utils/youtube';
 
 // Curated high-resolution fallback video stills for the cinematic viewfinder carousel
 const FALLBACK_VIDEOS: ViewfinderImage[] = [
@@ -45,17 +46,20 @@ export const VideosSection: React.FC = () => {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
-  // Map database videos to viewfinder image format
+  // Map database videos to viewfinder image format using automatic YouTube thumbnails
   const dbImages: ViewfinderImage[] = (videos || [])
-    .filter((v): v is Video & { thumbnailUrl: string } => Boolean(v.thumbnailUrl && v.thumbnailUrl.trim() !== ''))
-    .map((v) => ({
-      id: v.id,
-      url: v.thumbnailUrl,
-      title: v.title,
-      caption: v.description || v.category,
-    }));
+    .map((v) => {
+      const thumb = v.thumbnailUrl?.trim() || getYouTubeThumbnail(v.videoUrl);
+      return {
+        id: v.id,
+        url: thumb,
+        title: v.title,
+        caption: v.description || v.category,
+      };
+    })
+    .filter((img) => Boolean(img.url));
 
-  // Combine with fallbacks so the 1-second auto-play carousel always has active frames
+  // Combine with fallbacks so the auto-play carousel always has active frames
   const carouselImages =
     dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_VIDEOS.slice(dbImages.length)];
 
@@ -63,17 +67,6 @@ export const VideosSection: React.FC = () => {
   const { data: videoDetail, isLoading: isLoadingDetail } = videoApi.useGetById(
     selectedVideo?.id || ''
   );
-
-  const getEmbedUrl = (url: string) => {
-    if (url.includes('youtube.com/watch?v=')) {
-      return url.replace('watch?v=', 'embed/');
-    }
-    if (url.includes('youtu.be/')) {
-      const id = url.split('youtu.be/')[1]?.split('?')[0];
-      return `https://www.youtube.com/embed/${id}`;
-    }
-    return url;
-  };
 
   return (
     <section id="videos" className="py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
@@ -191,9 +184,9 @@ export const VideosSection: React.FC = () => {
                     >
                       {/* Video Thumbnail */}
                       <div className="relative aspect-video overflow-hidden bg-neutral-900 flex items-center justify-center">
-                        {video.thumbnailUrl ? (
+                        {Boolean(video.thumbnailUrl || getYouTubeThumbnail(video.videoUrl)) ? (
                           <img
-                            src={video.thumbnailUrl}
+                            src={video.thumbnailUrl || getYouTubeThumbnail(video.videoUrl)}
                             alt={video.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                             loading="lazy"
@@ -209,6 +202,11 @@ export const VideosSection: React.FC = () => {
                           <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
                             <Play className="w-5 h-5 fill-current ml-0.5" />
                           </div>
+                        </div>
+
+                        {/* YouTube Badge in top-right */}
+                        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-red-600/90 text-white text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-md">
+                          <YouTubeIcon className="w-3 h-3" /> YouTube
                         </div>
 
                         {video.duration && (
@@ -255,6 +253,15 @@ export const VideosSection: React.FC = () => {
             >
               {/* Action Buttons */}
               <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+                <a
+                  href={getYouTubeWatchUrl(selectedVideo.videoUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-black/60 hover:bg-red-600 text-white border border-white/20 transition-colors cursor-pointer"
+                  title="Watch on YouTube"
+                >
+                  <YouTubeIcon className="w-4 h-4 text-red-500 hover:text-white" />
+                </a>
                 <Link
                   to={`/videos/${selectedVideo.id}`}
                   className="p-2 bg-black/60 hover:bg-white hover:text-black text-white border border-white/20 transition-colors cursor-pointer"
@@ -272,24 +279,14 @@ export const VideosSection: React.FC = () => {
               </div>
 
               {/* Video Player Display */}
-              <div className="w-full md:w-3/5 bg-black flex items-center justify-center">
-                {selectedVideo.videoUrl.includes('youtube.com') ||
-                selectedVideo.videoUrl.includes('youtu.be') ? (
-                  <iframe
-                    src={getEmbedUrl(selectedVideo.videoUrl)}
-                    title={selectedVideo.title}
-                    className="w-full aspect-video border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <video
-                    src={selectedVideo.videoUrl}
-                    controls
-                    autoPlay
-                    className="w-full max-h-[45vh] md:max-h-[85vh] object-contain"
-                  />
-                )}
+              <div className="w-full md:w-3/5 bg-black flex items-center justify-center aspect-video">
+                <iframe
+                  src={getYouTubeEmbedUrl(selectedVideo.videoUrl, true)}
+                  title={selectedVideo.title}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
               </div>
 
               {/* Details & Comments Drawer */}
