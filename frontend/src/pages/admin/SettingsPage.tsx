@@ -25,8 +25,18 @@ import { useCurrentUser, useUpdateProfile } from '@/api/auth.api';
 import { useSiteSettings, useUpdateSettings, useUploadMedia } from '@/api/settings.api';
 import toast from 'react-hot-toast';
 
+import { DEFAULT_ABOUT_STORY_HERO } from '@/pages/public/AboutPage';
+
 // Default static circuit board fallback image (image_19.png)
 export const DEFAULT_CIRCUIT_BOARD_HERO = '/images/circuit-board-hero.jpg';
+
+export const DEFAULT_ABOUT_HERO_PRESETS = [
+  DEFAULT_ABOUT_STORY_HERO,
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=2000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=2000&auto=format&fit=crop',
+];
 
 export const SettingsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -87,6 +97,21 @@ export const SettingsPage: React.FC = () => {
     'It’s been a way for me to express myself and show others how I see the world.'
   );
 
+  // 'About Salman' Story Top Banner Hero State (Rory Kramer style)
+  const [aboutHeroImage, setAboutHeroImage] = useState('');
+  const [manualAboutHeroUrl, setManualAboutHeroUrl] = useState('');
+  const [isUploadingAboutHero, setIsUploadingAboutHero] = useState(false);
+  const [aboutHeroGallery, setAboutHeroGallery] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('portfolio_about_hero_presets');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return DEFAULT_ABOUT_HERO_PRESETS;
+  });
+
   // Music Playlist State
   const [playlist, setPlaylist] = useState<{ title: string; artist: string; src: string }[]>([]);
   const [isUploadingTrack, setIsUploadingTrack] = useState(false);
@@ -112,6 +137,8 @@ export const SettingsPage: React.FC = () => {
       setManualHeroBgUrl(settings.heroBackgroundImage || '');
       setBannerImage(settings.bannerImage || '');
       setManualBannerUrl(settings.bannerImage || '');
+      setAboutHeroImage(settings.aboutHeroImage || '');
+      setManualAboutHeroUrl(settings.aboutHeroImage || '');
       setBannerQuote(settings.bannerQuote || 'Each shot is a reflection of my true self.');
       setBannerQuoteSubtext(
         settings.bannerQuoteSubtext ||
@@ -389,6 +416,108 @@ export const SettingsPage: React.FC = () => {
     setPlaylist((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Handle 'About Salman' Story Top Banner Upload & Management
+  const handleAboutHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAboutHero(true);
+    try {
+      toast.loading('Uploading About Hero photo to Cloudinary...', { id: 'about-hero-upload' });
+      const res = await uploadMedia.mutateAsync({ file, folder: 'portfolio/about' });
+      const newUrl = res.secureUrl;
+      setAboutHeroImage(newUrl);
+      setManualAboutHeroUrl(newUrl);
+
+      // Add to About hero gallery presets
+      setAboutHeroGallery((prev) => {
+        const updated = [newUrl, ...prev.filter((u) => u !== newUrl)];
+        try {
+          localStorage.setItem('portfolio_about_hero_presets', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      toast.loading('Saving About Hero setting...', { id: 'about-hero-upload' });
+      await updateSettings.mutateAsync({ aboutHeroImage: newUrl });
+      toast.success('About Hero banner photo uploaded and saved!', { id: 'about-hero-upload' });
+    } catch (err) {
+      console.error('Failed to upload About Hero photo:', err);
+      toast.error('Failed to upload photo. Try entering a direct image URL.', {
+        id: 'about-hero-upload',
+      });
+    } finally {
+      setIsUploadingAboutHero(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleApplyManualAboutHeroUrl = async () => {
+    const url = manualAboutHeroUrl.trim();
+    if (!url) {
+      toast.error('Please enter a valid image URL');
+      return;
+    }
+    try {
+      toast.loading('Applying About Hero photo URL...', { id: 'about-hero-url' });
+      setAboutHeroImage(url);
+
+      setAboutHeroGallery((prev) => {
+        const updated = [url, ...prev.filter((u) => u !== url)];
+        try {
+          localStorage.setItem('portfolio_about_hero_presets', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      await updateSettings.mutateAsync({ aboutHeroImage: url });
+      toast.success('About Hero photo updated and saved to presets!', { id: 'about-hero-url' });
+    } catch {
+      toast.error('Failed to apply image URL', { id: 'about-hero-url' });
+    }
+  };
+
+  const handleSelectAboutHeroFromGallery = async (url: string) => {
+    try {
+      toast.loading('Applying About Hero photo...', { id: 'about-hero-select' });
+      const isDefault = url === DEFAULT_ABOUT_STORY_HERO;
+      const val = isDefault ? '' : url;
+      setAboutHeroImage(val);
+      setManualAboutHeroUrl(val);
+      await updateSettings.mutateAsync({ aboutHeroImage: val });
+      toast.success('Active About Hero photo updated!', { id: 'about-hero-select' });
+    } catch {
+      toast.error('Failed to apply hero photo', { id: 'about-hero-select' });
+    }
+  };
+
+  const handleDeleteFromAboutHeroGallery = (urlToDelete: string) => {
+    if (urlToDelete === DEFAULT_ABOUT_STORY_HERO) {
+      toast.error('Cannot delete the default portrait preset');
+      return;
+    }
+    setAboutHeroGallery((prev) => {
+      const updated = prev.filter((u) => u !== urlToDelete);
+      try {
+        localStorage.setItem('portfolio_about_hero_presets', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    toast.success('Removed photo from presets library');
+  };
+
+  const handleResetAboutHero = async () => {
+    try {
+      toast.loading('Reverting to default portrait...', { id: 'about-hero-reset' });
+      setAboutHeroImage('');
+      setManualAboutHeroUrl('');
+      await updateSettings.mutateAsync({ aboutHeroImage: '' });
+      toast.success('Reverted to default Rory Kramer style portrait!', { id: 'about-hero-reset' });
+    } catch {
+      toast.error('Failed to reset portrait', { id: 'about-hero-reset' });
+    }
+  };
+
   // Preview Sources
   const previewHeroBg = heroBackgroundImage || DEFAULT_CIRCUIT_BOARD_HERO;
   const isHeroUsingDefault = !heroBackgroundImage;
@@ -396,9 +525,13 @@ export const SettingsPage: React.FC = () => {
   const previewBanner = bannerImage || DEFAULT_CIRCUIT_BOARD_HERO;
   const isBannerUsingDefault = !bannerImage;
 
+  const previewAboutHero = aboutHeroImage || DEFAULT_ABOUT_STORY_HERO;
+  const isAboutHeroUsingDefault = !aboutHeroImage;
+
   // Tabs definition
   const tabs = [
     { id: 'hero', label: 'Hero Section', icon: <ImageIcon className="w-4 h-4" /> },
+    { id: 'about', label: 'About Story Hero', icon: <User className="w-4 h-4" /> },
     { id: 'banner', label: 'Showcase Banner', icon: <Sparkles className="w-4 h-4" /> },
     { id: 'general', label: 'General Settings', icon: <Globe className="w-4 h-4" /> },
     { id: 'profile', label: 'Admin Profile', icon: <User className="w-4 h-4" /> },
@@ -884,6 +1017,266 @@ export const SettingsPage: React.FC = () => {
     </Card>
   );
 
+  // Dedicated About Salman Hero Banner Manager (Rory Kramer style top banner for /about)
+  const renderAboutHeroManager = () => (
+    <Card className="border border-white/10 bg-black/40 backdrop-blur-sm overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-white/10">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-white/10 text-white">
+            <User className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+              &lsquo;About Salman&rsquo; Page Hero Banner Photo
+              {isAboutHeroUsingDefault ? (
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-white/80 border border-white/20">
+                  Default Portrait Active
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Custom Photo Active
+                </span>
+              )}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              The prominent moody cinematic portrait displayed at the top of the public &lsquo;About Salman&rsquo; page with the &ldquo;SALMAN&apos;S STORY&rdquo; title overlay.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {aboutHeroImage && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResetAboutHero}
+              disabled={isUploadingAboutHero}
+              className="text-xs text-muted-foreground hover:text-white border-white/20 hover:bg-white/10 gap-1.5 shrink-0"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Reset to Default
+            </Button>
+          )}
+          <Link
+            to="/about"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/20 text-xs font-semibold text-white hover:bg-white/10 transition-colors"
+          >
+            <span>View Live Page</span>
+            <ExternalLink className="w-3.5 h-3.5 text-white/70" />
+          </Link>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {/* Live Visual Preview Container matching the Rory Kramer style */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-primary" /> Live Website Preview (About Page Top Banner)
+            </label>
+            <span className="text-[11px] text-muted-foreground">
+              {isAboutHeroUsingDefault
+                ? 'Showing: Default Moody Portrait'
+                : 'Showing: Custom Uploaded Portrait'}
+            </span>
+          </div>
+
+          <div
+            className="relative aspect-[21/9] sm:aspect-[16/6] w-full overflow-hidden bg-black shadow-2xl group select-none"
+            style={{
+              clipPath: 'ellipse(80% 100% at 50% 0%)',
+              WebkitClipPath: 'ellipse(80% 100% at 50% 0%)',
+            }}
+          >
+            {/* The Photo in Full Vibrant Color */}
+            <img
+              src={previewAboutHero}
+              alt="About Hero Preview"
+              className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
+            />
+
+            {/* Scrim and Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/80 pointer-events-none" />
+
+            {/* Simulated Header Bar */}
+            <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex items-center justify-between pointer-events-none z-10">
+              <span
+                className="font-brush text-xs sm:text-base text-white tracking-wide uppercase"
+                style={{ fontFamily: "'Rock Salt', cursive" }}
+              >
+                SALMAN SAJID JOADDER
+              </span>
+              <div className="hidden xs:flex items-center gap-4 text-[10px] font-semibold tracking-widest text-white/80 uppercase">
+                <span>PORTFOLIO</span>
+                <span>CONTACT</span>
+                <span className="text-white border-b border-white">ABOUT SALMAN</span>
+              </div>
+            </div>
+
+            {/* Sleek, Noticeably Smaller Overlaid Title on the Right */}
+            <div className="absolute inset-0 p-6 sm:p-10 flex items-center justify-end z-10 pointer-events-none">
+              <div className="text-right space-y-1">
+                <h3
+                  className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold uppercase text-white tracking-wider leading-none drop-shadow-xl"
+                  style={{ fontFamily: "'Bebas Neue', 'Oswald', sans-serif" }}
+                >
+                  SALMAN&apos;S STORY
+                </h3>
+                <p className="text-[9px] sm:text-[10px] text-neutral-300/80 font-light tracking-widest uppercase drop-shadow">
+                  A Curious Mind &bull; A Creative Soul
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Upload & Direct URL Controls */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          {/* Upload Button */}
+          <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] flex flex-col justify-between space-y-3">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                <Upload className="w-3.5 h-3.5 text-primary" /> Option 1: Upload from Computer
+              </h3>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Upload a cinematic portrait or close-up photo (JPG, PNG, WEBP).
+              </p>
+            </div>
+
+            <div>
+              <label
+                className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black text-xs font-bold transition-all shadow-md ${
+                  isUploadingAboutHero
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'cursor-pointer hover:bg-white/90 active:scale-[0.99]'
+                }`}
+              >
+                <Upload className={`w-4 h-4 ${isUploadingAboutHero ? 'animate-pulse' : ''}`} />
+                {isUploadingAboutHero ? 'Uploading Photo...' : 'Choose Photo & Upload'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={isUploadingAboutHero}
+                  onChange={handleAboutHeroUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Image URL Input */}
+          <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] flex flex-col justify-between space-y-3">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                <ExternalLink className="w-3.5 h-3.5 text-primary" /> Option 2: Image URL
+              </h3>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Paste an external high-resolution Cloudinary, CDN, or Unsplash link.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="url"
+                value={manualAboutHeroUrl}
+                onChange={(e) => setManualAboutHeroUrl(e.target.value)}
+                placeholder="https://images.unsplash.com/..."
+                className="flex-1 rounded-xl border border-white/15 bg-black/50 px-3 py-2 text-xs text-white placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-white"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleApplyManualAboutHeroUrl}
+                disabled={isUploadingAboutHero}
+                className="text-xs shrink-0 border-white/20 text-white hover:bg-white/10"
+              >
+                Apply
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Preset Gallery Selector */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+              <Images className="w-3.5 h-3.5 text-primary" /> Preset Portrait Library
+            </h3>
+            <span className="text-[11px] text-muted-foreground">
+              Click any photo to instantly set as active hero banner
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {aboutHeroGallery.map((url, idx) => {
+              const isActive = (aboutHeroImage || DEFAULT_ABOUT_STORY_HERO) === url;
+              return (
+                <div
+                  key={`about-hero-preset-${idx}`}
+                  onClick={() => handleSelectAboutHeroFromGallery(url)}
+                  className={`group relative aspect-[4/3] rounded-xl overflow-hidden border cursor-pointer transition-all ${
+                    isActive
+                      ? 'border-white ring-2 ring-white/50 scale-[1.02]'
+                      : 'border-white/10 hover:border-white/30 hover:scale-[1.01]'
+                  }`}
+                >
+                  <img
+                    src={url}
+                    alt={`Preset ${idx + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                  {/* Active Indicator Checkmark */}
+                  {isActive && (
+                    <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-white text-black text-[9px] font-bold flex items-center gap-1 shadow-md">
+                      <CheckCircle2 className="w-3 h-3 text-black" /> Active
+                    </div>
+                  )}
+
+                  {/* Delete button (only for non-defaults) */}
+                  {url !== DEFAULT_ABOUT_STORY_HERO && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteFromAboutHeroGallery(url);
+                      }}
+                      className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/70 hover:bg-destructive text-white hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10"
+                      title="Remove from library"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+
+                  {/* Label */}
+                  <div className="absolute bottom-1.5 left-1.5 right-1.5 text-center pointer-events-none">
+                    <span className="text-[10px] font-bold text-white drop-shadow-md truncate block">
+                      {url === DEFAULT_ABOUT_STORY_HERO ? 'Default Portrait' : `Portrait #${idx + 1}`}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Aesthetics & Framing Guarantee Note */}
+        <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-start gap-3 text-xs text-muted-foreground">
+          <CheckCircle2 className="w-4 h-4 text-white/70 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="text-white/90 font-medium">Vibrant Color &amp; Arched Frame Display</p>
+            <p className="text-[11px] leading-relaxed">
+              Your uploaded banner is preserved in its original vibrant colors, enhanced with balanced dark edge overlays and an arched bottom curve to ensure the title remains crisp and readable.
+            </p>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
     <div className="space-y-8 max-w-4xl">
       {/* Page Header */}
@@ -919,6 +1312,15 @@ export const SettingsPage: React.FC = () => {
                   }`}
                 >
                   {isHeroUsingDefault ? 'Default' : 'Custom'}
+                </span>
+              )}
+              {tab.id === 'about' && (
+                <span
+                  className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono uppercase ${
+                    isActive ? 'bg-black/15 text-black' : 'bg-white/10 text-white/70'
+                  }`}
+                >
+                  {isAboutHeroUsingDefault ? 'Default' : 'Custom'}
                 </span>
               )}
               {tab.id === 'banner' && (
@@ -964,6 +1366,13 @@ export const SettingsPage: React.FC = () => {
               In addition to the fullscreen hero background, your portfolio features an interactive camera viewfinder carousel with technical corner brackets and custom captions supporting unlimited uploads. Click above to add, delete, and reorder photos in the gallery.
             </p>
           </Card>
+        </div>
+      )}
+
+      {/* Tab Content: ABOUT STORY HERO */}
+      {currentTab === 'about' && (
+        <div className="space-y-8">
+          {renderAboutHeroManager()}
         </div>
       )}
 
@@ -1026,6 +1435,36 @@ export const SettingsPage: React.FC = () => {
                   onChange={(e) => setAboutText(e.target.value)}
                   className="w-full rounded-xl border border-border/80 bg-background/50 px-3.5 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-200"
                 />
+              </div>
+
+              {/* Quick Link & Preview to About Salman Hero Banner */}
+              <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-12 rounded-lg overflow-hidden bg-black border border-white/10 shrink-0">
+                    <img
+                      src={previewAboutHero}
+                      alt="About Hero"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+                      &lsquo;About Salman&rsquo; Page Hero Banner Photo
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {isAboutHeroUsingDefault
+                        ? 'Using default story portrait'
+                        : 'Custom uploaded photo is active (original colors)'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSearchParams({ tab: 'about' })}
+                  className="px-3 py-1.5 rounded-lg border border-white/20 text-xs font-semibold text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                >
+                  Manage Banner Photo →
+                </button>
               </div>
 
               {/* Social Links */}

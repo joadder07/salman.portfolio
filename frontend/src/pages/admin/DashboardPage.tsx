@@ -11,6 +11,7 @@ import {
   Sparkles,
   Palette,
   Image as ImageIcon,
+  User,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import {
@@ -38,6 +39,7 @@ export const DashboardPage: React.FC = () => {
 
   const metrics = [
     { label: 'Hero Background', count: settings?.heroBackgroundImage ? 'Custom Active' : 'Default Circuit', to: '/admin/settings?tab=hero', icon: <ImageIcon className="w-5 h-5 text-primary" /> },
+    { label: 'About Story Hero', count: settings?.aboutHeroImage ? 'Custom Active' : 'Default Portrait', to: '/admin/settings?tab=about', icon: <User className="w-5 h-5 text-primary" /> },
     { label: 'Showcase Banner', count: settings?.bannerImage ? 'Custom Active' : 'Default Circuit', to: '/admin/settings?tab=banner', icon: <Sparkles className="w-5 h-5 text-primary" /> },
     { label: 'Unread Messages', count: unreadMessages, to: '/admin/messages', color: 'text-primary', alert: unreadMessages > 0 },
     { label: 'Pending Comments', count: pendingComments, to: '/admin/comments', color: 'text-white', alert: pendingComments > 0 },

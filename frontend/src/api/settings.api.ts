@@ -25,6 +25,7 @@ export interface SiteSettings {
   bannerImage?: string;
   bannerQuote?: string;
   bannerQuoteSubtext?: string;
+  aboutHeroImage?: string;
   adminProfilePic?: string;
   adminName?: string;
   adminBio?: string;

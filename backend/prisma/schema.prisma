@@ -159,6 +159,7 @@ model SiteSettings {
   heroTitle     String?
   heroSubtitle  String?
   aboutText     String?
+  aboutHeroImage String?
   socialLinks   String?
   facebookUrl   String?
   instagramUrl  String?

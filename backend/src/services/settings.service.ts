@@ -76,6 +76,9 @@ export class SettingsService {
     if (payload.bannerQuoteSubtext === '') {
       payload.bannerQuoteSubtext = null;
     }
+    if (payload.aboutHeroImage === '') {
+      payload.aboutHeroImage = null;
+    }
 
     const result = await prisma.siteSettings.upsert({
       where: { id: SINGLETON_ID },

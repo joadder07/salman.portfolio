@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Check, X, Trash2, Filter } from 'lucide-react';
+import { MessageSquare, Check, X, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useComments, useModerateComment, useDeleteComment } from '@/api/interactions.api';

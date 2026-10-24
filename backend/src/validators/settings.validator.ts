@@ -24,6 +24,7 @@ export const updateSettingsSchema = z.object({
   bannerImage: z.string().optional().nullable(),
   bannerQuote: z.string().optional().nullable(),
   bannerQuoteSubtext: z.string().optional().nullable(),
+  aboutHeroImage: z.string().optional().nullable(),
 });
 
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;
