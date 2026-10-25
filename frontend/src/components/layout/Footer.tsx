@@ -15,7 +15,7 @@ export const Footer: React.FC = () => {
 
   return (
     <footer
-      className="w-full select-none transition-colors duration-300 bg-transparent mt-16 sm:mt-24 pt-14 sm:pt-16 pb-16 sm:pb-20 border-t border-white/10"
+      className="w-full select-none transition-colors duration-300 bg-transparent mt-2 sm:mt-24 pt-4 sm:pt-16 pb-24 sm:pb-28 border-t border-white/10"
     >
       {/* Main Centered Stack with Scroll Reveal */}
       <motion.div
@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
         className="scroll-reveal max-w-5xl mx-auto px-4 flex flex-col items-center justify-center text-center"
       >
         {/* Handwritten Signature: Ultra-compact, Dainty Scale on Mobile with Layout and Spacing Untouched */}
-        <h2 className="font-brush tracking-normal uppercase select-none mb-6 sm:mb-8 flex flex-row items-center justify-center gap-1 sm:gap-2 whitespace-nowrap text-center max-w-full px-2 text-white">
+        <h2 className="font-brush tracking-normal uppercase select-none mb-5 sm:mb-8 flex flex-row items-center justify-center gap-1 sm:gap-2 whitespace-nowrap text-center max-w-full px-2 text-white">
           <span className="text-[7.5px] sm:text-sm md:text-base font-brush mt-0.5 text-white/90">
             A
           </span>
@@ -38,8 +38,8 @@ export const Footer: React.FC = () => {
           </span>
         </h2>
 
-        {/* Social Media Icons (Scaled down proportionally on mobile, natural spacing and margins kept) */}
-        <div className="flex items-center justify-center gap-6 mb-8 sm:mb-10 text-white/90">
+        {/* Social Media Icons: Exactly vertically centered between signature and copyright text */}
+        <div className="flex items-center justify-center gap-6 mb-5 sm:mb-8 text-white/90">
           {links.instagram && (
             <a
               href={links.instagram}

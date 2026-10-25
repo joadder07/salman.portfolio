@@ -48,7 +48,7 @@ export const PhotographyPage: React.FC = () => {
         <p className="text-sm text-muted-foreground mt-2 max-w-md">
           The requested photograph capture does not exist or may have been removed.
         </p>
-        <Button onClick={() => navigate('/#photography')} className="mt-6 gap-2">
+        <Button onClick={() => navigate('/', { state: { scrollTo: 'photography' } })} className="mt-6 gap-2">
           <ArrowLeft className="w-4 h-4" /> Return to Gallery
         </Button>
       </div>
@@ -60,7 +60,8 @@ export const PhotographyPage: React.FC = () => {
       {/* Navigation Top Bar */}
       <div className="flex items-center justify-between mb-8">
         <Link
-          to="/#photography"
+          to="/"
+          state={{ scrollTo: 'photography' }}
           className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors glass px-4 py-2 rounded-xl"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Gallery

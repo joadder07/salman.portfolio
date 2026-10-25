@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, PawPrint, Sparkles, X, Maximize2, ArrowLeft } from 'lucide-react';
 import { hobbyApi, petApi, Hobby, Pet } from '@/api/content.api';
@@ -37,6 +37,112 @@ const FALLBACK_HOBBIES_PETS: ViewfinderImage[] = [
   },
 ];
 
+interface HobbyPetCardProps {
+  item: UnifiedItem;
+  idx: number;
+  onSelect: (item: UnifiedItem) => void;
+}
+
+const HobbyPetCard: React.FC<HobbyPetCardProps> = React.memo(({ item, idx, onSelect }) => {
+  const isPet = item.type === 'pet';
+  const name = item.data.name;
+  const description = item.data.description;
+  const imageUrl = item.data.imageUrl;
+
+  const thumbUrl = useMemo(() => {
+    return imageUrl
+      ? getOptimizedImageUrl(imageUrl, {
+          width: 640,
+          height: 420,
+          crop: 'fill',
+          quality: 'auto',
+          format: 'auto',
+        })
+      : '';
+  }, [imageUrl]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.35,
+        delay: Math.min(idx * 0.02, 0.16),
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      onClick={() => onSelect(item)}
+      className="rounded-none border border-neutral-850 bg-neutral-950 p-5 hover:border-neutral-500 transition-colors flex flex-col justify-between group cursor-pointer gpu-accelerated-card"
+      style={{
+        transform: 'translate3d(0, 0, 0)',
+        willChange: 'transform',
+        contentVisibility: 'auto',
+        containIntrinsicSize: '350px 300px',
+        contain: 'layout paint',
+      }}
+    >
+      <div>
+        {imageUrl ? (
+          <div className="w-full h-48 rounded-none overflow-hidden mb-4 bg-neutral-900 relative">
+            <img
+              src={thumbUrl}
+              alt={name}
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 gpu-accelerated-image"
+              loading="lazy"
+              decoding="async"
+              style={{
+                transform: 'translate3d(0, 0, 0)',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <div className="absolute top-2.5 left-2.5 w-7 h-7 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Maximize2 className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase bg-black/80 backdrop-blur-md text-white border border-white/10 tracking-widest">
+              {isPet ? (
+                <>
+                  <PawPrint className="w-3 h-3 text-white" />
+                  <span>Pet</span>
+                </>
+              ) : (
+                <>
+                  <Heart className="w-3 h-3 text-rose-400" />
+                  <span>Hobby</span>
+                </>
+              )}
+            </span>
+          </div>
+        ) : null}
+
+        <div className="flex items-center justify-between gap-3">
+          <h4 className="text-base sm:text-lg font-bold uppercase tracking-wider text-white font-heading line-clamp-1 flex items-center gap-2 group-hover:text-primary transition-colors">
+            {isPet ? (
+              <PawPrint className="w-4 h-4 text-neutral-400 shrink-0" />
+            ) : (
+              <Heart className="w-4 h-4 text-neutral-400 shrink-0" />
+            )}
+            {name}
+          </h4>
+
+          {isPet && (
+            <span className="text-[10px] font-mono uppercase bg-neutral-900 text-neutral-400 px-2 py-0.5 border border-neutral-800 tracking-wider shrink-0">
+              {(item.data as Pet).species}
+              {(item.data as Pet).breed ? ` • ${(item.data as Pet).breed}` : ''}
+            </span>
+          )}
+        </div>
+
+        {description && (
+          <p className="text-xs text-neutral-400 mt-2.5 leading-relaxed font-light line-clamp-3">
+            {description}
+          </p>
+        )}
+      </div>
+    </motion.div>
+  );
+});
+
 export const HobbiesPetsSection: React.FC = () => {
   const { data: hobbies = [], isLoading: isLoadingHobbies } = hobbyApi.useGetAll();
   const { data: pets = [], isLoading: isLoadingPets } = petApi.useGetAll();
@@ -47,41 +153,50 @@ export const HobbiesPetsSection: React.FC = () => {
   const isLoading = isLoadingHobbies || isLoadingPets;
 
   // Unify items
-  const combinedItems: UnifiedItem[] = [
+  const combinedItems: UnifiedItem[] = useMemo(() => [
     ...hobbies.map((h): UnifiedItem => ({ type: 'hobby', data: h })),
     ...pets.map((p): UnifiedItem => ({ type: 'pet', data: p })),
-  ];
+  ], [hobbies, pets]);
 
-  const filteredItems =
+  const filteredItems = useMemo(() =>
     selectedCategory === 'pets'
       ? pets.map((p): UnifiedItem => ({ type: 'pet', data: p }))
       : selectedCategory === 'hobbies'
       ? hobbies.map((h): UnifiedItem => ({ type: 'hobby', data: h }))
-      : [];
+      : [],
+    [selectedCategory, pets, hobbies]
+  );
 
-  const handleOpenDiscover = (category: 'hobbies' | 'pets' | null = null) => {
+  const handleOpenDiscover = useCallback((category: 'hobbies' | 'pets' | null = null) => {
     setSelectedCategory(category);
     setIsGalleryOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsGalleryOpen(false);
     setSelectedCategory(null);
     setSelectedItem(null);
-  };
+  }, []);
+
+  const handleSelectHobbyPet = useCallback((item: UnifiedItem) => {
+    setSelectedItem(item);
+  }, []);
 
   // Map to viewfinder carousel images
-  const dbImages: ViewfinderImage[] = combinedItems
-    .filter((item) => item.data.imageUrl && item.data.imageUrl.trim() !== '')
-    .map((item) => ({
-      id: `${item.type}-${item.data.id}`,
-      url: item.data.imageUrl!,
-      title: item.data.name,
-      caption: item.type === 'pet' ? 'Pet Companion' : 'Creative Hobby',
-    }));
+  const dbImages: ViewfinderImage[] = useMemo(() => {
+    return combinedItems
+      .filter((item) => item.data.imageUrl && item.data.imageUrl.trim() !== '')
+      .map((item) => ({
+        id: `${item.type}-${item.data.id}`,
+        url: item.data.imageUrl!,
+        title: item.data.name,
+        caption: item.type === 'pet' ? 'Pet Companion' : 'Creative Hobby',
+      }));
+  }, [combinedItems]);
 
-  const carouselImages =
-    dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_HOBBIES_PETS.slice(dbImages.length)];
+  const carouselImages = useMemo(() => {
+    return dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_HOBBIES_PETS.slice(dbImages.length)];
+  }, [dbImages]);
 
   // Close modal or lightbox on Escape key
   useEffect(() => {
@@ -102,10 +217,25 @@ export const HobbiesPetsSection: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isGalleryOpen, selectedItem, selectedCategory]);
 
+  // Listen for global open-archive events (from Portfolio dropdown or external deep links)
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<{ type?: string; category?: 'hobbies' | 'pets' | null }>;
+      if (customEvent.detail?.type === 'hobbies' || customEvent.detail?.type === 'pets') {
+        if (customEvent.detail.category !== undefined) {
+          setSelectedCategory(customEvent.detail.category);
+        }
+        setIsGalleryOpen(true);
+      }
+    };
+    window.addEventListener('open-archive', handleOpen);
+    return () => window.removeEventListener('open-archive', handleOpen);
+  }, []);
+
   return (
     <section
       id="hobbies"
-      className="relative py-16 sm:py-24 px-4 sm:px-8 lg:px-12 bg-light-paper text-black overflow-hidden select-none"
+      className="scroll-mt-20 sm:scroll-mt-24 relative py-16 sm:py-24 px-4 sm:px-8 lg:px-12 bg-light-paper text-black overflow-hidden select-none"
     >
       {/* Anchor for pets link navigation */}
       <div id="pets" className="absolute -top-24" />
@@ -415,102 +545,14 @@ export const HobbiesPetsSection: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredItems.map((item, idx) => {
-                    const isPet = item.type === 'pet';
-                    const id = isPet ? `pet-${item.data.id}` : `hobby-${item.data.id}`;
-                    const name = item.data.name;
-                    const description = item.data.description;
-                    const imageUrl = item.data.imageUrl;
-
-                    const thumbUrl = imageUrl
-                      ? getOptimizedImageUrl(imageUrl, {
-                          width: 640,
-                          height: 420,
-                          crop: 'fill',
-                          quality: 'auto',
-                          format: 'auto',
-                        })
-                      : '';
-
-                    return (
-                      <motion.div
-                        key={id}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.35,
-                          delay: Math.min(idx * 0.02, 0.16),
-                          ease: [0.16, 1, 0.3, 1],
-                        }}
-                        onClick={() => setSelectedItem(item)}
-                        className="rounded-none border border-neutral-850 bg-neutral-950 p-5 hover:border-neutral-500 transition-colors flex flex-col justify-between group cursor-pointer gpu-accelerated-card"
-                        style={{
-                          transform: 'translate3d(0, 0, 0)',
-                          willChange: 'transform',
-                        }}
-                      >
-                        <div>
-                          {imageUrl ? (
-                            <div className="w-full h-48 rounded-none overflow-hidden mb-4 bg-neutral-900 relative">
-                              <img
-                                src={thumbUrl}
-                                alt={name}
-                                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 gpu-accelerated-image"
-                                loading="lazy"
-                                decoding="async"
-                                style={{
-                                  transform: 'translate3d(0, 0, 0)',
-                                  backfaceVisibility: 'hidden',
-                                  WebkitBackfaceVisibility: 'hidden',
-                                }}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                              <div className="absolute top-2.5 left-2.5 w-7 h-7 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Maximize2 className="w-3.5 h-3.5 text-white" />
-                              </div>
-                              <span className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase bg-black/80 backdrop-blur-md text-white border border-white/10 tracking-widest">
-                                {isPet ? (
-                                  <>
-                                    <PawPrint className="w-3 h-3 text-white" />
-                                    <span>Pet</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Heart className="w-3 h-3 text-rose-400" />
-                                    <span>Hobby</span>
-                                  </>
-                                )}
-                              </span>
-                            </div>
-                          ) : null}
-
-                          <div className="flex items-center justify-between gap-3">
-                            <h4 className="text-base sm:text-lg font-bold uppercase tracking-wider text-white font-heading line-clamp-1 flex items-center gap-2 group-hover:text-primary transition-colors">
-                              {isPet ? (
-                                <PawPrint className="w-4 h-4 text-neutral-400 shrink-0" />
-                              ) : (
-                                <Heart className="w-4 h-4 text-neutral-400 shrink-0" />
-                              )}
-                              {name}
-                            </h4>
-
-                            {isPet && (
-                              <span className="text-[10px] font-mono uppercase bg-neutral-900 text-neutral-400 px-2 py-0.5 border border-neutral-800 tracking-wider shrink-0">
-                                {(item.data as Pet).species}
-                                {(item.data as Pet).breed ? ` • ${(item.data as Pet).breed}` : ''}
-                              </span>
-                            )}
-                          </div>
-
-                          {description && (
-                            <p className="text-xs text-neutral-400 mt-2.5 leading-relaxed font-light line-clamp-3">
-                              {description}
-                            </p>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                  {filteredItems.map((item, idx) => (
+                    <HobbyPetCard
+                      key={item.type === 'pet' ? `pet-${item.data.id}` : `hobby-${item.data.id}`}
+                      item={item}
+                      idx={idx}
+                      onSelect={handleSelectHobbyPet}
+                    />
+                  ))}
                 </div>
               )}
             </div>

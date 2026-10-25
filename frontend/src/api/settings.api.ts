@@ -18,6 +18,7 @@ export interface SiteSettings {
   socialLinks?: Record<string, string>;
   facebookUrl?: string;
   instagramUrl?: string;
+  youtubeUrl?: string;
   activeTheme: string;
   musicPlaylist?: Track[];
   heroImages?: HeroImageSlot[];

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, Lock, Menu, X, ArrowUpRight } from 'lucide-react';
 import { useCurrentUser } from '@/api/auth.api';
 import { useSiteSettings } from '@/api/settings.api';
@@ -8,6 +8,7 @@ export const Header: React.FC = () => {
   const { data: user } = useCurrentUser();
   const { data: settings } = useSiteSettings();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
@@ -23,12 +24,30 @@ export const Header: React.FC = () => {
   const facebookUrl = settings?.socialLinks?.facebook || settings?.facebookUrl || '#';
   const instagramUrl = settings?.socialLinks?.instagram || settings?.instagramUrl || '#';
   const linkedinUrl = settings?.socialLinks?.linkedin || '#';
+  const youtubeUrl = settings?.socialLinks?.youtube || '#';
+
+  const isScrolledRef = useRef(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+    let ticking = false;
+
+    const updateScrolled = () => {
+      const scrolled = window.scrollY > 30;
+      if (scrolled !== isScrolledRef.current) {
+        isScrolledRef.current = scrolled;
+        setIsScrolled(scrolled);
+      }
+      ticking = false;
     };
-    handleScroll();
+
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateScrolled);
+      }
+    };
+
+    updateScrolled();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -74,7 +93,7 @@ export const Header: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Portfolio dropdown handlers
+  // Portfolio dropdown hover handlers
   const handlePortfolioMouseEnter = () => {
     if (portfolioTimeoutRef.current) {
       clearTimeout(portfolioTimeoutRef.current);
@@ -86,7 +105,7 @@ export const Header: React.FC = () => {
   const handlePortfolioMouseLeave = () => {
     portfolioTimeoutRef.current = setTimeout(() => {
       setIsPortfolioOpen(false);
-    }, 150);
+    }, 300);
   };
 
   const handlePortfolioToggle = () => {
@@ -94,7 +113,7 @@ export const Header: React.FC = () => {
     setIsPortfolioOpen((prev) => !prev);
   };
 
-  // Contact dropdown handlers
+  // Contact dropdown hover handlers
   const handleContactMouseEnter = () => {
     if (contactTimeoutRef.current) {
       clearTimeout(contactTimeoutRef.current);
@@ -106,7 +125,7 @@ export const Header: React.FC = () => {
   const handleContactMouseLeave = () => {
     contactTimeoutRef.current = setTimeout(() => {
       setIsContactOpen(false);
-    }, 150);
+    }, 300);
   };
 
   const handleContactToggle = () => {
@@ -114,29 +133,55 @@ export const Header: React.FC = () => {
     setIsContactOpen((prev) => !prev);
   };
 
-  const handleItemClick = (href: string) => {
+  // Helper to scroll smoothly to target with fixed header offset
+  const scrollToTarget = (targetId: string) => {
+    const el = document.getElementById(targetId);
+    if (el) {
+      const headerOffset = 85;
+      const top = el.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      return true;
+    }
+    return false;
+  };
+
+  // Navigate to section on homepage
+  const handleNavigateToSection = (targetId: string) => {
     if (portfolioTimeoutRef.current) clearTimeout(portfolioTimeoutRef.current);
     if (contactTimeoutRef.current) clearTimeout(contactTimeoutRef.current);
     setIsPortfolioOpen(false);
     setIsContactOpen(false);
     setIsMobileMenuOpen(false);
 
-    if (href.startsWith('/#')) {
-      const id = href.replace('/#', '');
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        window.location.href = href;
-      }
+    if (location.pathname === '/') {
+      scrollToTarget(targetId);
+    } else {
+      navigate('/', { state: { scrollTo: targetId } });
+    }
+  };
+
+  // Portfolio dropdown item click handler: navigates to section AND opens archive modal
+  const handlePortfolioItemClick = (targetId: string) => {
+    if (portfolioTimeoutRef.current) clearTimeout(portfolioTimeoutRef.current);
+    if (contactTimeoutRef.current) clearTimeout(contactTimeoutRef.current);
+    setIsPortfolioOpen(false);
+    setIsContactOpen(false);
+    setIsMobileMenuOpen(false);
+
+    if (location.pathname === '/') {
+      scrollToTarget(targetId);
+      // Open respective archive modal
+      window.dispatchEvent(new CustomEvent('open-archive', { detail: { type: targetId } }));
+    } else {
+      navigate('/', { state: { scrollTo: targetId, openArchive: true } });
     }
   };
 
   const portfolioItems = [
-    { label: 'Photography', href: '/#photography' },
-    { label: 'Videos', href: '/#videos' },
-    { label: 'Art', href: '/#art' },
-    { label: 'Hobbies & Pets', href: '/#hobbies' },
+    { label: 'Photography', id: 'photography' },
+    { label: 'Videos', id: 'videos' },
+    { label: 'Art', id: 'art' },
+    { label: 'Hobbies & Pets', id: 'hobbies' },
   ];
 
   const isHomePage = location.pathname === '/';
@@ -177,182 +222,207 @@ export const Header: React.FC = () => {
           </Link>
         </div>
 
-        {/* Right Area: Navigation Links */}
-        <div className="flex items-center gap-2 xs:gap-3 sm:gap-8 md:gap-10 shrink-0">
-          {/* Desktop Navigation Links: DASHBOARD -> PORTFOLIO -> CONTACT -> ABOUT SALMAN */}
-          <nav className="hidden md:flex items-center gap-7 lg:gap-10 text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white">
-            {/* 1. Dashboard (with lock icon) */}
+        {/* Right Area: Navigation Links or Close Button on /about */}
+        <div className="flex items-center shrink-0">
+          {isAboutPage ? (
+            /* On 'About Salman' page: Only 'X CLOSE' button remains visible on the top right */
             <Link
-              to={user ? '/admin' : '/admin/login'}
-              className="nav-entrance-1 text-xs sm:text-[13px] tracking-[0.2em] uppercase font-semibold text-white hover:text-white/80 transition-colors flex items-center gap-1.5 py-1"
-              title="Admin Dashboard"
+              to="/"
+              className="p-2 sm:p-2.5 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 text-xs uppercase font-bold tracking-wider"
+              title="Close & Return to Home"
+              aria-label="Close & Return to Home"
             >
-              <Lock className="w-3.5 h-3.5 text-white stroke-[2]" />
-              <span>DASHBOARD</span>
+              <X className="w-4 h-4" />
+              <span className="text-[11px] sm:text-xs tracking-widest">CLOSE</span>
             </Link>
+          ) : (
+            <div className="flex items-center gap-2 xs:gap-3 sm:gap-8 md:gap-10">
+              {/* Desktop Navigation Links: DASHBOARD -> PORTFOLIO -> CONTACT -> ABOUT SALMAN */}
+              <nav className="hidden md:flex items-center gap-7 lg:gap-10 text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white">
+                {/* 1. Dashboard (with lock icon) */}
+                <Link
+                  to={user ? '/admin' : '/admin/login'}
+                  className="nav-entrance-1 text-xs sm:text-[13px] tracking-[0.2em] uppercase font-semibold text-white hover:text-white/80 transition-colors flex items-center gap-1.5 py-1"
+                  title="Admin Dashboard"
+                >
+                  <Lock className="w-3.5 h-3.5 text-white stroke-[2]" />
+                  <span>DASHBOARD</span>
+                </Link>
 
-            {/* 2. Portfolio Dropdown */}
-            <div
-              ref={portfolioDropdownRef}
-              className="nav-entrance-2 relative group"
-              onMouseEnter={handlePortfolioMouseEnter}
-              onMouseLeave={handlePortfolioMouseLeave}
-            >
-              <button
-                type="button"
-                onClick={handlePortfolioToggle}
-                className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
-                aria-haspopup="true"
-                aria-expanded={isPortfolioOpen}
-              >
-                <span>PORTFOLIO</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 stroke-[2] transition-transform duration-200 text-white ${
-                    isPortfolioOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
+                {/* 2. Portfolio Dropdown */}
+                <div
+                  ref={portfolioDropdownRef}
+                  className="nav-entrance-2 relative group z-[60]"
+                  onMouseEnter={handlePortfolioMouseEnter}
+                  onMouseLeave={handlePortfolioMouseLeave}
+                >
+                  <button
+                    type="button"
+                    onClick={handlePortfolioToggle}
+                    className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none pointer-events-auto"
+                    aria-haspopup="true"
+                    aria-expanded={isPortfolioOpen}
+                  >
+                    <span>PORTFOLIO</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 stroke-[2] transition-transform duration-200 text-white pointer-events-none ${
+                        isPortfolioOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
 
-              {/* Dropdown Menu */}
-              {isPortfolioOpen && (
-                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 w-52 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="bg-black/95 backdrop-blur-xl border border-white/10 shadow-2xl py-2">
-                    {portfolioItems.map((item) => (
-                      <a
-                        key={item.label}
-                        href={item.href}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleItemClick(item.href);
-                        }}
-                        className="block px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-                      >
-                        {item.label}
-                      </a>
-                    ))}
-                  </div>
+                  {/* Dropdown Menu */}
+                  {isPortfolioOpen && (
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-56 z-[70] pointer-events-auto select-none animate-in fade-in slide-in-from-top-1 duration-150"
+                      onMouseDown={(e) => e.stopPropagation()}
+                    >
+                      <div className="bg-black/98 backdrop-blur-2xl border border-white/15 shadow-2xl shadow-black/80 py-2 divide-y divide-white/5 pointer-events-auto">
+                        {portfolioItems.map((item) => (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handlePortfolioItemClick(item.id);
+                            }}
+                            className="block w-full text-left px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/85 hover:text-white hover:bg-white/15 active:bg-white/25 transition-all cursor-pointer pointer-events-auto select-none"
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* 3. Contact Dropdown */}
-            <div
-              ref={contactDropdownRef}
-              className="nav-entrance-3 relative group"
-              onMouseEnter={handleContactMouseEnter}
-              onMouseLeave={handleContactMouseLeave}
-            >
-              <button
-                type="button"
-                onClick={handleContactToggle}
-                className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none"
-                aria-haspopup="true"
-                aria-expanded={isContactOpen}
-              >
-                <span>CONTACT</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 stroke-[2] transition-transform duration-200 text-white ${
-                    isContactOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
+                {/* 3. Contact Dropdown */}
+                <div
+                  ref={contactDropdownRef}
+                  className="nav-entrance-3 relative group z-[60]"
+                  onMouseEnter={handleContactMouseEnter}
+                  onMouseLeave={handleContactMouseLeave}
+                >
+                  <button
+                    type="button"
+                    onClick={handleContactToggle}
+                    className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 cursor-pointer focus:outline-none pointer-events-auto"
+                    aria-haspopup="true"
+                    aria-expanded={isContactOpen}
+                  >
+                    <span>CONTACT</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 stroke-[2] transition-transform duration-200 text-white pointer-events-none ${
+                        isContactOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
 
-              {/* Contact Dropdown Menu */}
-              {isContactOpen && (
-                <div className="absolute right-0 sm:left-1/2 sm:-translate-x-1/2 top-full pt-3 w-52 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="bg-black/95 backdrop-blur-xl border border-white/10 shadow-2xl py-2">
-                    {/* Facebook Link */}
-                    <a
-                      href={facebookUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsContactOpen(false)}
-                      className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                  {/* Contact Dropdown Menu */}
+                  {isContactOpen && (
+                    <div
+                      className="absolute right-0 sm:left-1/2 sm:-translate-x-1/2 top-full pt-2 w-52 z-[70] pointer-events-auto animate-in fade-in slide-in-from-top-1 duration-150"
+                      onMouseDown={(e) => e.stopPropagation()}
                     >
-                      <span>Facebook</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
-                    </a>
+                      <div className="bg-black/98 backdrop-blur-2xl border border-white/15 shadow-2xl shadow-black/80 py-2 pointer-events-auto">
+                        {/* Facebook Link */}
+                        <a
+                          href={facebookUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setIsContactOpen(false)}
+                          className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <span>Facebook</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+                        </a>
 
-                    {/* Instagram Link */}
-                    <a
-                      href={instagramUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsContactOpen(false)}
-                      className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <span>Instagram</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
-                    </a>
+                        {/* Instagram Link */}
+                        <a
+                          href={instagramUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setIsContactOpen(false)}
+                          className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <span>Instagram</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+                        </a>
 
-                    {/* LinkedIn Link */}
-                    <a
-                      href={linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsContactOpen(false)}
-                      className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <span>LinkedIn</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
-                    </a>
+                        {/* LinkedIn Link */}
+                        <a
+                          href={linkedinUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setIsContactOpen(false)}
+                          className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <span>LinkedIn</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+                        </a>
 
-                    {/* Divider */}
-                    <div className="my-1 border-t border-white/10" />
+                        {/* YouTube Link */}
+                        <a
+                          href={youtubeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setIsContactOpen(false)}
+                          className="flex items-center justify-between px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <span>YouTube</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+                        </a>
 
-                    {/* Direct / Send a Message */}
-                    <a
-                      href="/#contact"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleItemClick('/#contact');
-                      }}
-                      className="block px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      Send a Message
-                    </a>
-                  </div>
+                        {/* Divider */}
+                        <div className="my-1 border-t border-white/10" />
+
+                        {/* Direct / Send a Message */}
+                        <button
+                          type="button"
+                          onClick={() => handleNavigateToSection('contact')}
+                          className="block w-full text-left px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                        >
+                          Send a Message
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* 4. About Salman (on the far right end, direct Link to /about) */}
-            <div className="nav-entrance-4 pl-4 md:pl-5 border-l border-white/20">
-              <Link
-                to="/about"
-                className={`text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 relative group/nav whitespace-nowrap block ${
-                  location.pathname === '/about' ? 'text-white' : ''
-                }`}
-              >
-                <span>ABOUT SALMAN</span>
-                <span
-                  className={`absolute bottom-0 left-0 h-[2px] bg-white transition-all duration-200 ${
-                    location.pathname === '/about' ? 'w-full' : 'w-0 group-hover/nav:w-full'
-                  }`}
-                />
-              </Link>
-            </div>
-          </nav>
+                {/* 4. About Salman */}
+                <div className="nav-entrance-4 pl-4 md:pl-5 border-l border-white/20">
+                  <Link
+                    to="/about"
+                    className="text-xs sm:text-[13px] font-semibold tracking-[0.2em] uppercase text-white hover:text-white/80 transition-colors duration-200 py-1 relative group/nav whitespace-nowrap block"
+                  >
+                    <span>ABOUT SALMAN</span>
+                    <span className="absolute bottom-0 left-0 h-[2px] bg-white transition-all duration-200 w-0 group-hover/nav:w-full" />
+                  </Link>
+                </div>
+              </nav>
 
-          {/* Mobile Menu Hamburger Button */}
-          <div className="nav-entrance-mobile flex md:hidden items-center gap-1.5 shrink-0">
-            <Link
-              to={user ? '/admin' : '/admin/login'}
-              className="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white active:scale-95 transition-all rounded-lg"
-              title="Admin Dashboard"
-              aria-label="Admin Dashboard"
-            >
-              <Lock className="w-4 h-4 text-white/70" />
-            </Link>
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="w-10 h-10 flex items-center justify-center text-white hover:text-white/80 active:scale-95 transition-all rounded-lg focus:outline-none cursor-pointer"
-              aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+              {/* Mobile Menu Hamburger Button */}
+              <div className="nav-entrance-mobile flex md:hidden items-center gap-1.5 shrink-0">
+                <Link
+                  to={user ? '/admin' : '/admin/login'}
+                  className="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white active:scale-95 transition-all rounded-lg"
+                  title="Admin Dashboard"
+                  aria-label="Admin Dashboard"
+                >
+                  <Lock className="w-4 h-4 text-white/70" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="w-10 h-10 flex items-center justify-center text-white hover:text-white/80 active:scale-95 transition-all rounded-lg focus:outline-none cursor-pointer"
+                  aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+                >
+                  {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -381,19 +451,20 @@ export const Header: React.FC = () => {
             <div className="text-sm font-bold uppercase tracking-[0.22em] text-white mb-2.5">
               PORTFOLIO
             </div>
-            <div className="grid grid-cols-2 gap-2 pl-3 border-l border-white/15">
+            <div className="flex flex-col gap-1 pl-3 border-l border-white/15">
               {portfolioItems.map((item) => (
-                <a
+                <button
                   key={item.label}
-                  href={item.href}
+                  type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleItemClick(item.href);
+                    e.stopPropagation();
+                    handlePortfolioItemClick(item.id);
                   }}
-                  className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1.5 transition-colors"
+                  className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80 hover:text-white text-left py-2 transition-colors cursor-pointer"
                 >
                   {item.label}
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -434,15 +505,22 @@ export const Header: React.FC = () => {
                 <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
               </a>
               <a
-                href="/#contact"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleItemClick('/#contact');
-                }}
-                className="text-xs font-bold uppercase tracking-[0.18em] text-white hover:text-white py-2 pt-2.5 border-t border-white/10 transition-colors"
+                href={youtubeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1.5 transition-colors flex items-center justify-between"
+              >
+                <span>YouTube</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+              </a>
+              <button
+                type="button"
+                onClick={() => handleNavigateToSection('contact')}
+                className="text-xs font-bold uppercase tracking-[0.18em] text-white hover:text-white py-2 pt-2.5 border-t border-white/10 transition-colors text-left cursor-pointer"
               >
                 Send a Message
-              </a>
+              </button>
             </div>
           </div>
 

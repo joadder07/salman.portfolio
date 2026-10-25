@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video as VideoIcon, Play, MessageSquare, X, ExternalLink } from 'lucide-react';
@@ -41,35 +41,139 @@ const FALLBACK_VIDEOS: ViewfinderImage[] = [
   },
 ];
 
+interface VideoCardProps {
+  video: Video;
+  idx: number;
+  onSelect: (video: Video) => void;
+}
+
+const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect }) => {
+  const thumbUrl = useMemo(() => {
+    return video.thumbnailUrl?.trim() || getYouTubeThumbnail(video.videoUrl);
+  }, [video.thumbnailUrl, video.videoUrl]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.35,
+        delay: Math.min(idx * 0.02, 0.16),
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      onClick={() => onSelect(video)}
+      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-colors cursor-pointer flex flex-col gpu-accelerated-card"
+      style={{
+        transform: 'translate3d(0, 0, 0)',
+        willChange: 'transform',
+        contentVisibility: 'auto',
+        containIntrinsicSize: '320px 240px',
+        contain: 'layout paint',
+      }}
+    >
+      {/* Video Thumbnail */}
+      <div className="relative aspect-video overflow-hidden bg-neutral-900 flex items-center justify-center">
+        {Boolean(thumbUrl) ? (
+          <img
+            src={thumbUrl}
+            alt={video.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out gpu-accelerated-image"
+            loading="lazy"
+            decoding="async"
+            style={{
+              transform: 'translate3d(0, 0, 0)',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900 text-neutral-500">
+            <VideoIcon className="w-8 h-8 opacity-40" />
+          </div>
+        )}
+
+        {/* Play Overlay Button */}
+        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+            <Play className="w-5 h-5 fill-current ml-0.5" />
+          </div>
+        </div>
+
+        {/* YouTube Badge in top-right */}
+        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-red-600/90 text-white text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-md">
+          <YouTubeIcon className="w-3 h-3" /> YouTube
+        </div>
+
+        {video.duration && (
+          <span className="absolute bottom-2.5 right-2.5 text-[10px] bg-black/80 px-2 py-0.5 border border-white/10 text-white font-mono">
+            {video.duration}
+          </span>
+        )}
+      </div>
+
+      {/* Video Info */}
+      <div className="p-4 flex flex-col flex-1">
+        <h4 className="text-sm font-bold uppercase text-white line-clamp-1 group-hover:text-primary transition-colors">
+          {video.title}
+        </h4>
+        {video.description && (
+          <p className="text-xs text-neutral-400 mt-1.5 line-clamp-2 leading-relaxed">
+            {video.description}
+          </p>
+        )}
+      </div>
+    </motion.div>
+  );
+});
+
 export const VideosSection: React.FC = () => {
   const { data: videos, isLoading } = videoApi.useGetAll();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   // Map database videos to viewfinder image format using automatic YouTube thumbnails
-  const dbImages: ViewfinderImage[] = (videos || [])
-    .map((v) => {
-      const thumb = v.thumbnailUrl?.trim() || getYouTubeThumbnail(v.videoUrl);
-      return {
-        id: v.id,
-        url: thumb,
-        title: v.title,
-        caption: v.description || v.category,
-      };
-    })
-    .filter((img) => Boolean(img.url));
+  const dbImages: ViewfinderImage[] = useMemo(() => {
+    return (videos || [])
+      .map((v) => {
+        const thumb = v.thumbnailUrl?.trim() || getYouTubeThumbnail(v.videoUrl);
+        return {
+          id: v.id,
+          url: thumb,
+          title: v.title,
+          caption: v.description || v.category,
+        };
+      })
+      .filter((img) => Boolean(img.url));
+  }, [videos]);
 
   // Combine with fallbacks so the auto-play carousel always has active frames
-  const carouselImages =
-    dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_VIDEOS.slice(dbImages.length)];
+  const carouselImages = useMemo(() => {
+    return dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_VIDEOS.slice(dbImages.length)];
+  }, [dbImages]);
+
+  const handleSelectVideo = useCallback((video: Video) => {
+    setSelectedVideo(video);
+  }, []);
 
   // Fetch detailed video with approved comments when modal is opened
   const { data: videoDetail, isLoading: isLoadingDetail } = videoApi.useGetById(
     selectedVideo?.id || ''
   );
 
+  // Listen for global open-archive events (from Portfolio dropdown or external deep links)
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<{ type?: string }>;
+      if (customEvent.detail?.type === 'videos') {
+        setIsGalleryOpen(true);
+      }
+    };
+    window.addEventListener('open-archive', handleOpen);
+    return () => window.removeEventListener('open-archive', handleOpen);
+  }, []);
+
   return (
-    <section id="videos" className="py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
+    <section id="videos" className="scroll-mt-20 sm:scroll-mt-24 py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
       {/* ============================================================== */}
       {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 md:grid-cols-2)           */}
       {/* ============================================================== */}
@@ -180,74 +284,12 @@ export const VideosSection: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {videos.map((video, idx) => (
-                    <motion.div
+                    <VideoCard
                       key={video.id}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.35,
-                        delay: Math.min(idx * 0.02, 0.16),
-                        ease: [0.16, 1, 0.3, 1],
-                      }}
-                      onClick={() => setSelectedVideo(video)}
-                      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-colors cursor-pointer flex flex-col gpu-accelerated-card"
-                      style={{
-                        transform: 'translate3d(0, 0, 0)',
-                        willChange: 'transform',
-                      }}
-                    >
-                      {/* Video Thumbnail */}
-                      <div className="relative aspect-video overflow-hidden bg-neutral-900 flex items-center justify-center">
-                        {Boolean(video.thumbnailUrl || getYouTubeThumbnail(video.videoUrl)) ? (
-                          <img
-                            src={video.thumbnailUrl || getYouTubeThumbnail(video.videoUrl)}
-                            alt={video.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out gpu-accelerated-image"
-                            loading="lazy"
-                            decoding="async"
-                            style={{
-                              transform: 'translate3d(0, 0, 0)',
-                              backfaceVisibility: 'hidden',
-                              WebkitBackfaceVisibility: 'hidden',
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900 text-neutral-500">
-                            <VideoIcon className="w-8 h-8 opacity-40" />
-                          </div>
-                        )}
-
-                        {/* Play Overlay Button */}
-                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                          <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                            <Play className="w-5 h-5 fill-current ml-0.5" />
-                          </div>
-                        </div>
-
-                        {/* YouTube Badge in top-right */}
-                        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-red-600/90 text-white text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-md">
-                          <YouTubeIcon className="w-3 h-3" /> YouTube
-                        </div>
-
-                        {video.duration && (
-                          <span className="absolute bottom-2.5 right-2.5 text-[10px] bg-black/80 px-2 py-0.5 border border-white/10 text-white font-mono">
-                            {video.duration}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Video Info */}
-                      <div className="p-4 flex flex-col flex-1">
-                        <h4 className="text-sm font-bold uppercase text-white line-clamp-1 group-hover:text-primary transition-colors">
-                          {video.title}
-                        </h4>
-                        {video.description && (
-                          <p className="text-xs text-neutral-400 mt-1.5 line-clamp-2 leading-relaxed">
-                            {video.description}
-                          </p>
-                        )}
-                      </div>
-                    </motion.div>
+                      video={video}
+                      idx={idx}
+                      onSelect={handleSelectVideo}
+                    />
                   ))}
                 </div>
               )}

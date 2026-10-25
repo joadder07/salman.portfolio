@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, X, Maximize2, Brush, Layers, Sparkles } from 'lucide-react';
 import { artApi } from '@/api/content.api';
@@ -44,13 +44,101 @@ const FALLBACK_ARTWORKS: ViewfinderImage[] = [
   },
 ];
 
+interface ArtworkCardProps {
+  artwork: Artwork;
+  idx: number;
+  onSelect: (artwork: Artwork) => void;
+}
+
+const ArtworkCard: React.FC<ArtworkCardProps> = React.memo(({ artwork, idx, onSelect }) => {
+  const thumbUrl = useMemo(() => {
+    return getOptimizedImageUrl(artwork.imageUrl, {
+      width: 640,
+      height: 480,
+      crop: 'fill',
+      quality: 'auto',
+      format: 'auto',
+    });
+  }, [artwork.imageUrl]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.35,
+        delay: Math.min(idx * 0.02, 0.16),
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      onClick={() => onSelect(artwork)}
+      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-colors cursor-pointer flex flex-col gpu-accelerated-card"
+      style={{
+        transform: 'translate3d(0, 0, 0)',
+        willChange: 'transform',
+        contentVisibility: 'auto',
+        containIntrinsicSize: '300px 380px',
+        contain: 'layout paint',
+      }}
+    >
+      <div className="relative aspect-[4/3] overflow-hidden bg-neutral-900">
+        <img
+          src={thumbUrl}
+          alt={artwork.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out gpu-accelerated-image"
+          loading="lazy"
+          decoding="async"
+          style={{
+            transform: 'translate3d(0, 0, 0)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        <div className="absolute top-3 right-3 w-8 h-8 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <Maximize2 className="w-3.5 h-3.5 text-white" />
+        </div>
+      </div>
+
+      <div className="p-4 flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] font-mono uppercase text-neutral-400">
+            {artwork.medium}
+          </span>
+          <span className="text-[10px] font-mono text-neutral-400">
+            {artwork.year}
+          </span>
+        </div>
+        <h4 className="text-sm font-bold uppercase text-white truncate">
+          {artwork.title}
+        </h4>
+        {artwork.description && (
+          <p className="mt-1 text-xs text-neutral-400 line-clamp-2 leading-relaxed font-light">
+            {artwork.description}
+          </p>
+        )}
+        {artwork.palette && artwork.palette.length > 0 && (
+          <div className="flex items-center gap-1.5 mt-3">
+            {artwork.palette.map((color, cIdx) => (
+              <span
+                key={cIdx}
+                className="w-2.5 h-2.5 rounded-full ring-1 ring-white/20"
+                style={{ backgroundColor: color }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+});
+
 export const ArtPaintingsSection: React.FC = () => {
   const [selected, setSelected] = useState<Artwork | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const { data: dbArtworks, isLoading } = artApi.useGetAll();
 
-  const artworks: Artwork[] =
-    dbArtworks && dbArtworks.length > 0
+  const artworks: Artwork[] = useMemo(() => {
+    return dbArtworks && dbArtworks.length > 0
       ? dbArtworks.map((item) => ({
           id: item.id,
           title: item.title,
@@ -63,20 +151,28 @@ export const ArtPaintingsSection: React.FC = () => {
             : ['#6366f1', '#a855f7', '#ec4899'],
         }))
       : [];
+  }, [dbArtworks]);
 
   // Map artworks to viewfinder image format
-  const dbImages: ViewfinderImage[] = artworks
-    .filter((a) => a.imageUrl && a.imageUrl.trim() !== '')
-    .map((a) => ({
-      id: a.id,
-      url: a.imageUrl,
-      title: a.title,
-      caption: `${a.medium} • ${a.year}`,
-    }));
+  const dbImages: ViewfinderImage[] = useMemo(() => {
+    return artworks
+      .filter((a) => a.imageUrl && a.imageUrl.trim() !== '')
+      .map((a) => ({
+        id: a.id,
+        url: a.imageUrl,
+        title: a.title,
+        caption: `${a.medium} • ${a.year}`,
+      }));
+  }, [artworks]);
 
   // Combine with fallbacks so the 1-second auto-play carousel always has active frames
-  const carouselImages =
-    dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_ARTWORKS.slice(dbImages.length)];
+  const carouselImages = useMemo(() => {
+    return dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_ARTWORKS.slice(dbImages.length)];
+  }, [dbImages]);
+
+  const handleSelectArtwork = useCallback((artwork: Artwork) => {
+    setSelected(artwork);
+  }, []);
 
   // Close modal or lightbox on Escape key
   useEffect(() => {
@@ -95,8 +191,20 @@ export const ArtPaintingsSection: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isGalleryOpen, selected]);
 
+  // Listen for global open-archive events (from Portfolio dropdown or external deep links)
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<{ type?: string }>;
+      if (customEvent.detail?.type === 'art') {
+        setIsGalleryOpen(true);
+      }
+    };
+    window.addEventListener('open-archive', handleOpen);
+    return () => window.removeEventListener('open-archive', handleOpen);
+  }, []);
+
   return (
-    <section id="art" className="py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
+    <section id="art" className="scroll-mt-20 sm:scroll-mt-24 py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
       {/* ============================================================== */}
       {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 md:grid-cols-2)           */}
       {/* ============================================================== */}
@@ -206,83 +314,14 @@ export const ArtPaintingsSection: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {artworks.map((artwork, idx) => {
-                    const thumbUrl = getOptimizedImageUrl(artwork.imageUrl, {
-                      width: 640,
-                      height: 480,
-                      crop: 'fill',
-                      quality: 'auto',
-                      format: 'auto',
-                    });
-
-                    return (
-                      <motion.div
-                        key={artwork.id}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.35,
-                          delay: Math.min(idx * 0.02, 0.16),
-                          ease: [0.16, 1, 0.3, 1],
-                        }}
-                        onClick={() => setSelected(artwork)}
-                        className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-colors cursor-pointer flex flex-col gpu-accelerated-card"
-                        style={{
-                          transform: 'translate3d(0, 0, 0)',
-                          willChange: 'transform',
-                        }}
-                      >
-                        <div className="relative aspect-[4/3] overflow-hidden bg-neutral-900">
-                          <img
-                            src={thumbUrl}
-                            alt={artwork.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out gpu-accelerated-image"
-                            loading="lazy"
-                            decoding="async"
-                            style={{
-                              transform: 'translate3d(0, 0, 0)',
-                              backfaceVisibility: 'hidden',
-                              WebkitBackfaceVisibility: 'hidden',
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                          <div className="absolute top-3 right-3 w-8 h-8 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Maximize2 className="w-3.5 h-3.5 text-white" />
-                          </div>
-                        </div>
-
-                        <div className="p-4 flex flex-col flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] font-mono uppercase text-neutral-400">
-                              {artwork.medium}
-                            </span>
-                            <span className="text-[10px] font-mono text-neutral-400">
-                              {artwork.year}
-                            </span>
-                          </div>
-                          <h4 className="text-sm font-bold uppercase text-white truncate">
-                            {artwork.title}
-                          </h4>
-                          {artwork.description && (
-                            <p className="mt-1 text-xs text-neutral-400 line-clamp-2 leading-relaxed font-light">
-                              {artwork.description}
-                            </p>
-                          )}
-                          {artwork.palette && artwork.palette.length > 0 && (
-                            <div className="flex items-center gap-1.5 mt-3">
-                              {artwork.palette.map((color, cIdx) => (
-                                <span
-                                  key={cIdx}
-                                  className="w-2.5 h-2.5 rounded-full ring-1 ring-white/20"
-                                  style={{ backgroundColor: color }}
-                                />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                  {artworks.map((artwork, idx) => (
+                    <ArtworkCard
+                      key={artwork.id}
+                      artwork={artwork}
+                      idx={idx}
+                      onSelect={handleSelectArtwork}
+                    />
+                  ))}
                 </div>
               )}
             </div>

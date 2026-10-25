@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { FadeUpHeading } from '@/components/ui';
@@ -25,12 +25,24 @@ const QuoteBlock: React.FC<{ children: React.ReactNode; className?: string }> = 
 
 export const AboutPage: React.FC = () => {
   const { data: settings } = useSiteSettings();
+  const navigate = useNavigate();
   const heroImage = settings?.aboutHeroImage || DEFAULT_ABOUT_STORY_HERO;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     document.title = "Salman's Story | Biography & Life Story";
   }, []);
+
+  // Close / return to Home on Escape key, matching archive modal behavior
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        navigate('/');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
 
   return (
     <div className="w-full min-h-screen bg-dark-grunge bg-[#0a0a0a] text-white">
@@ -59,37 +71,22 @@ export const AboutPage: React.FC = () => {
           {/* Right Shadow & Edge Vignette to make typography pop */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/85 pointer-events-none" />
 
-          {/* Floating Back to Home Shortcut Button - Compact & Neatly Styled */}
-          <div className="absolute top-20 sm:top-24 left-4 xs:left-6 sm:left-12 lg:left-20 z-20">
-            <Link
-              to="/"
-              className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm border border-white/15 text-[10px] sm:text-[11px] font-medium tracking-widest uppercase text-white/70 hover:text-white hover:border-white/40 hover:bg-black/60 transition-all duration-200"
-              title="Return to Home"
-            >
-              <ArrowLeft className="w-3 h-3 transition-transform duration-200 group-hover:-translate-x-0.5" />
-              <span>Back to Home</span>
-            </Link>
-          </div>
-
           {/* Sleek, Noticeably Smaller, Well-Proportioned Title Overlaid on the Right */}
           <div className="absolute inset-0 max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 flex items-center justify-end z-10 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="text-right pointer-events-auto pr-2 sm:pr-6 md:pr-12 space-y-1"
+              className="text-right pointer-events-auto pr-2 sm:pr-6 md:pr-12"
             >
               <h1
-                className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold uppercase tracking-wider text-white leading-none font-heading"
+                className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold uppercase tracking-wider text-white leading-none font-heading drop-shadow-xl"
                 style={{
                   fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
                 }}
               >
                 SALMAN&apos;S STORY
               </h1>
-              <p className="text-[10px] sm:text-xs text-neutral-300/80 font-light tracking-widest uppercase">
-                A Curious Mind &bull; A Creative Soul
-              </p>
             </motion.div>
           </div>
         </div>
@@ -644,13 +641,14 @@ export const AboutPage: React.FC = () => {
             <span>Back to Home</span>
           </Link>
 
-          <a
-            href="/#contact"
+          <Link
+            to="/"
+            state={{ scrollTo: 'contact' }}
             className="text-xs uppercase font-bold tracking-[0.25em] text-neutral-400 hover:text-white transition-colors duration-200 inline-flex items-center gap-2"
           >
             <span>Get in touch</span>
             <span className="text-white">→</span>
-          </a>
+          </Link>
         </motion.footer>
       </div>
     </div>

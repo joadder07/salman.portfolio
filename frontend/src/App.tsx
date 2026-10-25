@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@/themes/ThemeProvider';
@@ -27,22 +27,24 @@ const ScrollRevealManager: React.FC = () => {
 };
 
 /**
- * Forcefully redirects to the main homepage ('/') on initial page load or hard refresh,
- * regardless of which sub-route was initially requested/reloaded.
+ * Resets scroll state on initial page load / refresh so visitors always start from the top.
  */
 const InitialHomeRedirect: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
   useEffect(() => {
-    // Disable automatic browser scroll restoration so reloads initialize reliably at top without jumping
+    // Disable automatic browser scroll restoration so reloads initialize cleanly
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
+    // Always unconditionally scroll to top on initial page mount or reload
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
 
-    if (location.pathname !== '/') {
-      navigate('/', { replace: true });
+    // Clean up any lingering hash from previous sessions so refreshes never anchor-jump
+    if (window.location.hash && (window.location.pathname === '/' || window.location.pathname === '')) {
+      try {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch (e) {
+        // ignore
+      }
     }
   }, []); // Run once on initial application mount
 

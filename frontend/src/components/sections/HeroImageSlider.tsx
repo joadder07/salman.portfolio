@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HeroImageSlot } from '@/api/settings.api';
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 
 interface HeroImageSliderProps {
   images?: HeroImageSlot[];
 }
 
-export const HeroImageSlider: React.FC<HeroImageSliderProps> = ({ images }) => {
+export const HeroImageSlider: React.FC<HeroImageSliderProps> = React.memo(({ images }) => {
   // Only use valid custom uploaded images
   const validImages: HeroImageSlot[] = (images || []).filter(
     (item) => item && item.url && item.url.trim() !== ''
@@ -126,10 +127,17 @@ export const HeroImageSlider: React.FC<HeroImageSliderProps> = ({ images }) => {
                 <div className="relative h-44 sm:h-48 md:h-52 w-full rounded-none overflow-hidden border border-neutral-850 bg-neutral-900 group/card">
                   {/* Slot Image */}
                   <img
-                    src={slot.url}
+                    src={getOptimizedImageUrl(slot.url, {
+                      width: 450,
+                      height: 350,
+                      crop: 'fill',
+                      quality: 'auto',
+                      format: 'auto',
+                    })}
                     alt={slot.title || `Highlight ${(idx % totalSlots) + 1}`}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-all duration-700 ease-out group-hover/card:scale-105"
+                    decoding="async"
+                    className="w-full h-full object-cover transition-all duration-700 ease-out group-hover/card:scale-105 gpu-accelerated-image"
                   />
 
                   {/* Gradient Overlay */}
@@ -185,4 +193,4 @@ export const HeroImageSlider: React.FC<HeroImageSliderProps> = ({ images }) => {
       </div>
     </div>
   );
-};
+});

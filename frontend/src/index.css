@@ -552,6 +552,7 @@ h2:not(.font-brush) {
   -webkit-backface-visibility: hidden;
   content-visibility: auto;
   contain-intrinsic-size: 0 320px;
+  contain: layout paint;
 }
 
 .gpu-accelerated-image {

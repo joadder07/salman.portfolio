@@ -18,7 +18,7 @@ interface CameraViewfinderCarouselProps {
   bracketColorClass?: string; // e.g. 'border-white' or 'border-black'
 }
 
-export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> = ({
+export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> = React.memo(({
   images,
   intervalMs = 3500,
   aspectRatioClass = 'aspect-[4/3] sm:aspect-[16/10]',
@@ -156,4 +156,4 @@ export const CameraViewfinderCarousel: React.FC<CameraViewfinderCarouselProps> =
       </div>
     </div>
   );
-};
+});

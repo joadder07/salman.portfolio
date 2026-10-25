@@ -64,6 +64,7 @@ export const SettingsPage: React.FC = () => {
   const [facebook, setFacebook] = useState('');
   const [linkedin, setLinkedin] = useState('');
   const [instagram, setInstagram] = useState('');
+  const [youtube, setYoutube] = useState('');
 
   // Hero Section Background State
   const [heroBackgroundImage, setHeroBackgroundImage] = useState('');
@@ -148,6 +149,7 @@ export const SettingsPage: React.FC = () => {
         setFacebook(settings.socialLinks.facebook || settings.facebookUrl || '');
         setLinkedin(settings.socialLinks.linkedin || '');
         setInstagram(settings.socialLinks.instagram || settings.instagramUrl || '');
+        setYoutube(settings.socialLinks.youtube || '');
       } else {
         if (settings.facebookUrl) setFacebook(settings.facebookUrl);
         if (settings.instagramUrl) setInstagram(settings.instagramUrl);
@@ -212,7 +214,7 @@ export const SettingsPage: React.FC = () => {
         heroSubtitle,
         aboutText,
         activeTheme,
-        socialLinks: { facebook, linkedin, instagram },
+        socialLinks: { facebook, linkedin, instagram, youtube },
         facebookUrl: facebook,
         instagramUrl: instagram,
         musicPlaylist: playlist,
@@ -1117,16 +1119,13 @@ export const SettingsPage: React.FC = () => {
 
             {/* Sleek, Noticeably Smaller Overlaid Title on the Right */}
             <div className="absolute inset-0 p-6 sm:p-10 flex items-center justify-end z-10 pointer-events-none">
-              <div className="text-right space-y-1">
+              <div className="text-right">
                 <h3
                   className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold uppercase text-white tracking-wider leading-none drop-shadow-xl"
                   style={{ fontFamily: "'Bebas Neue', 'Oswald', sans-serif" }}
                 >
                   SALMAN&apos;S STORY
                 </h3>
-                <p className="text-[9px] sm:text-[10px] text-neutral-300/80 font-light tracking-widest uppercase drop-shadow">
-                  A Curious Mind &bull; A Creative Soul
-                </p>
               </div>
             </div>
           </div>
@@ -1472,7 +1471,7 @@ export const SettingsPage: React.FC = () => {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Social Links
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <Input
                     label="FACEBOOK URL"
                     placeholder="https://facebook.com/username"
@@ -1490,6 +1489,12 @@ export const SettingsPage: React.FC = () => {
                     placeholder="https://instagram.com/username"
                     value={instagram}
                     onChange={(e) => setInstagram(e.target.value)}
+                  />
+                  <Input
+                    label="YOUTUBE URL"
+                    placeholder="https://youtube.com/@channel"
+                    value={youtube}
+                    onChange={(e) => setYoutube(e.target.value)}
                   />
                 </div>
               </div>

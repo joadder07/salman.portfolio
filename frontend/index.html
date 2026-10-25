@@ -4,6 +4,29 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icons.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <script>
+      // Immediately disable browser automatic scroll restoration on load/refresh
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      // On page load/refresh, unconditionally reset scroll position to top (0, 0)
+      window.scrollTo(0, 0);
+
+      // If page is refreshed or visited with a hash anchor on the home page, clear it so the browser does not jump to the section
+      if (window.location.hash && (window.location.pathname === '/' || window.location.pathname === '')) {
+        try {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        } catch (e) {}
+      }
+
+      // Reinforce on pageshow (handles mobile Safari/Chrome back-forward cache and reloads)
+      window.addEventListener('pageshow', function () {
+        if ('scrollRestoration' in history) {
+          history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+      });
+    </script>
     <title>Salman Sajid | Portfolio & Creative Showcase</title>
     <meta name="description" content="Personal portfolio and creative showcase of Salman Sajid - researcher, developer, photographer and artist." />
     <!-- Preload custom fonts & hero wordmark -->

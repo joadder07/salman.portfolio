@@ -50,7 +50,7 @@ interface HeroGalleryCarouselProps {
   customImages?: HeroImageSlot[];
 }
 
-export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ customImages }) => {
+export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = React.memo(({ customImages }) => {
   const { data: settings } = useSiteSettings();
 
   // Combine admin settings images or fallback images
@@ -186,10 +186,17 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ custom
                   className="relative h-40 sm:h-44 md:h-48 w-full rounded-lg overflow-hidden border border-white/10 bg-neutral-900 group/box cursor-pointer shadow-lg hover:border-white/30 transition-all duration-300"
                 >
                   <img
-                    src={item.url}
+                    src={getOptimizedImageUrl(item.url, {
+                      width: 500,
+                      height: 350,
+                      crop: 'fill',
+                      quality: 'auto',
+                      format: 'auto',
+                    })}
                     alt={item.title || `Gallery #${(idx % total) + 1}`}
                     loading="lazy"
-                    className="w-full h-full object-cover group-hover/box:scale-105 transition-all duration-500 ease-out"
+                    decoding="async"
+                    className="w-full h-full object-cover group-hover/box:scale-105 transition-all duration-500 ease-out gpu-accelerated-image"
                   />
 
                   {/* Gradient Overlay */}
@@ -327,18 +334,26 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = ({ custom
 
             {/* Bottom button in modal linking to full photography portfolio section */}
             <div className="mt-8 pt-6 border-t border-white/10 flex justify-center">
-              <a
-                href="/#photography"
-                onClick={() => setIsModalOpen(false)}
-                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-white hover:text-white/80 py-2.5 px-6 rounded-full bg-white text-black hover:bg-white/90 transition-all shadow-lg"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  const el = document.getElementById('photography');
+                  if (el) {
+                    const headerOffset = 85;
+                    const top = el.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                  }
+                }}
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] py-2.5 px-6 rounded-full bg-white text-black hover:bg-white/90 transition-all shadow-lg cursor-pointer"
               >
                 <span>View Full Photography Portfolio</span>
                 <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              </button>
             </div>
           </div>
         </div>
       )}
     </div>
   );
-};
+});

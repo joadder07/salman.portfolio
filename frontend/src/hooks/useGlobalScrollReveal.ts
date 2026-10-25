@@ -57,9 +57,16 @@ export const useGlobalScrollReveal = () => {
 
     const timer = setTimeout(checkImmediateInView, 60);
 
+    let mutationRafId: number | null = null;
+
     // MutationObserver to automatically bind dynamically rendered elements
     const mutationObserver = new MutationObserver(() => {
-      observeElements();
+      if (mutationRafId === null) {
+        mutationRafId = requestAnimationFrame(() => {
+          observeElements();
+          mutationRafId = null;
+        });
+      }
     });
 
     mutationObserver.observe(document.body, {
@@ -69,6 +76,7 @@ export const useGlobalScrollReveal = () => {
 
     return () => {
       clearTimeout(timer);
+      if (mutationRafId !== null) cancelAnimationFrame(mutationRafId);
       observer.disconnect();
       mutationObserver.disconnect();
     };

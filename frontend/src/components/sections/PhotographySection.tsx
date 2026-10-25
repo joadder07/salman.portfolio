@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  ArrowUp,
   SlidersHorizontal,
 } from 'lucide-react';
 import { photographyApi, Photography } from '@/api/content.api';
@@ -170,6 +169,18 @@ export const PhotographySection: React.FC = () => {
 
   const galleryScrollRef = useRef<HTMLDivElement>(null);
 
+  // Listen for global open-archive events (from Portfolio dropdown or external deep links)
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<{ type?: string }>;
+      if (customEvent.detail?.type === 'photography') {
+        setIsGalleryOpen(true);
+      }
+    };
+    window.addEventListener('open-archive', handleOpen);
+    return () => window.removeEventListener('open-archive', handleOpen);
+  }, []);
+
   // Map database photos to viewfinder image format
   const dbImages: ViewfinderImage[] = useMemo(() => {
     return (photos || [])
@@ -264,6 +275,15 @@ export const PhotographySection: React.FC = () => {
     }
   };
 
+  // Listen for global scroll-to-top event so floating widget control syncs with active modal
+  useEffect(() => {
+    const handleScrollTopEvent = () => {
+      scrollToTop();
+    };
+    window.addEventListener('scroll-to-top', handleScrollTopEvent);
+    return () => window.removeEventListener('scroll-to-top', handleScrollTopEvent);
+  }, []);
+
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     scrollToTop();
@@ -299,7 +319,7 @@ export const PhotographySection: React.FC = () => {
   }, [selectedPhoto]);
 
   return (
-    <section id="photography" className="py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
+    <section id="photography" className="scroll-mt-20 sm:scroll-mt-24 py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
       {/* ============================================================== */}
       {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 md:grid-cols-2)           */}
       {/* ============================================================== */}
@@ -502,67 +522,60 @@ export const PhotographySection: React.FC = () => {
 
                   {/* Pagination Bar (when in paginated mode and multiple pages exist) */}
                   {viewMode === 'paginated' && totalPages > 1 && (
-                    <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <div className="text-xs text-neutral-400 font-mono">
-                        Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-                        {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} captures
-                      </div>
+                    <div className="mt-12 pt-6 pb-12 sm:pb-16 border-t border-white/10 flex items-center justify-start gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                        disabled={currentPage <= 1}
+                        className="p-2 border border-white/15 bg-white/5 hover:bg-white text-white hover:text-black disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                        aria-label="Previous page"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
 
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                          disabled={currentPage <= 1}
-                          className="p-2 border border-white/15 bg-white/5 hover:bg-white text-white hover:text-black disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                          aria-label="Previous page"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((p) => {
+                          // Show first, last, and window around current page
+                          return p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1;
+                        })
+                        .map((p, idx, arr) => {
+                          const prev = arr[idx - 1];
+                          const showEllipsis = prev && p - prev > 1;
+                          return (
+                            <React.Fragment key={p}>
+                              {showEllipsis && (
+                                <span className="px-1 text-xs text-neutral-500 font-mono">...</span>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handlePageChange(p)}
+                                className={`min-w-8 h-8 px-2 text-xs font-mono uppercase transition-all cursor-pointer ${
+                                  currentPage === p
+                                    ? 'bg-white text-black font-bold'
+                                    : 'bg-white/5 border border-white/10 text-neutral-300 hover:border-white/30 hover:text-white'
+                                }`}
+                              >
+                                {p}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
 
-                        {Array.from({ length: totalPages }, (_, i) => i + 1)
-                          .filter((p) => {
-                            // Show first, last, and window around current page
-                            return p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1;
-                          })
-                          .map((p, idx, arr) => {
-                            const prev = arr[idx - 1];
-                            const showEllipsis = prev && p - prev > 1;
-                            return (
-                              <React.Fragment key={p}>
-                                {showEllipsis && (
-                                  <span className="px-1 text-xs text-neutral-500 font-mono">...</span>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => handlePageChange(p)}
-                                  className={`min-w-8 h-8 px-2 text-xs font-mono uppercase transition-all cursor-pointer ${
-                                    currentPage === p
-                                      ? 'bg-white text-black font-bold'
-                                      : 'bg-white/5 border border-white/10 text-neutral-300 hover:border-white/30 hover:text-white'
-                                  }`}
-                                >
-                                  {p}
-                                </button>
-                              </React.Fragment>
-                            );
-                          })}
-
-                        <button
-                          type="button"
-                          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                          disabled={currentPage >= totalPages}
-                          className="p-2 border border-white/15 bg-white/5 hover:bg-white text-white hover:text-black disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                          aria-label="Next page"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage >= totalPages}
+                        className="p-2 border border-white/15 bg-white/5 hover:bg-white text-white hover:text-black disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                        aria-label="Next page"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
 
                   {/* Summary / Infinite stream indicator in "all" mode */}
                   {viewMode === 'all' && totalItems > 0 && (
-                    <div className="mt-12 text-center text-xs text-neutral-500 font-mono">
+                    <div className="mt-12 pb-12 sm:pb-16 text-center text-xs text-neutral-500 font-mono">
                       {visibleAllCount < totalItems
                         ? `Displaying ${visibleAllCount} of ${totalItems} captures • Scroll down to stream more...`
                         : `End of archive • All ${totalItems} captures loaded seamlessly at 60 FPS`}
@@ -571,18 +584,6 @@ export const PhotographySection: React.FC = () => {
                 </>
               )}
             </div>
-
-            {/* Floating Back to Top Button */}
-            {showScrollTop && (
-              <button
-                type="button"
-                onClick={scrollToTop}
-                className="absolute bottom-6 right-6 p-3 rounded-none border border-white/20 bg-black/80 hover:bg-white text-white hover:text-black transition-all shadow-xl backdrop-blur-md cursor-pointer z-20"
-                title="Scroll back to top"
-              >
-                <ArrowUp className="w-4 h-4" />
-              </button>
-            )}
           </motion.div>
         )}
       </AnimatePresence>

@@ -56,6 +56,35 @@ export const DEFAULT_PLAYLIST: Track[] = [
   },
 ];
 
+/**
+ * Selects a random track index on initial load or reload.
+ * Uses sessionStorage to prevent consecutively repeating the same song across reloads.
+ */
+const getRandomTrackIndex = (tracks: Track[]): number => {
+  if (!tracks || tracks.length <= 1) return 0;
+
+  try {
+    const lastTitle = sessionStorage.getItem('salman_last_track_title');
+    const available = tracks
+      .map((t, idx) => ({ title: t.title, idx }))
+      .filter((item) => item.title !== lastTitle);
+
+    if (available.length > 0) {
+      const chosen = available[Math.floor(Math.random() * available.length)];
+      sessionStorage.setItem('salman_last_track_title', chosen.title);
+      return chosen.idx;
+    }
+  } catch (_) {
+    // Fallback if sessionStorage is unavailable in current context
+  }
+
+  const randomIdx = Math.floor(Math.random() * tracks.length);
+  try {
+    sessionStorage.setItem('salman_last_track_title', tracks[randomIdx].title);
+  } catch (_) {}
+  return randomIdx;
+};
+
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
 
 export const MusicProvider: React.FC<{
@@ -64,10 +93,13 @@ export const MusicProvider: React.FC<{
 }> = ({ children, initialPlaylist }) => {
   const { data: settings } = useSiteSettings();
 
-  const [playlist, setPlaylist] = useState<Track[]>(
-    initialPlaylist && initialPlaylist.length > 0 ? initialPlaylist : DEFAULT_PLAYLIST
+  const initialTracks =
+    initialPlaylist && initialPlaylist.length > 0 ? initialPlaylist : DEFAULT_PLAYLIST;
+
+  const [playlist, setPlaylist] = useState<Track[]>(initialTracks);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(() =>
+    getRandomTrackIndex(initialTracks)
   );
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
@@ -75,19 +107,32 @@ export const MusicProvider: React.FC<{
   const [duration, setDuration] = useState(0);
 
   const soundRef = useRef<Howl | null>(null);
+  const userInteractedRef = useRef<boolean>(false);
+  const hasInitializedSettingsTrack = useRef<boolean>(false);
 
   // Synchronize playlist with site settings fetched from the database/Admin panel
   useEffect(() => {
     if (settings?.musicPlaylist && Array.isArray(settings.musicPlaylist) && settings.musicPlaylist.length > 0) {
-      setPlaylist(settings.musicPlaylist);
-      setCurrentTrackIndex((prev) => {
-        return prev < settings.musicPlaylist!.length ? prev : 0;
-      });
+      const newPlaylist = settings.musicPlaylist;
+      setPlaylist(newPlaylist);
+
+      // On initial settings hydration (if user hasn't manually selected/played a song), randomize from database tracks
+      if (!hasInitializedSettingsTrack.current && !userInteractedRef.current && !isPlaying) {
+        hasInitializedSettingsTrack.current = true;
+        setCurrentTrackIndex(getRandomTrackIndex(newPlaylist));
+      } else {
+        setCurrentTrackIndex((prev) => (prev < newPlaylist.length ? prev : 0));
+      }
     } else if (settings && (!settings.musicPlaylist || settings.musicPlaylist.length === 0)) {
       setPlaylist(DEFAULT_PLAYLIST);
-      setCurrentTrackIndex(0);
+      if (!hasInitializedSettingsTrack.current && !userInteractedRef.current && !isPlaying) {
+        hasInitializedSettingsTrack.current = true;
+        setCurrentTrackIndex(getRandomTrackIndex(DEFAULT_PLAYLIST));
+      } else {
+        setCurrentTrackIndex((prev) => (prev < DEFAULT_PLAYLIST.length ? prev : 0));
+      }
     }
-  }, [settings?.musicPlaylist]);
+  }, [settings?.musicPlaylist, isPlaying]);
 
   const currentTrack =
     playlist.length > 0 && currentTrackIndex < playlist.length
@@ -159,7 +204,17 @@ export const MusicProvider: React.FC<{
     return () => clearInterval(interval);
   }, [isPlaying]);
 
+  // Track changes update last played track in sessionStorage
+  useEffect(() => {
+    if (currentTrack?.title) {
+      try {
+        sessionStorage.setItem('salman_last_track_title', currentTrack.title);
+      } catch (_) {}
+    }
+  }, [currentTrack?.title]);
+
   const togglePlay = () => {
+    userInteractedRef.current = true;
     if (!soundRef.current || !currentTrack) return;
     if (isPlaying) {
       soundRef.current.pause();
@@ -169,16 +224,19 @@ export const MusicProvider: React.FC<{
   };
 
   const nextTrack = () => {
+    userInteractedRef.current = true;
     if (playlist.length === 0) return;
     setCurrentTrackIndex((prev) => (prev + 1) % playlist.length);
   };
 
   const prevTrack = () => {
+    userInteractedRef.current = true;
     if (playlist.length === 0) return;
     setCurrentTrackIndex((prev) => (prev - 1 + playlist.length) % playlist.length);
   };
 
   const playTrackIndex = (index: number) => {
+    userInteractedRef.current = true;
     if (index >= 0 && index < playlist.length) {
       setCurrentTrackIndex(index);
       setIsPlaying(true);

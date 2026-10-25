@@ -8,7 +8,6 @@ import {
   Volume2,
   VolumeX,
   Music,
-  ChevronUp,
   ChevronDown,
   ListMusic,
 } from 'lucide-react';
@@ -133,9 +132,9 @@ export const MusicPlayer: React.FC = () => {
             <Music className="w-4 h-4 sm:w-5 sm:h-5 text-white stroke-[2.2] shrink-0" />
           </div>
 
-          {/* Compact View Details / Expand Trigger */}
+          {/* Compact View Details & Controls */}
           {!isExpanded ? (
-            <div className="flex items-center gap-2 pr-1">
+            <div className="flex items-center gap-2 pr-0.5">
               <button
                 onClick={togglePlay}
                 className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer shrink-0"
@@ -143,14 +142,6 @@ export const MusicPlayer: React.FC = () => {
                 aria-label={isPlaying ? 'Pause' : 'Play'}
               >
                 {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 ml-0.5 fill-current" />}
-              </button>
-              <button
-                onClick={() => setIsExpanded(true)}
-                className="text-white/80 hover:text-white p-1 hover:scale-110 active:scale-95 transition-all cursor-pointer"
-                title="Expand Music Player"
-                aria-label="Expand Music Player"
-              >
-                <ChevronUp className="w-4 h-4" />
               </button>
             </div>
           ) : (
@@ -167,7 +158,7 @@ export const MusicPlayer: React.FC = () => {
                     </p>
                   ) : null}
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     onClick={() => setShowPlaylist(!showPlaylist)}
                     className="p-1 rounded-lg text-white/70 hover:text-white transition-colors cursor-pointer"

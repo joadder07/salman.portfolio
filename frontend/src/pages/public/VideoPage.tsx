@@ -43,7 +43,7 @@ export const VideoPage: React.FC = () => {
         <p className="text-sm text-muted-foreground mt-2 max-w-md">
           The requested video demonstration does not exist or may have been removed.
         </p>
-        <Button onClick={() => navigate('/#videos')} className="mt-6 gap-2">
+        <Button onClick={() => navigate('/', { state: { scrollTo: 'videos' } })} className="mt-6 gap-2">
           <ArrowLeft className="w-4 h-4" /> Return to Videos
         </Button>
       </div>
@@ -55,7 +55,8 @@ export const VideoPage: React.FC = () => {
       {/* Navigation Top Bar */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <Link
-          to="/#videos"
+          to="/"
+          state={{ scrollTo: 'videos' }}
           className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors glass px-4 py-2 rounded-xl"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Videos

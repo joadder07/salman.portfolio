@@ -124,7 +124,7 @@ export const getOptimizedImageUrl = buildCloudinaryUrl;
  * responsive scaling, and smart cropping — mirroring next-cloudinary
  * while running natively in Vite / React 19 without Next.js dependencies.
  */
-export const CldImage: React.FC<CldImageProps> = ({
+export const CldImage: React.FC<CldImageProps> = React.memo(({
   src,
   width,
   height,
@@ -136,6 +136,7 @@ export const CldImage: React.FC<CldImageProps> = ({
   alt = '',
   className = '',
   loading = 'lazy',
+  decoding = 'async',
   ...rest
 }) => {
   const optimizedUrl = buildCloudinaryUrl(src, {
@@ -155,10 +156,11 @@ export const CldImage: React.FC<CldImageProps> = ({
       height={height}
       alt={alt}
       loading={loading}
+      decoding={decoding}
       className={className}
       {...rest}
     />
   );
-};
+});
 
 export default CldImage;
