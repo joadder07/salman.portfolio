@@ -1,15 +1,10 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSiteSettings } from '@/api/settings.api';
 
 export const Footer: React.FC = () => {
   const { data: settings } = useSiteSettings();
-  const location = useLocation();
   const currentYear = new Date().getFullYear();
-
-  // White theme styling applies exclusively to the /about page footer
-  const isAboutPage = location.pathname === '/about';
 
   const links = {
     instagram: settings?.socialLinks?.instagram || settings?.instagramUrl || 'https://instagram.com',
@@ -20,11 +15,7 @@ export const Footer: React.FC = () => {
 
   return (
     <footer
-      className={`w-full select-none transition-colors duration-300 ${
-        isAboutPage
-          ? 'bg-white text-neutral-900 mt-16 sm:mt-24 pt-14 sm:pt-16 pb-16 sm:pb-20 border-t border-neutral-200 shadow-sm'
-          : 'bg-transparent mt-6 sm:mt-8 pb-16 sm:pb-20'
-      }`}
+      className="w-full select-none transition-colors duration-300 bg-transparent mt-16 sm:mt-24 pt-14 sm:pt-16 pb-16 sm:pb-20 border-t border-white/10"
     >
       {/* Main Centered Stack with Scroll Reveal */}
       <motion.div
@@ -35,50 +26,26 @@ export const Footer: React.FC = () => {
         className="scroll-reveal max-w-5xl mx-auto px-4 flex flex-col items-center justify-center text-center"
       >
         {/* Handwritten Signature: Ultra-compact, Dainty Scale on Mobile with Layout and Spacing Untouched */}
-        <h2
-          className={`font-brush tracking-normal uppercase select-none mb-6 sm:mb-8 flex flex-row items-center justify-center gap-1 sm:gap-2 whitespace-nowrap text-center max-w-full px-2 ${
-            isAboutPage ? 'text-neutral-950' : 'text-white'
-          }`}
-        >
-          <span
-            className={`text-[7.5px] sm:text-sm md:text-base font-brush mt-0.5 ${
-              isAboutPage ? 'text-neutral-700 opacity-90' : 'text-white/80'
-            }`}
-          >
+        <h2 className="font-brush tracking-normal uppercase select-none mb-6 sm:mb-8 flex flex-row items-center justify-center gap-1 sm:gap-2 whitespace-nowrap text-center max-w-full px-2 text-white">
+          <span className="text-[7.5px] sm:text-sm md:text-base font-brush mt-0.5 text-white/90">
             A
           </span>
-          <span
-            className={`text-[9.5px] sm:text-2xl md:text-3xl font-brush tracking-wide ${
-              isAboutPage ? 'text-neutral-950' : 'text-white'
-            }`}
-          >
+          <span className="text-[9.5px] sm:text-2xl md:text-3xl font-brush tracking-wide text-white">
             SALMAN SAJID JOADDER
           </span>
-          <span
-            className={`text-[7.5px] sm:text-sm md:text-base font-brush mt-0.5 ${
-              isAboutPage ? 'text-neutral-700 opacity-90' : 'text-white/80'
-            }`}
-          >
+          <span className="text-[7.5px] sm:text-sm md:text-base font-brush mt-0.5 text-white/90">
             VISION
           </span>
         </h2>
 
         {/* Social Media Icons (Scaled down proportionally on mobile, natural spacing and margins kept) */}
-        <div
-          className={`flex items-center justify-center gap-6 mb-8 sm:mb-10 ${
-            isAboutPage ? 'text-neutral-700' : 'text-white/80'
-          }`}
-        >
+        <div className="flex items-center justify-center gap-6 mb-8 sm:mb-10 text-white/90">
           {links.instagram && (
             <a
               href={links.instagram}
               target="_blank"
               rel="noreferrer"
-              className={`hover:scale-115 transition-all duration-200 ${
-                isAboutPage
-                  ? 'text-neutral-700 hover:text-black'
-                  : 'text-white/80 hover:text-white'
-              }`}
+              className="hover:scale-115 transition-all duration-200 text-neutral-200 hover:text-white"
               title="Instagram"
               aria-label="Instagram"
             >
@@ -92,11 +59,7 @@ export const Footer: React.FC = () => {
               href={links.youtube}
               target="_blank"
               rel="noreferrer"
-              className={`hover:scale-115 transition-all duration-200 ${
-                isAboutPage
-                  ? 'text-neutral-700 hover:text-black'
-                  : 'text-white/80 hover:text-white'
-              }`}
+              className="hover:scale-115 transition-all duration-200 text-neutral-200 hover:text-white"
               title="YouTube"
               aria-label="YouTube"
             >
@@ -110,11 +73,7 @@ export const Footer: React.FC = () => {
               href={links.facebook}
               target="_blank"
               rel="noreferrer"
-              className={`hover:scale-115 transition-all duration-200 ${
-                isAboutPage
-                  ? 'text-neutral-700 hover:text-black'
-                  : 'text-white/80 hover:text-white'
-              }`}
+              className="hover:scale-115 transition-all duration-200 text-neutral-200 hover:text-white"
               title="Facebook"
               aria-label="Facebook"
             >
@@ -128,11 +87,7 @@ export const Footer: React.FC = () => {
               href={links.linkedin}
               target="_blank"
               rel="noreferrer"
-              className={`hover:scale-115 transition-all duration-200 ${
-                isAboutPage
-                  ? 'text-neutral-700 hover:text-black'
-                  : 'text-white/80 hover:text-white'
-              }`}
+              className="hover:scale-115 transition-all duration-200 text-neutral-200 hover:text-white"
               title="LinkedIn"
               aria-label="LinkedIn"
             >
@@ -144,11 +99,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Main Copyright Line (Scaled Down on Mobile, Natural Breathing Room Maintained) */}
-        <p
-          className={`text-[10px] xs:text-[11px] sm:text-xs md:text-sm font-light tracking-wide ${
-            isAboutPage ? 'text-neutral-500' : 'text-white/50'
-          }`}
-        >
+        <p className="text-[10px] xs:text-[11px] sm:text-xs md:text-sm font-normal tracking-wide text-neutral-300">
           &copy; {currentYear} {settings?.adminName || 'Salman Sajid Joadder'}. All rights reserved.
         </p>
       </motion.div>

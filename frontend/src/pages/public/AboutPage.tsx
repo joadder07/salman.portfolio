@@ -9,6 +9,20 @@ import { useSiteSettings } from '@/api/settings.api';
 export const DEFAULT_ABOUT_STORY_HERO =
   'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=2000&auto=format&fit=crop';
 
+// Reusable Quote/Callout Block with elegant dark card and left border accent styling
+const QuoteBlock: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = '',
+}) => (
+  <div
+    className={`my-7 sm:my-9 p-5 sm:p-6 md:p-7 bg-[#121212]/90 bg-dark-grunge border border-white/10 border-l-2 sm:border-l-[3px] border-l-white rounded-r-xl shadow-lg shadow-black/40 ${className}`}
+  >
+    <p className="text-base sm:text-lg md:text-xl text-neutral-100 font-light italic leading-relaxed">
+      {children}
+    </p>
+  </div>
+);
+
 export const AboutPage: React.FC = () => {
   const { data: settings } = useSiteSettings();
   const heroImage = settings?.aboutHeroImage || DEFAULT_ABOUT_STORY_HERO;
@@ -19,7 +33,7 @@ export const AboutPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-[#0a0a0a] text-white">
+    <div className="w-full min-h-screen bg-dark-grunge bg-[#0a0a0a] text-white">
       {/* ============================================================== */}
       {/* TOP HERO BANNER: Cinematic Moody Portrait in Rory Kramer Style */}
       {/* ============================================================== */}
@@ -39,20 +53,20 @@ export const AboutPage: React.FC = () => {
             className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700"
           />
 
-          {/* Top Vignette Overlay for Seamless Sticky Header Blend */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/25 to-transparent pointer-events-none" />
+          {/* Top Vignette Overlay for Natural Image Display & Flawless Navbar Contrast */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/15 to-transparent pointer-events-none" />
 
           {/* Right Shadow & Edge Vignette to make typography pop */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/85 pointer-events-none" />
 
-          {/* Floating Back to Home Shortcut Button */}
+          {/* Floating Back to Home Shortcut Button - Compact & Neatly Styled */}
           <div className="absolute top-20 sm:top-24 left-4 xs:left-6 sm:left-12 lg:left-20 z-20">
             <Link
               to="/"
-              className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold uppercase tracking-[0.22em] text-neutral-300 hover:text-white hover:border-white transition-all duration-200"
+              className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm border border-white/15 text-[10px] sm:text-[11px] font-medium tracking-widest uppercase text-white/70 hover:text-white hover:border-white/40 hover:bg-black/60 transition-all duration-200"
               title="Return to Home"
             >
-              <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-x-1" />
+              <ArrowLeft className="w-3 h-3 transition-transform duration-200 group-hover:-translate-x-0.5" />
               <span>Back to Home</span>
             </Link>
           </div>
@@ -66,14 +80,14 @@ export const AboutPage: React.FC = () => {
               className="text-right pointer-events-auto pr-2 sm:pr-6 md:pr-12 space-y-1"
             >
               <h1
-                className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold uppercase tracking-wider text-white leading-none font-heading drop-shadow-2xl"
+                className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold uppercase tracking-wider text-white leading-none font-heading"
                 style={{
                   fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
                 }}
               >
                 SALMAN&apos;S STORY
               </h1>
-              <p className="text-[10px] sm:text-xs text-neutral-300/80 font-light tracking-widest uppercase drop-shadow">
+              <p className="text-[10px] sm:text-xs text-neutral-300/80 font-light tracking-widest uppercase">
                 A Curious Mind &bull; A Creative Soul
               </p>
             </motion.div>
@@ -86,11 +100,21 @@ export const AboutPage: React.FC = () => {
       {/* ============================================================== */}
       <div className="w-full py-12 sm:py-20 px-4 xs:px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto">
         {/* Intro Lead Block & Opening Philosophy */}
-        <FadeUpHeading className="mb-16 sm:mb-24">
-          <div className="space-y-6 sm:space-y-7 text-base sm:text-lg md:text-xl text-neutral-200 font-light leading-relaxed">
-            <p className="text-xl xs:text-2xl sm:text-3xl font-medium text-white italic leading-snug border-l-2 border-white/40 pl-4 sm:pl-6 my-4 sm:my-6">
+        <FadeUpHeading className="mb-20 sm:mb-28 space-y-6">
+          <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-[0.25em] text-neutral-400">
+            <span>00</span>
+            <span className="w-8 h-px bg-white/20" />
+            <span>PROLOGUE</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wider text-white font-heading">
+            A CURIOUS MIND &bull; A CREATIVE SOUL
+          </h2>
+
+          <div className="space-y-5 sm:space-y-6 text-base sm:text-lg md:text-xl text-neutral-300 font-light leading-relaxed">
+            <QuoteBlock>
               What happens when a curious mind refuses to stay in one box?
-            </p>
+            </QuoteBlock>
 
             <p>
               You might find me exploring a quiet village with my camera, researching a healthcare problem, editing a documentary, painting something in my free time, listening to music late at night, or taking care of plants on my rooftop. Sometimes, you&apos;ll find me working on a new idea; other times, I&apos;ll simply be enjoying the little things that make life beautiful.
@@ -149,9 +173,9 @@ export const AboutPage: React.FC = () => {
                 Looking back, I realise that many of the experiences that shaped me weren&apos;t necessarily part of a grand plan. Some came from curiosity, some from unexpected opportunities, and others simply from wanting to try something different.
               </p>
 
-              <p className="text-white font-normal italic border-l-2 border-white/20 pl-4 py-1">
-                I&apos;ve learned that sometimes, the most interesting journeys begin when you dare to step outside your familiar world.
-              </p>
+            <QuoteBlock>
+              I&apos;ve learned that sometimes, the most interesting journeys begin when you dare to step outside your familiar world.
+            </QuoteBlock>
             </div>
           </FadeUpHeading>
 
@@ -188,9 +212,9 @@ export const AboutPage: React.FC = () => {
                 For me, research is not simply about publishing papers or finding answers. It&apos;s about asking better questions, remaining open to new possibilities, and contributing something useful to the world.
               </p>
 
-              <p className="text-white font-normal italic border-l-2 border-white/20 pl-4 py-1">
-                I&apos;m still learning, and I have a long way to go. But I hope to build a future where my curiosity translates into meaningful work that can make a difference in people&apos;s lives.
-              </p>
+            <QuoteBlock>
+              I&apos;m still learning, and I have a long way to go. But I hope to build a future where my curiosity translates into meaningful work that can make a difference in people&apos;s lives.
+            </QuoteBlock>
             </div>
           </FadeUpHeading>
 
@@ -235,9 +259,9 @@ export const AboutPage: React.FC = () => {
                 I want to create visual work that makes people pause for a moment, feel something, discover a new perspective, or see something familiar in a different way.
               </p>
 
-              <p className="text-white font-normal italic border-l-2 border-white/20 pl-4 py-1">
-                I may not have every story figured out yet, but I know I want to keep telling them.
-              </p>
+            <QuoteBlock>
+              I may not have every story figured out yet, but I know I want to keep telling them.
+            </QuoteBlock>
             </div>
           </FadeUpHeading>
 
@@ -286,9 +310,9 @@ export const AboutPage: React.FC = () => {
                 More importantly, it reminded me that even something as simple as music can create a sense of connection among thousands of strangers.
               </p>
 
-              <p className="text-white font-normal italic border-l-2 border-white/20 pl-4 py-1">
-                And perhaps that&apos;s one of the reasons I continue to love music: it gives people a way to feel understood, even without knowing one another.
-              </p>
+            <QuoteBlock>
+              And perhaps that&apos;s one of the reasons I continue to love music: it gives people a way to feel understood, even without knowing one another.
+            </QuoteBlock>
             </div>
           </FadeUpHeading>
 
@@ -341,9 +365,9 @@ export const AboutPage: React.FC = () => {
                 Some things teach me. Some challenge me. Some help me express myself. And some simply make me happy.
               </p>
 
-              <p className="text-white font-normal italic border-l-2 border-white/20 pl-4 py-1">
-                I want to leave room in my life for all of them.
-              </p>
+            <QuoteBlock>
+              I want to leave room in my life for all of them.
+            </QuoteBlock>
             </div>
           </FadeUpHeading>
 
@@ -396,9 +420,9 @@ export const AboutPage: React.FC = () => {
                 To me, success isn&apos;t just about reaching a destination. It&apos;s also about remembering the people who supported you along the way and making sure they can share in the happiness you&apos;ve worked so hard to achieve.
               </p>
 
-              <p className="text-white font-normal italic border-l-2 border-white/20 pl-4 py-1">
-                Because life becomes more meaningful when the people you love are part of the journey.
-              </p>
+            <QuoteBlock>
+              Because life becomes more meaningful when the people you love are part of the journey.
+            </QuoteBlock>
             </div>
           </FadeUpHeading>
 
@@ -447,9 +471,9 @@ export const AboutPage: React.FC = () => {
                 Perhaps I&apos;ll find that kind of connection someday. Perhaps life has its own timing.
               </p>
 
-              <p className="text-white font-normal italic border-l-2 border-white/20 pl-4 py-1">
-                For now, I&apos;m simply living my life, keeping an open mind, and letting the story unfold.
-              </p>
+            <QuoteBlock>
+              For now, I&apos;m simply living my life, keeping an open mind, and letting the story unfold.
+            </QuoteBlock>
             </div>
           </FadeUpHeading>
 
@@ -510,9 +534,9 @@ export const AboutPage: React.FC = () => {
                 There will be unexpected turns, difficult days, missed opportunities, and moments when I&apos;ll need to start again. But I hope to approach them with curiosity, patience, and the willingness to keep moving forward.
               </p>
 
-              <p className="text-white font-normal italic border-l-2 border-white/20 pl-4 py-1">
-                I want a life filled with meaningful work, creative freedom, family, adventure, and experiences that remind me how much there is to appreciate.
-              </p>
+            <QuoteBlock>
+              I want a life filled with meaningful work, creative freedom, family, adventure, and experiences that remind me how much there is to appreciate.
+            </QuoteBlock>
             </div>
           </FadeUpHeading>
 
@@ -529,9 +553,9 @@ export const AboutPage: React.FC = () => {
             </h2>
 
             <div className="space-y-5 sm:space-y-6 text-base sm:text-lg md:text-xl text-neutral-300 font-light leading-relaxed">
-              <p className="text-white font-normal italic">
-                I believe we don&apos;t have to be just one thing.
-              </p>
+            <QuoteBlock>
+              I believe we don&apos;t have to be just one thing.
+            </QuoteBlock>
 
               <p>
                 I can be a Public Health student who loves photography, a researcher who enjoys filmmaking, a creative person who finds peace in gardening, and an explorer who dreams of seeing the world with his family.
@@ -594,7 +618,7 @@ export const AboutPage: React.FC = () => {
               </p>
 
               <div className="pt-6 sm:pt-8">
-                <div className="p-6 sm:p-8 bg-neutral-900/60 border border-white/10 rounded-sm">
+                <div className="p-6 sm:p-8 bg-[#121212]/90 bg-dark-grunge border border-white/10 border-l-2 sm:border-l-[3px] border-l-white rounded-r-xl shadow-lg shadow-black/40">
                   <p className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-wider text-white font-heading leading-tight">
                     And this is only the beginning of mine
                   </p>

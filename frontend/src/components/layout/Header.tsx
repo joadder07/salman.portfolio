@@ -139,19 +139,26 @@ export const Header: React.FC = () => {
     { label: 'Hobbies & Pets', href: '/#hobbies' },
   ];
 
+  const isHomePage = location.pathname === '/';
+  const isAboutPage = location.pathname === '/about';
+  const hasTransparentHeroAtTop = isHomePage || isAboutPage;
+
+  // Solid dark transparent background on scroll, or on pages without a hero banner at top
+  const isScrolledDark = isScrolled || !hasTransparentHeroAtTop;
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out py-3.5 xs:py-4 sm:py-7 border-none ${
-        isScrolled || location.pathname !== '/'
-          ? 'bg-black/40 backdrop-blur-md'
+        isScrolledDark
+          ? 'bg-black/65 backdrop-blur-md shadow-lg shadow-black/25'
           : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-8 lg:px-12 flex items-center justify-between gap-2 sm:gap-4">
-        {/* Left: Signature Brand/Logo in Hero Brush Font - Hidden at top of home, appears on scroll/subpages */}
+        {/* Left: Signature Brand/Logo in Hero Brush Font - Hidden at top of home, always visible on /about and subpages */}
         <div
           className={`flex items-center transition-all duration-300 ease-in-out min-w-0 flex-1 overflow-visible py-1 ${
-            isScrolled || location.pathname !== '/'
+            isScrolled || !isHomePage
               ? 'opacity-100 translate-y-0 pointer-events-auto'
               : 'opacity-0 -translate-y-2 pointer-events-none'
           }`}
