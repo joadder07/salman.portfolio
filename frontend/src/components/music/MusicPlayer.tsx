@@ -50,7 +50,7 @@ export const MusicPlayer: React.FC = () => {
   const progressPercent = duration > 0 ? (seek / duration) * 100 : 0;
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end pointer-events-none music-bar-entrance">
+    <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-[110] flex flex-col items-end pointer-events-none music-bar-entrance">
       {/* Playlist Drawer */}
       <AnimatePresence>
         {showPlaylist && isExpanded && (

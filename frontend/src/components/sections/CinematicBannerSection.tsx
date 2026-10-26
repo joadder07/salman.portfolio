@@ -76,7 +76,7 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
           <h3
             className="text-sm xs:text-base sm:text-xl md:text-2xl lg:text-[28px] font-black uppercase tracking-wide text-white leading-tight sm:leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-3xl"
             style={{
-              fontFamily: "'Oswald', 'Bebas Neue', sans-serif",
+              fontFamily: "'Anton', 'Oswald', 'Bebas Neue', sans-serif",
             }}
           >
             EACH SHOT IS A REFLECTION OF MY TRUE SELF.
@@ -86,7 +86,7 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
           <div
             className="mt-1.5 sm:mt-2.5 text-[11px] xs:text-xs sm:text-base md:text-lg lg:text-xl font-normal sm:font-medium uppercase tracking-wide text-white/90 leading-snug sm:leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] max-w-2xl"
             style={{
-              fontFamily: "'Oswald', 'Bebas Neue', sans-serif",
+              fontFamily: "'Anton', 'Oswald', 'Bebas Neue', sans-serif",
             }}
           >
             <span className="block whitespace-normal sm:whitespace-nowrap break-words">

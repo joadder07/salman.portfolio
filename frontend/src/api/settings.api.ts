@@ -8,6 +8,13 @@ export interface HeroImageSlot {
   title?: string;
 }
 
+export interface SectionCoversConfig {
+  photography?: string[];
+  videos?: string[];
+  art?: string[];
+  hobbies?: string[];
+}
+
 export interface SiteSettings {
   id: string;
   siteName: string;
@@ -27,6 +34,7 @@ export interface SiteSettings {
   bannerQuote?: string;
   bannerQuoteSubtext?: string;
   aboutHeroImage?: string;
+  sectionCovers?: SectionCoversConfig;
   adminProfilePic?: string;
   adminName?: string;
   adminBio?: string;

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
 import { FadeUpHeading } from '@/components/ui';
 import { useSiteSettings } from '@/api/settings.api';
 
@@ -45,14 +44,14 @@ export const AboutPage: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="w-full min-h-screen bg-dark-grunge bg-[#0a0a0a] text-white">
+    <div className="w-full min-h-screen bg-dark-grunge text-white">
       {/* ============================================================== */}
       {/* TOP HERO BANNER: Cinematic Moody Portrait in Rory Kramer Style */}
       {/* ============================================================== */}
-      <section className="relative w-full overflow-hidden select-none bg-[#0a0a0a]">
+      <section className="relative w-full overflow-hidden select-none bg-dark-grunge">
         {/* Curved / Arc-Shaped Hero Image Container */}
         <div
-          className="relative w-full h-[320px] xs:h-[360px] sm:h-[420px] md:h-[460px] lg:h-[500px] overflow-hidden bg-black"
+          className="relative w-full h-[320px] xs:h-[360px] sm:h-[420px] md:h-[460px] lg:h-[500px] overflow-hidden bg-dark-grunge"
           style={{
             clipPath: 'ellipse(80% 100% at 50% 0%)',
             WebkitClipPath: 'ellipse(80% 100% at 50% 0%)',
@@ -625,31 +624,17 @@ export const AboutPage: React.FC = () => {
           </FadeUpHeading>
         </div>
 
-        {/* Bottom Navigation & Call to Action */}
-        <motion.footer
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mt-20 sm:mt-28 pt-10 sm:pt-14 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
-        >
-          <Link
-            to="/"
-            className="group inline-flex items-center gap-3 px-6 py-3 border border-white/20 bg-black/40 hover:bg-white hover:text-black hover:border-white text-white text-xs font-bold uppercase tracking-[0.25em] transition-all duration-300 cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
-            <span>Back to Home</span>
-          </Link>
-
+        {/* Direct Action Link into Contact Section */}
+        <div className="mt-8 sm:mt-12 pb-4 flex items-center justify-start">
           <Link
             to="/"
             state={{ scrollTo: 'contact' }}
-            className="text-xs uppercase font-bold tracking-[0.25em] text-neutral-400 hover:text-white transition-colors duration-200 inline-flex items-center gap-2"
+            className="text-xs sm:text-sm uppercase font-bold tracking-[0.25em] text-neutral-400 hover:text-white transition-colors duration-200 inline-flex items-center gap-2 group cursor-pointer"
           >
             <span>Get in touch</span>
-            <span className="text-white">→</span>
+            <span className="text-white group-hover:translate-x-1.5 transition-transform duration-200">→</span>
           </Link>
-        </motion.footer>
+        </div>
       </div>
     </div>
   );

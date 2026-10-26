@@ -48,7 +48,7 @@ html {
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background-color: #0c0d0e;
+  background-color: #12100e;
   background-image: url('/images/dark-grunge-texture.png');
   background-repeat: repeat;
   background-size: 600px auto;
@@ -78,7 +78,7 @@ button, a, input, textarea, select {
 /* Authentic Dark Grunge Texture & Soft Light Paper Texture       */
 /* ============================================================== */
 .bg-dark-grunge {
-  background-color: #0c0d0e;
+  background-color: #12100e;
   background-image: url('/images/dark-grunge-texture.png');
   background-repeat: repeat;
   background-size: 600px auto;
@@ -104,19 +104,19 @@ button, a, input, textarea, select {
   }
 }
 
-/* Tall bold condensed typography for major section titles & headings */
+/* Tall bold condensed typography for major section titles & headings matching Rory Kramer style */
 h1:not(.font-brush),
 h2:not(.font-brush),
 h3:not(.font-brush),
 h4:not(.font-brush),
 .font-heading,
 .font-condensed {
-  font-family: 'Bebas Neue', 'Oswald', sans-serif;
-  letter-spacing: 0.05em;
+  font-family: 'Anton', 'Bebas Neue', 'Oswald', sans-serif;
+  letter-spacing: 0.02em;
 }
 
 h2:not(.font-brush) {
-  letter-spacing: 0.2em;
+  letter-spacing: 0.03em;
 }
 
 .font-handwriting {
@@ -515,32 +515,25 @@ h2:not(.font-brush) {
   .scroll-delay-5 { transition-delay: 0.40s; }
 }
 
-/* Viewfinder Corner Brackets Reveal Animation */
+/* Viewfinder Corner Framing Brackets (Solid & Crisp on all devices) */
 .viewfinder-bracket {
-  opacity: 0;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
-              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+  opacity: 1;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 
-.scroll-reveal.is-revealed .viewfinder-bracket,
-.is-revealed .viewfinder-bracket,
-.viewfinder-bracket.is-revealed {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-}
-
 .viewfinder-bracket-tl {
-  transform: translate3d(-5px, -5px, 0);
+  transform: translate3d(0, 0, 0);
 }
 .viewfinder-bracket-tr {
-  transform: translate3d(5px, -5px, 0);
+  transform: translate3d(0, 0, 0);
 }
 .viewfinder-bracket-bl {
-  transform: translate3d(-5px, 5px, 0);
+  transform: translate3d(0, 0, 0);
 }
 .viewfinder-bracket-br {
-  transform: translate3d(5px, 5px, 0);
+  transform: translate3d(0, 0, 0);
 }
 
 /* ============================================================== */

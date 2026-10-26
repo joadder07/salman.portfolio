@@ -16,6 +16,9 @@ function parseSettings(settings: any) {
     heroImages: settings.heroImages
       ? JSON.parse(settings.heroImages)
       : null,
+    sectionCovers: settings.sectionCovers
+      ? JSON.parse(settings.sectionCovers)
+      : null,
   };
 }
 
@@ -63,6 +66,9 @@ export class SettingsService {
     }
     if (payload.heroImages !== undefined) {
       payload.heroImages = JSON.stringify(payload.heroImages);
+    }
+    if (payload.sectionCovers !== undefined) {
+      payload.sectionCovers = payload.sectionCovers ? JSON.stringify(payload.sectionCovers) : null;
     }
     if (payload.heroBackgroundImage === '') {
       payload.heroBackgroundImage = null;

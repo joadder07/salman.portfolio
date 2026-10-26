@@ -52,6 +52,9 @@ const CommentModeration = lazy(() =>
 const MessageInbox = lazy(() =>
   import('@/pages/admin/MessageInbox').then((m) => ({ default: m.MessageInbox }))
 );
+const SectionCoversManager = lazy(() =>
+  import('@/pages/admin/SectionCoversManager').then((m) => ({ default: m.SectionCoversManager }))
+);
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -85,6 +88,8 @@ export const AppRoutes: React.FC = () => {
             <Route path="about-hero" element={<Navigate to="/admin/settings?tab=about" replace />} />
             <Route path="banner" element={<Navigate to="/admin/settings?tab=banner" replace />} />
             <Route path="showcase-banner" element={<Navigate to="/admin/settings?tab=banner" replace />} />
+            <Route path="section-covers" element={<SectionCoversManager />} />
+            <Route path="covers" element={<Navigate to="/admin/section-covers" replace />} />
             <Route path="hero-gallery" element={<HeroGalleryManager />} />
             <Route path="education" element={<EducationManager />} />
             <Route path="photography" element={<PhotographyManager />} />

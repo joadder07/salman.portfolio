@@ -241,10 +241,10 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = React.mem
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="group inline-flex items-center gap-2.5 text-xs sm:text-[13px] font-bold uppercase tracking-[0.25em] text-white hover:text-white/80 py-2 px-5 rounded-full border border-white/15 hover:border-white/40 bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg hover:scale-105 active:scale-95"
+          className="group inline-flex items-center gap-2.5 text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white hover:text-white/90 py-2.5 px-6 rounded-full border border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg hover:scale-105 active:scale-95"
         >
-          <span>Discover more</span>
-          <ArrowRight className="w-3.5 h-3.5 text-white transition-transform duration-300 group-hover:translate-x-1" />
+          <span>DISCOVER MORE</span>
+          <ArrowRight className="w-4 h-4 text-white transition-transform duration-300 group-hover:translate-x-1" />
         </button>
       </div>
 

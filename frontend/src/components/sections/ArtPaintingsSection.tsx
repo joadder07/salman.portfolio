@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, X, Maximize2, Brush, Layers, Sparkles } from 'lucide-react';
 import { artApi } from '@/api/content.api';
+import { useSiteSettings } from '@/api/settings.api';
 import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
 import { getOptimizedImageUrl } from '@/components/ui/CldImage';
 
@@ -133,6 +134,7 @@ const ArtworkCard: React.FC<ArtworkCardProps> = React.memo(({ artwork, idx, onSe
 });
 
 export const ArtPaintingsSection: React.FC = () => {
+  const { data: settings } = useSiteSettings();
   const [selected, setSelected] = useState<Artwork | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const { data: dbArtworks, isLoading } = artApi.useGetAll();
@@ -165,10 +167,21 @@ export const ArtPaintingsSection: React.FC = () => {
       }));
   }, [artworks]);
 
-  // Combine with fallbacks so the 1-second auto-play carousel always has active frames
+  // Main section cover photos: limited to the 6 to 7 selected custom cover photos, or default first 7 artworks
   const carouselImages = useMemo(() => {
-    return dbImages.length >= 3 ? dbImages : [...dbImages, ...FALLBACK_ARTWORKS.slice(dbImages.length)];
-  }, [dbImages]);
+    const selectedIds = settings?.sectionCovers?.art;
+    if (selectedIds && Array.isArray(selectedIds) && selectedIds.length > 0) {
+      const selected = selectedIds
+        .map((id) => dbImages.find((img) => String(img.id) === String(id)))
+        .filter(Boolean) as ViewfinderImage[];
+      if (selected.length > 0) {
+        return selected.slice(0, 7);
+      }
+    }
+
+    const featuredList = dbImages.slice(0, 7);
+    return featuredList.length >= 3 ? featuredList : [...featuredList, ...FALLBACK_ARTWORKS.slice(featuredList.length)];
+  }, [dbImages, settings?.sectionCovers?.art]);
 
   const handleSelectArtwork = useCallback((artwork: Artwork) => {
     setSelected(artwork);
@@ -204,40 +217,34 @@ export const ArtPaintingsSection: React.FC = () => {
   }, []);
 
   return (
-    <section id="art" className="scroll-mt-20 sm:scroll-mt-24 py-20 sm:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
-      {/* ============================================================== */}
-      {/* TWO-COLUMN SPLIT LAYOUT (grid-cols-1 md:grid-cols-2)           */}
-      {/* ============================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-center">
-        {/* ------------------------------------------------------------ */}
-        {/* MEDIA COLUMN: Camera Viewfinder Auto-playing Carousel (Left) */}
-        {/* ------------------------------------------------------------ */}
-        <div className="w-full flex items-center justify-center order-1 md:order-1">
+    <section id="art" className="scroll-mt-20 sm:scroll-mt-24 py-16 sm:py-24 md:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
+        {/* MEDIA PREVIEW: LEFT ON DESKTOP, TOP ON MOBILE */}
+        <div className="w-full lg:col-span-7 order-1 lg:order-1 flex items-center justify-center">
           <CameraViewfinderCarousel
             images={carouselImages}
             intervalMs={3500}
+            aspectRatioClass="aspect-[16/10]"
             bracketColorClass="border-white"
             onClickImage={() => setIsGalleryOpen(true)}
           />
         </div>
 
-        {/* ------------------------------------------------------------ */}
-        {/* TEXT COLUMN: Typography & Call to Action (Right)             */}
-        {/* ------------------------------------------------------------ */}
-        <div className="w-full flex flex-col justify-center items-start text-left order-2 md:order-2">
-          <h2 className="scroll-reveal text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-tight font-heading">
+        {/* TYPOGRAPHY & CALL TO ACTION: RIGHT ON DESKTOP, BOTTOM ON MOBILE */}
+        <div className="w-full lg:col-span-5 order-2 lg:order-2 flex flex-col justify-center items-start text-left mt-4 lg:mt-0 px-1 sm:px-2">
+          <h2 className="scroll-reveal text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight font-heading">
             Art &amp; Paintings
           </h2>
-          <p className="scroll-reveal scroll-delay-1 mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-neutral-400 font-light leading-relaxed tracking-wide max-w-xl">
+          <p className="scroll-reveal scroll-delay-1 mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-neutral-200 font-medium leading-relaxed tracking-wide max-w-xl">
             I want to learn many things, including painting. I used to hide my work for perfection, hoping to inspire other artists to overcome their fears of not being good enough.
           </p>
           <button
             type="button"
             onClick={() => setIsGalleryOpen(true)}
-            className="scroll-reveal scroll-delay-2 mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.22em] sm:tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
+            className="scroll-reveal scroll-delay-2 mt-5 sm:mt-7 inline-flex items-center gap-2.5 text-lg sm:text-xl md:text-2xl font-black uppercase text-white font-heading tracking-wider hover:text-neutral-300 transition-colors group cursor-pointer"
           >
             <span>DISCOVER MORE</span>
-            <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
+            <span className="text-xl sm:text-2xl group-hover:translate-x-2 transition-transform duration-200">→</span>
           </button>
         </div>
       </div>

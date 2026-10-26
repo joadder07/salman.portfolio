@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronDown, Lock, Menu, X, ArrowUpRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Lock, Menu, X, ArrowUpRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCurrentUser } from '@/api/auth.api';
 import { useSiteSettings } from '@/api/settings.api';
 
@@ -14,6 +15,8 @@ export const Header: React.FC = () => {
   const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobilePortfolioOpen, setIsMobilePortfolioOpen] = useState(false);
+  const [isMobileContactOpen, setIsMobileContactOpen] = useState(false);
 
   const portfolioDropdownRef = useRef<HTMLDivElement>(null);
   const contactDropdownRef = useRef<HTMLDivElement>(null);
@@ -55,9 +58,23 @@ export const Header: React.FC = () => {
   // Close dropdowns and mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsMobilePortfolioOpen(false);
+    setIsMobileContactOpen(false);
     setIsPortfolioOpen(false);
     setIsContactOpen(false);
   }, [location.pathname]);
+
+  // Lock body scroll when mobile navigation menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -225,15 +242,14 @@ export const Header: React.FC = () => {
         {/* Right Area: Navigation Links or Close Button on /about */}
         <div className="flex items-center shrink-0">
           {isAboutPage ? (
-            /* On 'About Salman' page: Only 'X CLOSE' button remains visible on the top right */
+            /* On 'About Salman' page: Only 'X' cross symbol inside clean rectangular outline box */
             <Link
               to="/"
-              className="p-2 sm:p-2.5 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 text-xs uppercase font-bold tracking-wider"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-none border border-white/80 hover:border-white bg-transparent hover:bg-white text-white hover:text-black transition-all duration-200 cursor-pointer flex items-center justify-center select-none"
               title="Close & Return to Home"
               aria-label="Close & Return to Home"
             >
-              <X className="w-4 h-4" />
-              <span className="text-[11px] sm:text-xs tracking-widest">CLOSE</span>
+              <X className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[1.75]" />
             </Link>
           ) : (
             <div className="flex items-center gap-2 xs:gap-3 sm:gap-8 md:gap-10">
@@ -414,11 +430,12 @@ export const Header: React.FC = () => {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="w-10 h-10 flex items-center justify-center text-white hover:text-white/80 active:scale-95 transition-all rounded-lg focus:outline-none cursor-pointer"
-                  aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="w-10 h-10 flex flex-col items-center justify-center gap-1.5 text-white hover:text-white/80 active:scale-95 transition-all focus:outline-none cursor-pointer"
+                  aria-label="Open mobile menu"
                 >
-                  {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                  <span className="w-6 h-0.5 bg-white transition-all" />
+                  <span className="w-6 h-0.5 bg-white transition-all" />
                 </button>
               </div>
             </div>
@@ -426,115 +443,199 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer Backdrop Overlay - closes menu on tap outside */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/75 backdrop-blur-sm z-40 md:hidden transition-opacity duration-200"
-          onClick={() => setIsMobileMenuOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Mobile Dropdown Menu Drawer */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden relative z-50 mt-3 mx-3 xs:mx-4 bg-black/95 backdrop-blur-2xl border border-white/10 p-5 xs:p-6 shadow-2xl flex flex-col gap-4 xs:gap-5 rounded-2xl max-h-[calc(100svh-5.5rem)] overflow-y-auto overscroll-contain animate-in fade-in slide-in-from-top-2 duration-200">
-          <Link
-            to={user ? '/admin' : '/admin/login'}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="text-xs font-bold uppercase tracking-[0.2em] text-white/90 hover:text-white flex items-center gap-2 py-1"
+      {/* Full-Screen Mobile Navigation Menu (Matching Rory Kramer reference style) */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] bg-dark-grunge text-white flex flex-col overflow-y-auto overscroll-contain select-none md:hidden"
+            style={{
+              backgroundColor: '#12100e',
+              backgroundImage: "url('/images/dark-grunge-texture.png')",
+              backgroundRepeat: 'repeat',
+              backgroundSize: '400px auto',
+            }}
           >
-            <Lock className="w-3.5 h-3.5 text-white/70" />
-            <span>Dashboard</span>
-          </Link>
+            {/* Top Bar: Logo on left, clean borderless 'X' close button on right (seamless, no bottom border) */}
+            <div className="flex items-center justify-between px-6 xs:px-8 py-5 sm:py-6 shrink-0">
+              <Link
+                to="/"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="font-brush text-sm xs:text-base sm:text-lg text-white uppercase hover:opacity-85 transition-opacity tracking-normal"
+                style={{ fontFamily: "'Rock Salt', cursive" }}
+              >
+                SALMAN SAJID JOADDER
+              </Link>
 
-          <div>
-            <div className="text-sm font-bold uppercase tracking-[0.22em] text-white mb-2.5">
-              PORTFOLIO
-            </div>
-            <div className="flex flex-col gap-1 pl-3 border-l border-white/15">
-              {portfolioItems.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handlePortfolioItemClick(item.id);
-                  }}
-                  className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80 hover:text-white text-left py-2 transition-colors cursor-pointer"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-sm font-bold uppercase tracking-[0.22em] text-white mb-2.5">
-              CONTACT
-            </div>
-            <div className="flex flex-col gap-1.5 pl-3 border-l border-white/15">
-              <a
-                href={facebookUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1.5 transition-colors flex items-center justify-between"
-              >
-                <span>Facebook</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
-              </a>
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1.5 transition-colors flex items-center justify-between"
-              >
-                <span>Instagram</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
-              </a>
-              <a
-                href={linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1.5 transition-colors flex items-center justify-between"
-              >
-                <span>LinkedIn</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
-              </a>
-              <a
-                href={youtubeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70 hover:text-white py-1.5 transition-colors flex items-center justify-between"
-              >
-                <span>YouTube</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
-              </a>
+              {/* Clean Close Button ('X') precisely matching reference */}
               <button
                 type="button"
-                onClick={() => handleNavigateToSection('contact')}
-                className="text-xs font-bold uppercase tracking-[0.18em] text-white hover:text-white py-2 pt-2.5 border-t border-white/10 transition-colors text-left cursor-pointer"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1 text-white hover:opacity-70 transition-opacity cursor-pointer focus:outline-none"
+                aria-label="Close navigation menu"
               >
-                Send a Message
+                <X className="w-7 h-7 xs:w-8 xs:h-8 stroke-[1.5]" />
               </button>
             </div>
-          </div>
 
-          <div className="pt-2.5 border-t border-white/15">
-            <Link
-              to="/about"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-sm font-bold uppercase tracking-[0.22em] text-white hover:text-white/70 transition-colors block py-1"
-            >
-              ABOUT SALMAN
-            </Link>
-          </div>
-        </div>
-      )}
+            {/* Menu Items: Minimalist, clean Anton typography with chevron indicators */}
+            <div className="flex-1 flex flex-col justify-start px-6 xs:px-8 pt-10 sm:pt-14 pb-12">
+              <nav className="flex flex-col space-y-6 xs:space-y-7">
+                {/* 1. ABOUT SALMAN > */}
+                <div>
+                  <Link
+                    to="/about"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit"
+                  >
+                    <span>ABOUT SALMAN</span>
+                    <span className="text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 group-hover:translate-x-1.5 transition-transform">
+                      ›
+                    </span>
+                  </Link>
+                </div>
+
+                {/* 2. PORTFOLIO > */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setIsMobilePortfolioOpen(!isMobilePortfolioOpen)}
+                    className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit cursor-pointer text-left"
+                  >
+                    <span>PORTFOLIO</span>
+                    <span
+                      className={`text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 transition-transform duration-200 inline-block ${
+                        isMobilePortfolioOpen ? 'rotate-90 text-white' : 'group-hover:translate-x-1.5'
+                      }`}
+                    >
+                      ›
+                    </span>
+                  </button>
+
+                  {/* Portfolio Sub-categories Accordion */}
+                  {isMobilePortfolioOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex flex-col space-y-3 pt-4 pl-4 border-l-2 border-white/20 mt-3"
+                    >
+                      {portfolioItems.map((item) => (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            handlePortfolioItemClick(item.id);
+                          }}
+                          className="text-base xs:text-lg font-bold uppercase tracking-wider text-neutral-300 hover:text-white text-left font-heading transition-colors cursor-pointer"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* 3. CONTACT > */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setIsMobileContactOpen(!isMobileContactOpen)}
+                    className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit cursor-pointer text-left"
+                  >
+                    <span>CONTACT</span>
+                    <span
+                      className={`text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 transition-transform duration-200 inline-block ${
+                        isMobileContactOpen ? 'rotate-90 text-white' : 'group-hover:translate-x-1.5'
+                      }`}
+                    >
+                      ›
+                    </span>
+                  </button>
+
+                  {/* Contact Links Accordion */}
+                  {isMobileContactOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex flex-col space-y-3.5 pt-4 pl-4 border-l-2 border-white/20 mt-3"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          handleNavigateToSection('contact');
+                        }}
+                        className="text-base xs:text-lg font-bold uppercase tracking-wider text-white hover:text-neutral-300 text-left font-heading transition-colors cursor-pointer"
+                      >
+                        Send a Message →
+                      </button>
+                      <div className="flex flex-wrap items-center gap-4 pt-1">
+                        <a
+                          href={facebookUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
+                        >
+                          Facebook ↗
+                        </a>
+                        <a
+                          href={instagramUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
+                        >
+                          Instagram ↗
+                        </a>
+                        <a
+                          href={linkedinUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
+                        >
+                          LinkedIn ↗
+                        </a>
+                        <a
+                          href={youtubeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
+                        >
+                          YouTube ↗
+                        </a>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* 4. DASHBOARD > */}
+                <div>
+                  <Link
+                    to={user ? '/admin' : '/admin/login'}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit"
+                  >
+                    <span>DASHBOARD</span>
+                    <span className="text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 group-hover:translate-x-1.5 transition-transform">
+                      ›
+                    </span>
+                  </Link>
+                </div>
+              </nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

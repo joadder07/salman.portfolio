@@ -166,6 +166,7 @@ model SiteSettings {
   activeTheme   String   @default("default")
   musicPlaylist       String?
   heroImages          String?
+  sectionCovers       String?
   heroBackgroundImage String?
   bannerImage         String?
   bannerQuote         String?

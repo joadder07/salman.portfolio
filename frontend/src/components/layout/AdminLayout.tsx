@@ -18,6 +18,7 @@ import {
   Image as ImageIcon,
   Sparkles,
   User,
+  Layers,
 } from 'lucide-react';
 import { useCurrentUser, useLogout } from '@/api/auth.api';
 import { usePendingCommentsCount, useUnreadMessagesCount } from '@/api/interactions.api';
@@ -47,6 +48,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Overview', to: '/admin', icon: <LayoutDashboard className="w-4 h-4" /> },
     { label: 'Hero Section', to: '/admin/settings?tab=hero', icon: <ImageIcon className="w-4 h-4" /> },
     { label: 'About Story Hero', to: '/admin/settings?tab=about', icon: <User className="w-4 h-4" /> },
+    { label: 'Section Covers', to: '/admin/section-covers', icon: <Layers className="w-4 h-4" /> },
     { label: 'Showcase Banner', to: '/admin/settings?tab=banner', icon: <Sparkles className="w-4 h-4" /> },
     { label: 'Settings', to: '/admin/settings', icon: <Settings className="w-4 h-4" /> },
     { label: 'Hero Gallery', to: '/admin/hero-gallery', icon: <Images className="w-4 h-4" /> },

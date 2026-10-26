@@ -121,7 +121,7 @@ export const AboutSection: React.FC = () => {
                 key={role}
                 className="text-[28px] min-[360px]:text-3xl xs:text-4xl sm:text-4xl md:text-5xl lg:text-[2.85rem] font-black uppercase text-white font-heading leading-[0.96] tracking-tight whitespace-normal sm:whitespace-nowrap break-words hover:text-neutral-300 transition-colors duration-200"
                 style={{
-                  fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
+                  fontFamily: "'Anton', 'Bebas Neue', 'Oswald', sans-serif",
                 }}
               >
                 {role}
@@ -135,13 +135,12 @@ export const AboutSection: React.FC = () => {
               'Researcher at IntelliNova Research Team | Public Health Student at Daffodil International University | Videographer & Storyteller capturing perspectives beyond the lens.'}
           </p>
 
-          {/* Salman's Story Link */}
+          {/* Salman's Story Button (Rory Kramer Outline Box Style - Compact on Mobile) */}
           <Link
             to="/about"
-            className="scroll-reveal scroll-delay-2 mt-6 sm:mt-8 inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
+            className="scroll-reveal scroll-delay-2 mt-5 sm:mt-8 inline-flex items-center justify-center px-4 xs:px-5 sm:px-10 py-2 xs:py-2.5 sm:py-3.5 border-[1.5px] sm:border-2 border-white rounded-none bg-transparent hover:bg-white text-white hover:text-black text-[10px] min-[360px]:text-[11px] sm:text-sm font-bold uppercase tracking-[0.14em] sm:tracking-[0.16em] transition-all duration-200 cursor-pointer text-center select-none w-fit"
           >
-            <span>SALMAN&apos;S STORY</span>
-            <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
+            SALMAN&apos;S STORY
           </Link>
         </div>
 
@@ -230,10 +229,10 @@ export const AboutSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsGalleryOpen(true)}
-                className="inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white hover:text-neutral-300 transition-colors group cursor-pointer"
+                className="inline-flex items-center gap-2.5 text-base sm:text-lg md:text-xl font-black uppercase text-white font-heading tracking-wider hover:text-neutral-300 transition-colors group cursor-pointer"
               >
                 <span>DISCOVER MORE</span>
-                <span className="group-hover:translate-x-1.5 transition-transform duration-200">→</span>
+                <span className="text-lg sm:text-xl group-hover:translate-x-1.5 transition-transform duration-200">→</span>
               </button>
             </div>
           </div>
