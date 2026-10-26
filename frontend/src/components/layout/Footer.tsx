@@ -18,13 +18,7 @@ export const Footer: React.FC = () => {
       className="w-full select-none transition-colors duration-300 bg-transparent mt-2 sm:mt-24 pt-4 sm:pt-16 pb-24 sm:pb-28 border-t border-white/10"
     >
       {/* Main Centered Stack with Scroll Reveal */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-10px' }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="scroll-reveal max-w-5xl mx-auto px-4 flex flex-col items-center justify-center text-center"
-      >
+      <div className="scroll-reveal max-w-5xl mx-auto px-4 flex flex-col items-center justify-center text-center">
         {/* Handwritten Signature: Ultra-compact, Dainty Scale on Mobile with Layout and Spacing Untouched */}
         <h2 className="font-brush tracking-normal uppercase select-none mb-5 sm:mb-8 flex flex-row items-center justify-center gap-1 sm:gap-2 whitespace-nowrap text-center max-w-full px-2 text-white">
           <span className="text-[7.5px] sm:text-sm md:text-base font-brush mt-0.5 text-white/90">
@@ -102,7 +96,7 @@ export const Footer: React.FC = () => {
         <p className="text-[10px] xs:text-[11px] sm:text-xs md:text-sm font-normal tracking-wide text-neutral-300">
           &copy; {currentYear} {settings?.adminName || 'Salman Sajid Joadder'}. All rights reserved.
         </p>
-      </motion.div>
+      </div>
     </footer>
   );
 };

@@ -248,13 +248,7 @@ export const HobbiesPetsSection: React.FC = () => {
           {/* ------------------------------------------------------------ */}
           {/* TEXT COLUMN: Typography & Call to Action (Left)              */}
           {/* ------------------------------------------------------------ */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-10px' }}
-            transition={{ duration: 0.85, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full flex flex-col justify-center items-start text-left order-2 md:order-1"
-          >
+          <div className="w-full flex flex-col justify-center items-start text-left order-2 md:order-1">
             <h2 className="scroll-reveal text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-black leading-tight font-heading">
               Hobbies &amp; Pets
             </h2>
@@ -269,25 +263,19 @@ export const HobbiesPetsSection: React.FC = () => {
               <span>DISCOVER MORE</span>
               <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
             </button>
-          </motion.div>
+          </div>
 
           {/* ------------------------------------------------------------ */}
           {/* MEDIA COLUMN: Camera Viewfinder Auto-playing Carousel (Right)*/}
           {/* ------------------------------------------------------------ */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-10px' }}
-            transition={{ duration: 0.85, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="scroll-reveal scroll-reveal-scale scroll-delay-2 w-full flex items-center justify-center order-1 md:order-2"
-          >
+          <div className="w-full flex items-center justify-center order-1 md:order-2">
             <CameraViewfinderCarousel
               images={carouselImages}
               intervalMs={3500}
               bracketColorClass="border-black"
               onClickImage={() => handleOpenDiscover(null)}
             />
-          </motion.div>
+          </div>
         </div>
       </div>
 

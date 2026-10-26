@@ -20,14 +20,14 @@ export const EducationSection: React.FC = () => {
     >
 
       <div className="relative z-10 max-w-4xl mx-auto my-4 sm:my-6">
-        <FadeUpHeading className="scroll-reveal text-center max-w-3xl mx-auto mb-6 sm:mb-12">
+        <div className="scroll-reveal text-center max-w-3xl mx-auto mb-6 sm:mb-12">
           <h2 className="text-[11px] uppercase font-bold tracking-[0.3em] text-neutral-600 mb-1.5 sm:mb-2">
             Academic Journey
           </h2>
           <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-black font-heading">
             Education &amp; Qualifications
           </h3>
-        </FadeUpHeading>
+        </div>
 
         {isLoading ? (
           <div className="space-y-2 sm:space-y-3.5">
@@ -58,12 +58,8 @@ export const EducationSection: React.FC = () => {
         ) : (
           <div className="space-y-2 sm:space-y-3.5">
             {education.map((item, idx) => (
-              <motion.div
+              <div
                 key={item.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-10px' }}
-                transition={{ duration: 0.7, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
                 className={`scroll-reveal scroll-delay-${Math.min((idx % 4) + 1, 4)}`}
               >
                 {/* Black / Dark Gray Qualification Card Container */}
@@ -99,7 +95,7 @@ export const EducationSection: React.FC = () => {
                     </span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

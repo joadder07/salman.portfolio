@@ -58,13 +58,7 @@ export const ContactSection: React.FC = () => {
       {/* ============================================================== */}
       {/* SECTION HEADER: Clean Minimalist Typography                     */}
       {/* ============================================================== */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-10px' }}
-        transition={{ duration: 0.8, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-        className="scroll-reveal max-w-4xl lg:max-w-5xl mx-auto mb-2.5 sm:mb-6 flex flex-col md:flex-row md:items-end justify-between gap-1.5 sm:gap-3 text-left"
-      >
+      <div className="scroll-reveal max-w-4xl lg:max-w-5xl mx-auto mb-2.5 sm:mb-6 flex flex-col md:flex-row md:items-end justify-between gap-1.5 sm:gap-3 text-left">
         <div>
           <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-[0.2em] sm:tracking-[0.25em] text-neutral-400 mb-0.5 sm:mb-1 block">
             Connect &amp; Collaborate
@@ -76,18 +70,12 @@ export const ContactSection: React.FC = () => {
         <p className="text-[11px] sm:text-sm text-neutral-400 font-light leading-snug sm:leading-relaxed max-w-md">
           Reach out for collaborations, research inquiries, or drop an anonymous whisper. Whether you have a project idea, an invitation, or simply want to connect, feel free to drop a line below.
         </p>
-      </motion.div>
+      </div>
 
       {/* ============================================================== */}
       {/* WIDE RECTANGULAR FORM CONTAINER (Ayatakar)                      */}
       {/* ============================================================== */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-10px' }}
-        transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        className="scroll-reveal scroll-delay-2 w-full max-w-4xl lg:max-w-5xl mx-auto"
-      >
+      <div className="scroll-reveal scroll-delay-2 w-full max-w-4xl lg:max-w-5xl mx-auto">
         <div className="w-full rounded-none bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl p-2.5 sm:p-5 lg:p-6">
           {/* Mode Toggle Header: Compact Bar */}
           <div className="flex items-center justify-between gap-2 pb-2 mb-2 sm:pb-3 sm:mb-4 border-b border-white/10">
@@ -201,7 +189,7 @@ export const ContactSection: React.FC = () => {
             </button>
           </form>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };

@@ -10,15 +10,24 @@ export const DEFAULT_CIRCUIT_BOARD_HERO = '/images/circuit-board-hero.jpg';
 export const HeroSection: React.FC = () => {
   const { data: settings } = useSiteSettings();
 
-  // Isolated black shutter reveal state (confined exclusively to the hero container)
+  // Isolated dark split-curtain reveal state - smoothly splits open on page load / reload across all devices
   const [isCurtainFinished, setIsCurtainFinished] = useState(false);
 
   useEffect(() => {
+    // Notify page components to trigger smooth title/content reveal as soon as curtain finishes opening (~820ms)
+    const revealTimer = setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('curtain-opened'));
+    }, 820);
+
     // Failsafe unmount timeout ensuring DOM cleanup after animation completion
-    const timer = setTimeout(() => {
+    const cleanupTimer = setTimeout(() => {
       setIsCurtainFinished(true);
     }, 1250);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(revealTimer);
+      clearTimeout(cleanupTimer);
+    };
   }, []);
 
   // 1) Dynamic custom uploaded image from settings (if present)
@@ -86,16 +95,15 @@ export const HeroSection: React.FC = () => {
               WebkitBackfaceVisibility: 'hidden',
               backfaceVisibility: 'hidden',
             }}
-            aria-hidden="true"
-            onAnimationEnd={() => setIsCurtainFinished(true)}
+            onAnimationEnd={() => {
+              setIsCurtainFinished(true);
+              window.dispatchEvent(new CustomEvent('curtain-opened'));
+            }}
           >
-            {/* Dynamic Inner White Fade Layer: soft luminous layer that dissolves as curtains part */}
-            <div className="hero-curtain-white-fade" />
-
-            {/* Top Black Panel: smoothly slides up (-102%) */}
+            {/* Top Solid Black Panel: smoothly slides up (-102%) */}
             <div className="hero-curtain-top" />
 
-            {/* Bottom Black Panel: smoothly slides down (102%) */}
+            {/* Bottom Solid Black Panel: smoothly slides down (102%) */}
             <div className="hero-curtain-bottom" />
           </div>
         )}

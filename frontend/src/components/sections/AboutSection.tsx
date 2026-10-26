@@ -113,13 +113,7 @@ export const AboutSection: React.FC = () => {
         {/* ------------------------------------------------------------ */}
         {/* LEFT COLUMN: Multi-line Roles, Bio Text & Salman's Story Link */}
         {/* ------------------------------------------------------------ */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.85, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full lg:col-span-5 xl:col-span-4 flex flex-col justify-center items-start text-left"
-        >
+        <div className="w-full lg:col-span-5 xl:col-span-4 flex flex-col justify-center items-start text-left">
           {/* Multi-line Roles Stack */}
           <div className="scroll-reveal flex flex-col items-start text-left select-none space-y-0.5 sm:space-y-1 w-full">
             {ROLES.map((role) => (
@@ -149,18 +143,12 @@ export const AboutSection: React.FC = () => {
             <span>SALMAN&apos;S STORY</span>
             <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
           </Link>
-        </motion.div>
+        </div>
 
         {/* ------------------------------------------------------------ */}
         {/* RIGHT COLUMN: 3-Box Horizontal Viewfinder Frame With Controls */}
         {/* ------------------------------------------------------------ */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.85, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="scroll-reveal scroll-reveal-scale scroll-delay-2 w-full lg:col-span-7 xl:col-span-8 flex flex-col justify-center"
-        >
+        <div className="scroll-reveal scroll-reveal-scale w-full lg:col-span-7 xl:col-span-8 flex flex-col justify-center">
           <div
             className="w-full select-none"
             onMouseEnter={() => setIsPaused(true)}
@@ -249,7 +237,7 @@ export const AboutSection: React.FC = () => {
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* ============================================================== */}
