@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Lock, Menu, X, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -430,12 +431,19 @@ export const Header: React.FC = () => {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  className="w-10 h-10 flex flex-col items-center justify-center gap-1.5 text-white hover:text-white/80 active:scale-95 transition-all focus:outline-none cursor-pointer"
-                  aria-label="Open mobile menu"
+                  onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                  className="w-10 h-10 flex items-center justify-center text-white hover:text-white/80 active:scale-95 transition-all focus:outline-none cursor-pointer"
+                  aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open mobile menu"}
+                  aria-expanded={isMobileMenuOpen}
                 >
-                  <span className="w-6 h-0.5 bg-white transition-all" />
-                  <span className="w-6 h-0.5 bg-white transition-all" />
+                  {isMobileMenuOpen ? (
+                    <X className="w-6 h-6 stroke-[2] text-white" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-1.5">
+                      <span className="w-6 h-0.5 bg-white transition-all" />
+                      <span className="w-6 h-0.5 bg-white transition-all" />
+                    </div>
+                  )}
                 </button>
               </div>
             </div>
@@ -443,199 +451,203 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Full-Screen Mobile Navigation Menu (Matching Rory Kramer reference style) */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-dark-grunge text-white flex flex-col overflow-y-auto overscroll-contain select-none md:hidden"
-            style={{
-              backgroundColor: '#000000',
-              backgroundImage: "url('/images/dark-grunge-texture.png?v=2')",
-              backgroundRepeat: 'repeat',
-              backgroundSize: '400px auto',
-            }}
-          >
-            {/* Top Bar: Logo on left, clean borderless 'X' close button on right (seamless, no bottom border) */}
-            <div className="flex items-center justify-between px-6 xs:px-8 py-5 sm:py-6 shrink-0">
-              <Link
-                to="/"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+      {/* Full-Screen Mobile Navigation Menu (Rendered via Portal to escape header backdrop-filter containing block) */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-[100] bg-dark-grunge text-white flex flex-col h-full min-h-screen min-h-[100dvh] overflow-y-auto overscroll-contain select-none md:hidden"
+                style={{
+                  backgroundColor: '#000000',
+                  backgroundImage: "url('/images/dark-grunge-texture.png?v=2')",
+                  backgroundRepeat: 'repeat',
+                  backgroundSize: '400px auto',
                 }}
-                className="font-brush text-sm xs:text-base sm:text-lg text-white uppercase hover:opacity-85 transition-opacity tracking-normal"
-                style={{ fontFamily: "'Rock Salt', cursive" }}
               >
-                SALMAN SAJID JOADDER
-              </Link>
-
-              {/* Clean Close Button ('X') precisely matching reference */}
-              <button
-                type="button"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-1 text-white hover:opacity-70 transition-opacity cursor-pointer focus:outline-none"
-                aria-label="Close navigation menu"
-              >
-                <X className="w-7 h-7 xs:w-8 xs:h-8 stroke-[1.5]" />
-              </button>
-            </div>
-
-            {/* Menu Items: Minimalist, clean Anton typography with chevron indicators */}
-            <div className="flex-1 flex flex-col justify-start px-6 xs:px-8 pt-10 sm:pt-14 pb-12">
-              <nav className="flex flex-col space-y-6 xs:space-y-7">
-                {/* 1. ABOUT SALMAN > */}
-                <div>
+                {/* Top Bar: Logo on left, clean borderless 'X' close button on right */}
+                <div className="flex items-center justify-between px-6 xs:px-8 py-5 sm:py-6 shrink-0">
                   <Link
-                    to="/about"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit"
+                    to="/"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="font-brush text-sm xs:text-base sm:text-lg text-white uppercase hover:opacity-85 transition-opacity tracking-normal"
+                    style={{ fontFamily: "'Rock Salt', cursive" }}
                   >
-                    <span>ABOUT SALMAN</span>
-                    <span className="text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 group-hover:translate-x-1.5 transition-transform">
-                      ›
-                    </span>
+                    SALMAN SAJID JOADDER
                   </Link>
-                </div>
 
-                {/* 2. PORTFOLIO > */}
-                <div>
+                  {/* Clean Close Button ('X') precisely matching reference */}
                   <button
                     type="button"
-                    onClick={() => setIsMobilePortfolioOpen(!isMobilePortfolioOpen)}
-                    className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit cursor-pointer text-left"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-1 text-white hover:opacity-70 transition-opacity cursor-pointer focus:outline-none"
+                    aria-label="Close navigation menu"
                   >
-                    <span>PORTFOLIO</span>
-                    <span
-                      className={`text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 transition-transform duration-200 inline-block ${
-                        isMobilePortfolioOpen ? 'rotate-90 text-white' : 'group-hover:translate-x-1.5'
-                      }`}
-                    >
-                      ›
-                    </span>
+                    <X className="w-7 h-7 xs:w-8 xs:h-8 stroke-[1.5]" />
                   </button>
-
-                  {/* Portfolio Sub-categories Accordion */}
-                  {isMobilePortfolioOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex flex-col space-y-3 pt-4 pl-4 border-l-2 border-white/20 mt-3"
-                    >
-                      {portfolioItems.map((item) => (
-                        <button
-                          key={item.label}
-                          type="button"
-                          onClick={() => {
-                            setIsMobileMenuOpen(false);
-                            handlePortfolioItemClick(item.id);
-                          }}
-                          className="text-base xs:text-lg font-bold uppercase tracking-wider text-neutral-300 hover:text-white text-left font-heading transition-colors cursor-pointer"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
                 </div>
 
-                {/* 3. CONTACT > */}
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setIsMobileContactOpen(!isMobileContactOpen)}
-                    className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit cursor-pointer text-left"
-                  >
-                    <span>CONTACT</span>
-                    <span
-                      className={`text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 transition-transform duration-200 inline-block ${
-                        isMobileContactOpen ? 'rotate-90 text-white' : 'group-hover:translate-x-1.5'
-                      }`}
-                    >
-                      ›
-                    </span>
-                  </button>
+                {/* Menu Items: Minimalist, clean Anton typography with chevron indicators */}
+                <div className="flex-1 flex flex-col justify-start px-6 xs:px-8 pt-10 sm:pt-14 pb-12">
+                  <nav className="flex flex-col space-y-6 xs:space-y-7">
+                    {/* 1. ABOUT SALMAN > */}
+                    <div>
+                      <Link
+                        to="/about"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit"
+                      >
+                        <span>ABOUT SALMAN</span>
+                        <span className="text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 group-hover:translate-x-1.5 transition-transform">
+                          ›
+                        </span>
+                      </Link>
+                    </div>
 
-                  {/* Contact Links Accordion */}
-                  {isMobileContactOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex flex-col space-y-3.5 pt-4 pl-4 border-l-2 border-white/20 mt-3"
-                    >
+                    {/* 2. PORTFOLIO > */}
+                    <div>
                       <button
                         type="button"
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          handleNavigateToSection('contact');
-                        }}
-                        className="text-base xs:text-lg font-bold uppercase tracking-wider text-white hover:text-neutral-300 text-left font-heading transition-colors cursor-pointer"
+                        onClick={() => setIsMobilePortfolioOpen(!isMobilePortfolioOpen)}
+                        className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit cursor-pointer text-left"
                       >
-                        Send a Message →
+                        <span>PORTFOLIO</span>
+                        <span
+                          className={`text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 transition-transform duration-200 inline-block ${
+                            isMobilePortfolioOpen ? 'rotate-90 text-white' : 'group-hover:translate-x-1.5'
+                          }`}
+                        >
+                          ›
+                        </span>
                       </button>
-                      <div className="flex flex-wrap items-center gap-4 pt-1">
-                        <a
-                          href={facebookUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
-                        >
-                          Facebook ↗
-                        </a>
-                        <a
-                          href={instagramUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
-                        >
-                          Instagram ↗
-                        </a>
-                        <a
-                          href={linkedinUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
-                        >
-                          LinkedIn ↗
-                        </a>
-                        <a
-                          href={youtubeUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
-                        >
-                          YouTube ↗
-                        </a>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
 
-                {/* 4. DASHBOARD > */}
-                <div>
-                  <Link
-                    to={user ? '/admin' : '/admin/login'}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit"
-                  >
-                    <span>DASHBOARD</span>
-                    <span className="text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 group-hover:translate-x-1.5 transition-transform">
-                      ›
-                    </span>
-                  </Link>
+                      {/* Portfolio Sub-categories Accordion */}
+                      {isMobilePortfolioOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col space-y-3 pt-4 pl-4 border-l-2 border-white/20 mt-3"
+                        >
+                          {portfolioItems.map((item) => (
+                            <button
+                              key={item.label}
+                              type="button"
+                              onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                handlePortfolioItemClick(item.id);
+                              }}
+                              className="text-base xs:text-lg font-bold uppercase tracking-wider text-neutral-300 hover:text-white text-left font-heading transition-colors cursor-pointer"
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </div>
+
+                    {/* 3. CONTACT > */}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setIsMobileContactOpen(!isMobileContactOpen)}
+                        className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit cursor-pointer text-left"
+                      >
+                        <span>CONTACT</span>
+                        <span
+                          className={`text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 transition-transform duration-200 inline-block ${
+                            isMobileContactOpen ? 'rotate-90 text-white' : 'group-hover:translate-x-1.5'
+                          }`}
+                        >
+                          ›
+                        </span>
+                      </button>
+
+                      {/* Contact Links Accordion */}
+                      {isMobileContactOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col space-y-3.5 pt-4 pl-4 border-l-2 border-white/20 mt-3"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              handleNavigateToSection('contact');
+                            }}
+                            className="text-base xs:text-lg font-bold uppercase tracking-wider text-white hover:text-neutral-300 text-left font-heading transition-colors cursor-pointer"
+                          >
+                            Send a Message →
+                          </button>
+                          <div className="flex flex-wrap items-center gap-4 pt-1">
+                            <a
+                              href={facebookUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
+                            >
+                              Facebook ↗
+                            </a>
+                            <a
+                              href={instagramUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
+                            >
+                              Instagram ↗
+                            </a>
+                            <a
+                              href={linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
+                            >
+                              LinkedIn ↗
+                            </a>
+                            <a
+                              href={youtubeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-mono uppercase tracking-wider text-neutral-400 hover:text-white"
+                            >
+                              YouTube ↗
+                            </a>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+
+                    {/* 4. DASHBOARD > */}
+                    <div>
+                      <Link
+                        to={user ? '/admin' : '/admin/login'}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="group inline-flex items-center text-2xl min-[360px]:text-[28px] xs:text-[34px] font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit"
+                      >
+                        <span>DASHBOARD</span>
+                        <span className="text-xl min-[360px]:text-2xl xs:text-[28px] font-light text-white/50 ml-2.5 group-hover:translate-x-1.5 transition-transform">
+                          ›
+                        </span>
+                      </Link>
+                    </div>
+                  </nav>
                 </div>
-              </nav>
-            </div>
-          </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </header>
   );
 };
