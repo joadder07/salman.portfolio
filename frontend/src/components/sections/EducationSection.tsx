@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { GraduationCap, Calendar } from 'lucide-react';
+import { GraduationCap, Calendar, Briefcase } from 'lucide-react';
 import { educationApi } from '@/api/content.api';
 import { Skeleton } from '@/components/shared';
 
@@ -99,22 +99,72 @@ export const EducationSection: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Academic Achievements / GPA / Description */}
+                  {/* Academic Achievements / GPA / Experience Details */}
                   {item.description && (
-                    <div className="mt-2.5 pt-2 sm:mt-4 sm:pt-3 border-t border-neutral-900 flex flex-wrap gap-1.5">
-                      {item.description.includes('|') ? (
-                        item.description.split('|').map((pill, pIdx) => (
-                          <span
-                            key={pIdx}
-                            className="px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider bg-black border border-neutral-800 text-neutral-300"
-                          >
-                            {pill.trim()}
-                          </span>
-                        ))
+                    <div className="mt-2.5 pt-2 sm:mt-4 sm:pt-3 border-t border-neutral-900">
+                      {item.description.includes('\n') ? (() => {
+                        const lines = item.description
+                          .split('\n')
+                          .map((l) => l.trim())
+                          .filter(Boolean);
+                        const hasRoleWithDate =
+                          lines.length >= 2 &&
+                          (lines[1].toLowerCase().includes('present') || /\d{4}/.test(lines[1]));
+
+                        if (hasRoleWithDate) {
+                          const isCurrentRole = lines[1].toLowerCase().includes('present');
+                          return (
+                            <div className="space-y-1.5 text-left">
+                              <div className="flex items-center gap-1.5">
+                                <Briefcase className="w-3 h-3 text-neutral-400 shrink-0" />
+                                <h5 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-neutral-200 font-heading">
+                                  {lines[0]}
+                                </h5>
+                              </div>
+                              <div className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                                {isCurrentRole && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                )}
+                                <span>{lines[1]}</span>
+                              </div>
+                              {lines.length > 2 && (
+                                <p className="text-[10px] sm:text-[11px] font-mono text-neutral-400 leading-relaxed">
+                                  {lines.slice(2).join(' ')}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-1 text-left">
+                            {lines.map((line, lIdx) => (
+                              <p
+                                key={lIdx}
+                                className="text-[10px] sm:text-[11px] font-mono text-neutral-400 leading-relaxed"
+                              >
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        );
+                      })() : item.description.includes('|') ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {item.description.split('|').map((pill, pIdx) => (
+                            <span
+                              key={pIdx}
+                              className="px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider bg-black border border-neutral-800 text-neutral-300"
+                            >
+                              {pill.trim()}
+                            </span>
+                          ))}
+                        </div>
                       ) : (
-                        <span className="px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider bg-black border border-neutral-800 text-neutral-300">
-                          {item.description.trim()}
-                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="px-2 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider bg-black border border-neutral-800 text-neutral-300">
+                            {item.description.trim()}
+                          </span>
+                        </div>
                       )}
                     </div>
                   )}

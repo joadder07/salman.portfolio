@@ -45,22 +45,14 @@ interface VideoCardProps {
   video: Video;
   idx: number;
   onSelect: (video: Video) => void;
-  isActive?: boolean;
-  onTap?: () => void;
 }
 
-const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect, isActive, onTap }) => {
+const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect }) => {
   const thumbUrl = useMemo(() => {
     return video.thumbnailUrl?.trim() || getYouTubeThumbnail(video.videoUrl);
   }, [video.thumbnailUrl, video.videoUrl]);
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    const isTouch = typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
-    if (isTouch && !isActive) {
-      e.stopPropagation();
-      onTap?.();
-      return;
-    }
+  const handleCardClick = () => {
     onSelect(video);
   };
 
@@ -74,9 +66,7 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect, 
         ease: [0.16, 1, 0.3, 1],
       }}
       onClick={handleCardClick}
-      className={`group relative overflow-hidden bg-neutral-950 border transition-all cursor-pointer flex flex-col gpu-accelerated-card ${
-        isActive ? 'border-white/60 shadow-lg' : 'border-neutral-850 hover:border-neutral-500'
-      }`}
+      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-all cursor-pointer flex flex-col gpu-accelerated-card"
       style={{
         transform: 'translate3d(0, 0, 0)',
         willChange: 'transform',
@@ -91,9 +81,7 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect, 
           <img
             src={thumbUrl}
             alt={video.title}
-            className={`w-full h-full object-cover transition-transform duration-500 ease-out gpu-accelerated-image ${
-              isActive ? 'scale-105' : 'group-hover:scale-105'
-            }`}
+            className="w-full h-full object-cover transition-transform duration-500 ease-out gpu-accelerated-image group-hover:scale-105"
             loading="lazy"
             decoding="async"
             style={{
@@ -109,31 +97,20 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect, 
         )}
 
         {/* Play Overlay Button */}
-        <div className={`absolute inset-0 transition-colors flex items-center justify-center ${
-          isActive ? 'bg-black/20' : 'bg-black/40 group-hover:bg-black/20'
-        }`}>
-          <div className={`w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl transition-transform ${
-            isActive ? 'scale-110' : 'group-hover:scale-110'
-          }`}>
+        <div className="absolute inset-0 transition-colors flex items-center justify-center bg-black/40 group-hover:bg-black/20">
+          <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
             <Play className="w-5 h-5 fill-current ml-0.5" />
           </div>
         </div>
 
         {/* Frame Overlay on video thumbnail */}
-        <div
-          className={`absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent transition-opacity p-3 flex flex-col justify-end pointer-events-none ${
-            isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-          }`}
-        >
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent transition-opacity p-3 flex flex-col justify-end pointer-events-none opacity-0 group-hover:opacity-100">
           <span className="text-[10px] font-mono uppercase text-neutral-400">
             {video.category || 'Video'}
           </span>
           <h4 className="text-sm font-bold uppercase text-white truncate">
             {video.title}
           </h4>
-          <span className="text-[10px] text-red-300 font-mono mt-0.5 sm:hidden font-semibold flex items-center gap-1">
-            Tap again to watch on YouTube ↗
-          </span>
         </div>
 
         {/* YouTube Badge in top-right */}
@@ -173,7 +150,6 @@ export const VideosSection: React.FC = () => {
   const { data: settings } = useSiteSettings();
   const { data: videos, isLoading } = videoApi.useGetAll();
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
 
   // Map database videos to viewfinder image format using automatic YouTube thumbnails
   const dbImages: ViewfinderImage[] = useMemo(() => {
@@ -341,21 +317,12 @@ export const VideosSection: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-                  onClick={(e) => {
-                    if (e.target === e.currentTarget) {
-                      setActiveVideoId(null);
-                    }
-                  }}
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {videos.map((video, idx) => (
                     <VideoCard
                       key={video.id}
                       video={video}
                       idx={idx}
-                      isActive={activeVideoId === video.id}
-                      onTap={() => setActiveVideoId(video.id)}
                       onSelect={handleSelectVideo}
                     />
                   ))}

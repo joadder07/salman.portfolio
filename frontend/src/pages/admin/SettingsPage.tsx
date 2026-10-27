@@ -765,19 +765,19 @@ export const SettingsPage: React.FC = () => {
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none p-4 sm:p-6 max-w-lg mx-auto">
               <svg
                 viewBox="0 0 100 80"
-                className="w-5 h-4 sm:w-7 sm:h-5 fill-white text-white mb-1.5 sm:mb-2 select-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+                className="w-5 h-4 sm:w-7 sm:h-5 fill-white text-white mb-1.5 sm:mb-2 select-none"
                 aria-hidden="true"
               >
                 <path d="M0,48 C0,22 14,0 42,0 L44,12 C28,14 18,25 18,36 C21,34 25,32 30,32 C40,32 48,40 48,52 C48,65 38,76 24,76 C11,76 0,64 0,48 Z M52,48 C52,22 66,0 94,0 L96,12 C80,14 70,25 70,36 C73,34 77,32 82,32 C92,32 100,40 100,52 C100,65 90,76 76,76 C63,76 52,64 52,48 Z" />
               </svg>
               <h4
-                className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-wide text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+                className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-wide text-white leading-tight"
                 style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
               >
                 EACH SHOT IS A REFLECTION OF MY TRUE SELF.
               </h4>
               <div
-                className="mt-1 sm:mt-1.5 text-[8px] sm:text-[10px] md:text-xs font-normal sm:font-medium uppercase tracking-wide text-white/90 leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+                className="mt-1 sm:mt-1.5 text-[8px] sm:text-[10px] md:text-xs font-normal sm:font-medium uppercase tracking-wide text-white leading-tight"
                 style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
               >
                 <span className="block whitespace-nowrap">

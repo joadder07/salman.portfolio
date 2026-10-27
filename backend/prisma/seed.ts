@@ -171,7 +171,8 @@ async function main() {
         field: 'Department of Public Health',
         startDate: new Date('2025-01-01'),
         endDate: null,
-        description: null,
+        description:
+          'Industrial Innovation Centre (IIC)\nApril 2026 – Present\nWorking on research activities and project development at the Industrial Innovation Centre (DIU)',
         order: 0,
       },
       {
