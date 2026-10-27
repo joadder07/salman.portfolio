@@ -18,7 +18,7 @@ export const DEFAULT_BANNER_QUOTE_SUBTEXT =
   "It’s been a way for me to express myself and show others how I see the world.";
 
 // Animation variants for smooth scroll-triggered reveal
-const containerVariants = {
+const containerVariants: Record<string, any> = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -29,7 +29,7 @@ const containerVariants = {
   },
 };
 
-const quoteMarkVariants = {
+const quoteMarkVariants: Record<string, any> = {
   hidden: { opacity: 0, scale: 0.75, y: 20 },
   visible: {
     opacity: 1,
@@ -37,31 +37,31 @@ const quoteMarkVariants = {
     y: 0,
     transition: {
       duration: 0.85,
-      ease: [0.16, 1, 0.3, 1],
+      ease: [0.16, 1, 0.3, 1] as any,
     },
   },
 };
 
-const headingVariants = {
+const headingVariants: Record<string, any> = {
   hidden: { opacity: 0, y: 28 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.95,
-      ease: [0.16, 1, 0.3, 1],
+      ease: [0.16, 1, 0.3, 1] as any,
     },
   },
 };
 
-const subtextVariants = {
+const subtextVariants: Record<string, any> = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.95,
-      ease: [0.16, 1, 0.3, 1],
+      ease: [0.16, 1, 0.3, 1] as any,
     },
   },
 };
@@ -110,7 +110,7 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
         {/* Stylized Quote Overlay Centered in Middle of Section with scroll-triggered reveal */}
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none select-none p-6 sm:p-10">
           <motion.div
-            variants={containerVariants}
+            variants={containerVariants as any}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.35, margin: '0px 0px -40px 0px' }}
@@ -118,7 +118,7 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
           >
             {/* Large Stylized Quotation Mark (❝) with gentle fade + scale-up */}
             <motion.svg
-              variants={quoteMarkVariants}
+              variants={quoteMarkVariants as any}
               viewBox="0 0 100 80"
               className="w-8 h-6 sm:w-11 sm:h-9 md:w-14 md:h-11 fill-white text-white mb-2.5 sm:mb-3.5 select-none"
               aria-hidden="true"
@@ -128,7 +128,7 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
 
             {/* 1st Line: Noticeably Bolder - Fades and slides gently up */}
             <motion.h3
-              variants={headingVariants}
+              variants={headingVariants as any}
               className="text-sm xs:text-base sm:text-xl md:text-2xl lg:text-[28px] font-black uppercase tracking-wide text-white leading-tight sm:leading-snug max-w-3xl"
               style={{
                 fontFamily: "'Anton', 'Oswald', 'Bebas Neue', sans-serif",
@@ -139,7 +139,7 @@ export const CinematicBannerSection: React.FC<CinematicBannerSectionProps> = ({
 
             {/* 2nd & 3rd Lines: Lighter / Medium Font Weight - Staggered fade and slide */}
             <motion.div
-              variants={subtextVariants}
+              variants={subtextVariants as any}
               className="mt-1.5 sm:mt-2.5 text-[11px] xs:text-xs sm:text-base md:text-lg lg:text-xl font-normal sm:font-medium uppercase tracking-wide text-white leading-snug sm:leading-relaxed max-w-2xl"
               style={{
                 fontFamily: "'Anton', 'Oswald', 'Bebas Neue', sans-serif",
