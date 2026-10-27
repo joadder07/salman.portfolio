@@ -9,8 +9,14 @@ export interface Comment {
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   photographyId?: string;
   videoId?: string;
+  artId?: string;
+  hobbyId?: string;
+  petId?: string;
   photography?: { id: string; title: string };
   video?: { id: string; title: string };
+  art?: { id: string; title: string };
+  hobby?: { id: string; name: string };
+  pet?: { id: string; name: string };
   createdAt: string;
 }
 
@@ -49,6 +55,7 @@ export const usePendingCommentsCount = () => {
 };
 
 export const useSubmitComment = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: {
       authorName: string;
@@ -56,9 +63,19 @@ export const useSubmitComment = () => {
       content: string;
       photographyId?: string;
       videoId?: string;
+      artId?: string;
+      hobbyId?: string;
+      petId?: string;
     }) => {
       const { data } = await apiClient.post('/comments', payload);
       return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['photography'] });
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
+      queryClient.invalidateQueries({ queryKey: ['art'] });
+      queryClient.invalidateQueries({ queryKey: ['hobbies'] });
+      queryClient.invalidateQueries({ queryKey: ['pets'] });
     },
   });
 };
@@ -74,6 +91,9 @@ export const useModerateComment = () => {
       queryClient.invalidateQueries({ queryKey: ['comments'] });
       queryClient.invalidateQueries({ queryKey: ['photography'] });
       queryClient.invalidateQueries({ queryKey: ['videos'] });
+      queryClient.invalidateQueries({ queryKey: ['art'] });
+      queryClient.invalidateQueries({ queryKey: ['hobbies'] });
+      queryClient.invalidateQueries({ queryKey: ['pets'] });
     },
   });
 };

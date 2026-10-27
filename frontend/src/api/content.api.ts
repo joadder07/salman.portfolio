@@ -114,6 +114,7 @@ export interface Hobby {
   iconUrl?: string;
   imageUrl?: string;
   order: number;
+  comments?: any[];
 }
 
 export interface Pet {
@@ -125,6 +126,7 @@ export interface Pet {
   imageUrl?: string;
   birthDate?: string;
   order: number;
+  comments?: any[];
 }
 
 
@@ -137,6 +139,7 @@ export interface Art {
   imageUrl: string;
   palette?: string;
   order: number;
+  comments?: any[];
 }
 
 // Instantiated hooks

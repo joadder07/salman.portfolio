@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Video as VideoIcon, Play, MessageSquare, X, ExternalLink } from 'lucide-react';
+import { Video as VideoIcon, Play, X, ExternalLink } from 'lucide-react';
 import { videoApi, Video } from '@/api/content.api';
 import { useSiteSettings } from '@/api/settings.api';
-import { CommentList, CommentForm } from '@/components/comments';
 import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
-import { getYouTubeThumbnail, getYouTubeEmbedUrl, getYouTubeWatchUrl, YouTubeIcon } from '@/utils/youtube';
+import { getYouTubeThumbnail, getYouTubeWatchUrl, YouTubeIcon } from '@/utils/youtube';
 
 // Curated high-resolution fallback video stills for the cinematic viewfinder carousel
 const FALLBACK_VIDEOS: ViewfinderImage[] = [
@@ -46,12 +45,24 @@ interface VideoCardProps {
   video: Video;
   idx: number;
   onSelect: (video: Video) => void;
+  isActive?: boolean;
+  onTap?: () => void;
 }
 
-const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect }) => {
+const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect, isActive, onTap }) => {
   const thumbUrl = useMemo(() => {
     return video.thumbnailUrl?.trim() || getYouTubeThumbnail(video.videoUrl);
   }, [video.thumbnailUrl, video.videoUrl]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    const isTouch = typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    if (isTouch && !isActive) {
+      e.stopPropagation();
+      onTap?.();
+      return;
+    }
+    onSelect(video);
+  };
 
   return (
     <motion.div
@@ -62,8 +73,10 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect }
         delay: Math.min(idx * 0.02, 0.16),
         ease: [0.16, 1, 0.3, 1],
       }}
-      onClick={() => onSelect(video)}
-      className="group relative overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-colors cursor-pointer flex flex-col gpu-accelerated-card"
+      onClick={handleCardClick}
+      className={`group relative overflow-hidden bg-neutral-950 border transition-all cursor-pointer flex flex-col gpu-accelerated-card ${
+        isActive ? 'border-white/60 shadow-lg' : 'border-neutral-850 hover:border-neutral-500'
+      }`}
       style={{
         transform: 'translate3d(0, 0, 0)',
         willChange: 'transform',
@@ -78,7 +91,9 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect }
           <img
             src={thumbUrl}
             alt={video.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out gpu-accelerated-image"
+            className={`w-full h-full object-cover transition-transform duration-500 ease-out gpu-accelerated-image ${
+              isActive ? 'scale-105' : 'group-hover:scale-105'
+            }`}
             loading="lazy"
             decoding="async"
             style={{
@@ -94,10 +109,31 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect }
         )}
 
         {/* Play Overlay Button */}
-        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+        <div className={`absolute inset-0 transition-colors flex items-center justify-center ${
+          isActive ? 'bg-black/20' : 'bg-black/40 group-hover:bg-black/20'
+        }`}>
+          <div className={`w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl transition-transform ${
+            isActive ? 'scale-110' : 'group-hover:scale-110'
+          }`}>
             <Play className="w-5 h-5 fill-current ml-0.5" />
           </div>
+        </div>
+
+        {/* Frame Overlay on video thumbnail */}
+        <div
+          className={`absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent transition-opacity p-3 flex flex-col justify-end pointer-events-none ${
+            isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          }`}
+        >
+          <span className="text-[10px] font-mono uppercase text-neutral-400">
+            {video.category || 'Video'}
+          </span>
+          <h4 className="text-sm font-bold uppercase text-white truncate">
+            {video.title}
+          </h4>
+          <span className="text-[10px] text-red-300 font-mono mt-0.5 sm:hidden font-semibold flex items-center gap-1">
+            Tap again to watch on YouTube ↗
+          </span>
         </div>
 
         {/* YouTube Badge in top-right */}
@@ -114,14 +150,20 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect }
 
       {/* Video Info */}
       <div className="p-4 flex flex-col flex-1">
-        <h4 className="text-sm font-bold uppercase text-white line-clamp-1 group-hover:text-primary transition-colors">
-          {video.title}
-        </h4>
+        <div className="flex items-start justify-between gap-2">
+          <h4 className="text-sm font-bold uppercase text-white line-clamp-1 group-hover:text-red-400 transition-colors flex-1">
+            {video.title}
+          </h4>
+          <ExternalLink className="w-3.5 h-3.5 text-neutral-400 group-hover:text-red-400 shrink-0 mt-0.5 transition-colors" />
+        </div>
         {video.description && (
           <p className="text-xs text-neutral-400 mt-1.5 line-clamp-2 leading-relaxed">
             {video.description}
           </p>
         )}
+        <span className="mt-2 text-[10px] uppercase font-mono tracking-wider text-red-400/90 flex items-center gap-1">
+          Open on YouTube <ExternalLink className="w-2.5 h-2.5" />
+        </span>
       </div>
     </motion.div>
   );
@@ -130,8 +172,8 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(({ video, idx, onSelect }
 export const VideosSection: React.FC = () => {
   const { data: settings } = useSiteSettings();
   const { data: videos, isLoading } = videoApi.useGetAll();
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
 
   // Map database videos to viewfinder image format using automatic YouTube thumbnails
   const dbImages: ViewfinderImage[] = useMemo(() => {
@@ -167,13 +209,11 @@ export const VideosSection: React.FC = () => {
   }, [dbImages, settings?.sectionCovers?.videos]);
 
   const handleSelectVideo = useCallback((video: Video) => {
-    setSelectedVideo(video);
+    const watchUrl = getYouTubeWatchUrl(video.videoUrl);
+    if (watchUrl) {
+      window.open(watchUrl, '_blank', 'noopener,noreferrer');
+    }
   }, []);
-
-  // Fetch detailed video with approved comments when modal is opened
-  const { data: videoDetail, isLoading: isLoadingDetail } = videoApi.useGetById(
-    selectedVideo?.id || ''
-  );
 
   // Listen for global open-archive events (from Portfolio dropdown or external deep links)
   useEffect(() => {
@@ -209,13 +249,26 @@ export const VideosSection: React.FC = () => {
         </div>
 
         {/* MEDIA PREVIEW: RIGHT ON DESKTOP, TOP ON MOBILE */}
-        <div className="w-full lg:col-span-7 order-1 lg:order-2 flex items-center justify-center">
+        <div className="scroll-reveal scroll-reveal-scale w-full lg:col-span-7 order-1 lg:order-2 flex items-center justify-center">
           <CameraViewfinderCarousel
             images={carouselImages}
             intervalMs={3500}
             aspectRatioClass="aspect-[16/10]"
             bracketColorClass="border-white"
-            onClickImage={() => setIsGalleryOpen(true)}
+            onClickImage={(idx) => {
+              if (typeof idx === 'number' && carouselImages[idx]) {
+                const img = carouselImages[idx];
+                const video = (videos || []).find((v) => String(v.id) === String(img.id));
+                if (video?.videoUrl) {
+                  const watchUrl = getYouTubeWatchUrl(video.videoUrl);
+                  if (watchUrl) {
+                    window.open(watchUrl, '_blank', 'noopener,noreferrer');
+                    return;
+                  }
+                }
+              }
+              setIsGalleryOpen(true);
+            }}
           />
         </div>
       </div>
@@ -223,18 +276,26 @@ export const VideosSection: React.FC = () => {
       {/* ============================================================== */}
       {/* FULL-SCREEN 'VIEW ALL' MODAL SHOWCASE                          */}
       {/* ============================================================== */}
-      <AnimatePresence>
-        {isGalleryOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col overflow-hidden transform-gpu"
-            style={{ transform: 'translate3d(0, 0, 0)' }}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isGalleryOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-[100] bg-dark-grunge flex flex-col overflow-hidden transform-gpu select-none text-white"
+            style={{
+              backgroundColor: '#000000',
+              backgroundImage: "url('/images/dark-grunge-texture.png?v=2')",
+              backgroundRepeat: 'repeat',
+              backgroundSize: '400px auto',
+              transform: 'translate3d(0, 0, 0)',
+            }}
           >
             {/* Modal Top Bar */}
-            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-neutral-950/90 backdrop-blur-md z-10">
+            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-black/40 backdrop-blur-md z-10">
               <div className="flex items-center gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                 <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
@@ -245,10 +306,11 @@ export const VideosSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsGalleryOpen(false)}
-                className="p-2 sm:p-2.5 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-2 text-xs uppercase font-bold tracking-wider"
+                className="p-1.5 sm:p-2 text-white/80 hover:text-white transition-opacity cursor-pointer focus:outline-none"
+                title="Close Archive"
+                aria-label="Close Archive"
               >
-                <X className="w-4 h-4" />
-                <span className="hidden sm:inline">Close</span>
+                <X className="w-6 h-6 sm:w-6 sm:h-6" />
               </button>
             </div>
 
@@ -279,12 +341,21 @@ export const VideosSection: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                      setActiveVideoId(null);
+                    }
+                  }}
+                >
                   {videos.map((video, idx) => (
                     <VideoCard
                       key={video.id}
                       video={video}
                       idx={idx}
+                      isActive={activeVideoId === video.id}
+                      onTap={() => setActiveVideoId(video.id)}
                       onSelect={handleSelectVideo}
                     />
                   ))}
@@ -293,101 +364,9 @@ export const VideosSection: React.FC = () => {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
-
-      {/* ============================================================== */}
-      {/* VIDEO PLAYER & COMMENTS MODAL                                  */}
-      {/* ============================================================== */}
-      <AnimatePresence>
-        {selectedVideo && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-4xl max-h-[90vh] rounded-none overflow-hidden flex flex-col md:flex-row border border-white/20 bg-neutral-950 shadow-2xl"
-            >
-              {/* Action Buttons */}
-              <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-                <a
-                  href={getYouTubeWatchUrl(selectedVideo.videoUrl)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 bg-black/60 hover:bg-red-600 text-white border border-white/20 transition-colors cursor-pointer"
-                  title="Watch on YouTube"
-                >
-                  <YouTubeIcon className="w-4 h-4 text-red-500 hover:text-white" />
-                </a>
-                <Link
-                  to={`/videos/${selectedVideo.id}`}
-                  className="p-2 bg-black/60 hover:bg-white hover:text-black text-white border border-white/20 transition-colors cursor-pointer"
-                  title="Open dedicated full page"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </Link>
-                <button
-                  onClick={() => setSelectedVideo(null)}
-                  className="p-2 bg-black/60 hover:bg-white hover:text-black text-white border border-white/20 transition-colors cursor-pointer"
-                  aria-label="Close video preview"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Video Player Display */}
-              <div className="w-full md:w-3/5 bg-black flex items-center justify-center aspect-video">
-                <iframe
-                  src={getYouTubeEmbedUrl(selectedVideo.videoUrl, true)}
-                  title={selectedVideo.title}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
-
-              {/* Details & Comments Drawer */}
-              <div className="w-full md:w-2/5 p-6 flex flex-col overflow-y-auto bg-neutral-900/90 max-h-[50vh] md:max-h-[85vh]">
-                <div className="shrink-0">
-                  <span className="text-xs uppercase font-mono text-neutral-400 font-semibold tracking-wider">
-                    {selectedVideo.category || 'Video'}
-                  </span>
-                  <h3 className="text-xl font-bold uppercase text-white mt-1">{selectedVideo.title}</h3>
-                  {selectedVideo.description && (
-                    <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
-                      {selectedVideo.description}
-                    </p>
-                  )}
-
-                  <hr className="my-4 border-white/10" />
-
-                  {/* Comments Header */}
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5 text-white" /> Discussion Feed
-                    </h4>
-                    <span className="text-[11px] font-mono text-neutral-400">
-                      {videoDetail?.comments?.length ?? 0} {videoDetail?.comments?.length === 1 ? 'comment' : 'comments'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Approved Comments Feed */}
-                <div className="flex-1 min-h-0">
-                  <CommentList
-                    comments={videoDetail?.comments}
-                    isLoading={isLoadingDetail}
-                  />
-                </div>
-
-                {/* Submit New Comment */}
-                <div className="mt-4 shrink-0">
-                  <CommentForm videoId={selectedVideo.id} />
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
     </section>
   );
 };

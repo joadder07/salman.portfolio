@@ -15,14 +15,14 @@ export const useGlobalScrollReveal = () => {
     // Flag indicating whether the initial curtain animation has completed (or not on home page)
     let isCurtainOpened = !isHomeRoute;
 
-    // Check and mark elements visible in the initial viewport
+    // Check and mark elements genuinely visible in the initial viewport
     const markVisibleInViewport = () => {
       const viewportHeight = window.innerHeight;
       const elements = document.querySelectorAll('.scroll-reveal:not(.is-revealed)');
       elements.forEach((el) => {
         const rect = el.getBoundingClientRect();
-        // Reveal if element is in the viewport or slightly below
-        if (rect.top <= viewportHeight + 100 && rect.bottom >= -50) {
+        // Reveal only elements genuinely within the initial viewport
+        if (rect.top < viewportHeight - 20 && rect.bottom > 10) {
           el.classList.add('is-revealed');
         }
       });
@@ -41,8 +41,8 @@ export const useGlobalScrollReveal = () => {
           },
           {
             root: null,
-            rootMargin: '120px 0px 60px 0px',
-            threshold: 0.01,
+            rootMargin: '0px 0px -40px 0px',
+            threshold: 0.05,
           }
         )
       : null;
@@ -54,7 +54,7 @@ export const useGlobalScrollReveal = () => {
 
       elements.forEach((el) => {
         const rect = el.getBoundingClientRect();
-        const inViewport = rect.top <= viewportHeight + 100 && rect.bottom >= -50;
+        const inViewport = rect.top < viewportHeight - 20 && rect.bottom > 10;
 
         if (inViewport) {
           if (isCurtainOpened) {
@@ -78,9 +78,9 @@ export const useGlobalScrollReveal = () => {
     let curtainTimer: ReturnType<typeof setTimeout> | null = null;
 
     if (isHomeRoute) {
-      // Solid black curtain completes opening at ~820ms.
+      // Solid black curtain completes opening at ~1050ms.
       // Trigger smoothly at curtain finish:
-      curtainTimer = setTimeout(triggerCurtainCompletionReveal, 820);
+      curtainTimer = setTimeout(triggerCurtainCompletionReveal, 1050);
       window.addEventListener('curtain-opened', triggerCurtainCompletionReveal, { once: true });
     } else {
       markVisibleInViewport();

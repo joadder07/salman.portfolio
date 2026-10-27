@@ -28,6 +28,14 @@ app.use(
 // Compression
 app.use(compression());
 
+// Cache-Control headers for read-only public GET requests
+app.use((req: Request, res: Response, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api/auth') && !req.path.startsWith('/api/admin')) {
+    res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+  }
+  next();
+});
+
 // Request logging
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));

@@ -17,6 +17,9 @@ export class CommentService {
         include: {
           photography: { select: { id: true, title: true } },
           video: { select: { id: true, title: true } },
+          art: { select: { id: true, title: true } },
+          hobby: { select: { id: true, name: true } },
+          pet: { select: { id: true, name: true } },
         },
       }),
       prisma.comment.count({ where }),
@@ -32,6 +35,9 @@ export class CommentService {
     content: string;
     photographyId?: string;
     videoId?: string;
+    artId?: string;
+    hobbyId?: string;
+    petId?: string;
   }) {
     return prisma.comment.create({ data });
   }

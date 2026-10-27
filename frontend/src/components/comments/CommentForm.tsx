@@ -8,12 +8,20 @@ import toast from 'react-hot-toast';
 interface CommentFormProps {
   photographyId?: string;
   videoId?: string;
+  artId?: string;
+  hobbyId?: string;
+  petId?: string;
+  placeholder?: string;
   onSuccess?: () => void;
 }
 
 export const CommentForm: React.FC<CommentFormProps> = ({
   photographyId,
   videoId,
+  artId,
+  hobbyId,
+  petId,
+  placeholder = 'What do you think about this?',
   onSuccess,
 }) => {
   const [authorName, setAuthorName] = useState('');
@@ -41,6 +49,9 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         content: content.trim(),
         photographyId,
         videoId,
+        artId,
+        hobbyId,
+        petId,
       });
 
       toast.success('Comment submitted! It will appear after moderation.', {
@@ -87,7 +98,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
 
       <div className="relative">
         <textarea
-          placeholder="What do you think about this capture?"
+          placeholder={placeholder}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={3}

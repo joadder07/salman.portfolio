@@ -1,10 +1,14 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, PawPrint, Sparkles, X, Maximize2, ArrowLeft } from 'lucide-react';
+import { Heart, PawPrint, Sparkles, X, Maximize2, ArrowLeft, MessageSquare } from 'lucide-react';
 import { hobbyApi, petApi, Hobby, Pet } from '@/api/content.api';
 import { useSiteSettings } from '@/api/settings.api';
+import { CommentList, CommentForm } from '@/components/comments';
 import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
 import { getOptimizedImageUrl } from '@/components/ui/CldImage';
+import { InstantModalImage } from '@/components/ui/InstantModalImage';
+import { preloadImage, preloadImagesIdle } from '@/utils/imagePreload';
 import { Skeleton } from '@/components/shared';
 
 type UnifiedItem =
@@ -42,9 +46,11 @@ interface HobbyPetCardProps {
   item: UnifiedItem;
   idx: number;
   onSelect: (item: UnifiedItem) => void;
+  isActive?: boolean;
+  onTap?: () => void;
 }
 
-const HobbyPetCard: React.FC<HobbyPetCardProps> = React.memo(({ item, idx, onSelect }) => {
+const HobbyPetCard: React.FC<HobbyPetCardProps> = React.memo(({ item, idx, onSelect, isActive, onTap }) => {
   const isPet = item.type === 'pet';
   const name = item.data.name;
   const description = item.data.description;
@@ -62,6 +68,33 @@ const HobbyPetCard: React.FC<HobbyPetCardProps> = React.memo(({ item, idx, onSel
       : '';
   }, [imageUrl]);
 
+  const modalUrl = useMemo(() => {
+    return imageUrl
+      ? getOptimizedImageUrl(imageUrl, {
+          width: 1400,
+          crop: 'limit',
+          quality: 'auto',
+          format: 'auto',
+        })
+      : '';
+  }, [imageUrl]);
+
+  const handlePreload = useCallback(() => {
+    if (modalUrl) preloadImage(modalUrl, 'high');
+  }, [modalUrl]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    const isTouch = typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    if (isTouch && !isActive) {
+      e.stopPropagation();
+      handlePreload();
+      onTap?.();
+      return;
+    }
+    handlePreload();
+    onSelect(item);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -71,8 +104,13 @@ const HobbyPetCard: React.FC<HobbyPetCardProps> = React.memo(({ item, idx, onSel
         delay: Math.min(idx * 0.02, 0.16),
         ease: [0.16, 1, 0.3, 1],
       }}
-      onClick={() => onSelect(item)}
-      className="rounded-none border border-neutral-850 bg-neutral-950 p-5 hover:border-neutral-500 transition-colors flex flex-col justify-between group cursor-pointer gpu-accelerated-card"
+      onClick={handleCardClick}
+      onMouseEnter={handlePreload}
+      onPointerDown={handlePreload}
+      onTouchStart={handlePreload}
+      className={`rounded-none border bg-neutral-950 p-5 transition-all flex flex-col justify-between group cursor-pointer gpu-accelerated-card ${
+        isActive ? 'border-white/60 shadow-lg' : 'border-neutral-850 hover:border-neutral-500'
+      }`}
       style={{
         transform: 'translate3d(0, 0, 0)',
         willChange: 'transform',
@@ -87,7 +125,9 @@ const HobbyPetCard: React.FC<HobbyPetCardProps> = React.memo(({ item, idx, onSel
             <img
               src={thumbUrl}
               alt={name}
-              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 gpu-accelerated-image"
+              className={`w-full h-full object-cover transition-transform duration-500 ease-out gpu-accelerated-image ${
+                isActive ? 'scale-105' : 'group-hover:scale-105'
+              }`}
               loading="lazy"
               decoding="async"
               style={{
@@ -96,8 +136,23 @@ const HobbyPetCard: React.FC<HobbyPetCardProps> = React.memo(({ item, idx, onSel
                 WebkitBackfaceVisibility: 'hidden',
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-            <div className="absolute top-2.5 left-2.5 w-7 h-7 bg-black/80 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div
+              className={`absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent transition-opacity p-3 flex flex-col justify-end pointer-events-none ${
+                isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+            >
+              <h4 className="text-sm font-bold uppercase text-white truncate">
+                {name}
+              </h4>
+              <span className="text-[9px] text-white/60 font-mono mt-0.5 sm:hidden">
+                Tap again to view full profile
+              </span>
+            </div>
+            <div
+              className={`absolute top-2.5 left-2.5 w-7 h-7 bg-black/80 border border-white/20 flex items-center justify-center transition-opacity ${
+                isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+            >
               <Maximize2 className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase bg-black/80 backdrop-blur-md text-white border border-white/10 tracking-widest">
@@ -151,8 +206,17 @@ export const HobbiesPetsSection: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<'hobbies' | 'pets' | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<UnifiedItem | null>(null);
+  const [modalTab, setModalTab] = useState<'item' | 'comments'>('item');
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
   const isLoading = isLoadingHobbies || isLoadingPets;
+
+  // Fetch comments for active selected pet or hobby
+  const petQuery = petApi.useGetById(selectedItem?.type === 'pet' ? selectedItem.data.id : '');
+  const hobbyQuery = hobbyApi.useGetById(selectedItem?.type === 'hobby' ? selectedItem.data.id : '');
+
+  const activeDetail = selectedItem?.type === 'pet' ? petQuery.data : hobbyQuery.data;
+  const isLoadingDetail = selectedItem?.type === 'pet' ? petQuery.isLoading : hobbyQuery.isLoading;
 
   // Unify items
   const combinedItems: UnifiedItem[] = useMemo(() => [
@@ -180,9 +244,73 @@ export const HobbiesPetsSection: React.FC = () => {
     setSelectedItem(null);
   }, []);
 
-  const handleSelectHobbyPet = useCallback((item: UnifiedItem) => {
-    setSelectedItem(item);
+  const mobileModalScrollRef = useRef<HTMLDivElement>(null);
+  const mobileCommentsRef = useRef<HTMLDivElement>(null);
+
+  const scrollToItem = useCallback(() => {
+    setModalTab('item');
+    mobileModalScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  const scrollToComments = useCallback(() => {
+    setModalTab('comments');
+    mobileCommentsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  const handleSelectHobbyPet = useCallback((item: UnifiedItem) => {
+    if (item.data.imageUrl) {
+      preloadImage(
+        getOptimizedImageUrl(item.data.imageUrl, {
+          width: 1400,
+          crop: 'limit',
+          quality: 'auto',
+          format: 'auto',
+        }),
+        'high'
+      );
+    }
+    setSelectedItem(item);
+    setModalTab('item');
+  }, []);
+
+  const selectedItemThumbUrl = useMemo(() => {
+    if (!selectedItem?.data.imageUrl) return '';
+    return getOptimizedImageUrl(selectedItem.data.imageUrl, {
+      width: 640,
+      height: 420,
+      crop: 'fill',
+      quality: 'auto',
+      format: 'auto',
+    });
+  }, [selectedItem]);
+
+  const selectedItemModalUrl = useMemo(() => {
+    if (!selectedItem?.data.imageUrl) return '';
+    return getOptimizedImageUrl(selectedItem.data.imageUrl, {
+      width: 1400,
+      crop: 'limit',
+      quality: 'auto',
+      format: 'auto',
+    });
+  }, [selectedItem]);
+
+  // Preload top gallery modal images during idle browser time
+  useEffect(() => {
+    if (isGalleryOpen && filteredItems.length > 0) {
+      const topUrls = filteredItems
+        .filter((it) => it.data.imageUrl)
+        .slice(0, 10)
+        .map((it) =>
+          getOptimizedImageUrl(it.data.imageUrl!, {
+            width: 1400,
+            crop: 'limit',
+            quality: 'auto',
+            format: 'auto',
+          })
+        );
+      preloadImagesIdle(topUrls);
+    }
+  }, [isGalleryOpen, filteredItems]);
 
   // Map to viewfinder carousel images
   const dbImages: ViewfinderImage[] = useMemo(() => {
@@ -278,7 +406,7 @@ export const HobbiesPetsSection: React.FC = () => {
           </div>
 
           {/* MEDIA PREVIEW: RIGHT ON DESKTOP, TOP ON MOBILE */}
-          <div className="w-full lg:col-span-7 order-1 lg:order-2 flex items-center justify-center">
+          <div className="scroll-reveal scroll-reveal-scale w-full lg:col-span-7 order-1 lg:order-2 flex items-center justify-center">
             <CameraViewfinderCarousel
               images={carouselImages}
               intervalMs={3500}
@@ -293,24 +421,31 @@ export const HobbiesPetsSection: React.FC = () => {
       {/* ============================================================== */}
       {/* FULL-SCREEN 'VIEW ALL' MODAL GALLERY                           */}
       {/* ============================================================== */}
-      <AnimatePresence>
-        {isGalleryOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col overflow-hidden text-white transform-gpu"
-            style={{ transform: 'translate3d(0, 0, 0)' }}
-          >
-            {/* Modal Top Bar */}
-            <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-neutral-950/90 backdrop-blur-md z-10">
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isGalleryOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-[100] bg-dark-grunge flex flex-col overflow-hidden text-white select-none"
+                style={{
+                  backgroundColor: '#000000',
+                  backgroundImage: "url('/images/dark-grunge-texture.png?v=2')",
+                  backgroundRepeat: 'repeat',
+                  backgroundSize: '400px auto',
+                }}
+              >
+                {/* Modal Top Bar */}
+                <div className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-white/10 shrink-0 bg-black/40 backdrop-blur-md z-10">
               <div className="flex items-center gap-4">
                 {selectedCategory !== null ? (
                   <button
                     type="button"
                     onClick={() => setSelectedCategory(null)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono uppercase tracking-wider text-neutral-300 hover:text-white border border-white/20 hover:border-white bg-neutral-900/80 transition-all cursor-pointer group"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono uppercase tracking-wider text-neutral-300 hover:text-white border border-white/20 hover:border-white bg-white/5 transition-all cursor-pointer group"
                     title="Back to Selection Gateway"
                   >
                     <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
@@ -331,7 +466,7 @@ export const HobbiesPetsSection: React.FC = () => {
               <div className="flex items-center gap-4">
                 {/* Filter Pills inside modal (only shown in collection view) */}
                 {selectedCategory !== null && (
-                  <div className="hidden sm:flex items-center gap-1.5 p-1 border border-white/10 bg-neutral-900/60">
+                  <div className="hidden sm:flex items-center gap-1.5 p-1 border border-white/10 bg-black/40">
                     {(['hobbies', 'pets'] as const).map((tab) => (
                       <button
                         key={tab}
@@ -352,17 +487,18 @@ export const HobbiesPetsSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="p-2.5 rounded-none border border-white/20 text-white/80 hover:text-white hover:border-white transition-colors cursor-pointer"
+                  className="p-1.5 sm:p-2 text-white/80 hover:text-white transition-opacity cursor-pointer focus:outline-none"
                   title="Close Gallery"
+                  aria-label="Close Gallery"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-6 h-6 sm:w-6 sm:h-6" />
                 </button>
               </div>
             </div>
 
             {/* Mobile Filter Row (only shown in collection view) */}
             {selectedCategory !== null && (
-              <div className="sm:hidden flex items-center justify-center gap-2 px-6 py-3 border-b border-white/10 bg-neutral-950">
+              <div className="sm:hidden flex items-center justify-center gap-2 px-6 py-3 border-b border-white/10 bg-black/40 backdrop-blur-md">
                 {(['hobbies', 'pets'] as const).map((tab) => (
                   <button
                     key={tab}
@@ -380,101 +516,52 @@ export const HobbiesPetsSection: React.FC = () => {
               </div>
             )}
 
+            {/* Gallery Sub-bar Hint (shown in collection view below filter tabs) */}
+            {selectedCategory !== null && (
+              <div className="px-6 sm:px-10 py-2 sm:py-2.5 border-b border-white/5 bg-black/60 backdrop-blur-md flex items-center justify-end shrink-0">
+                <span className="text-[11px] sm:text-xs text-neutral-400 font-light tracking-wide whitespace-nowrap select-none">
+                  Click to view the full image
+                </span>
+              </div>
+            )}
+
             {selectedCategory === null ? (
-              /* LANDING / SELECTION GATEWAY VIEW */
-              <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 max-w-5xl mx-auto w-full overflow-y-auto">
+              /* LANDING / SELECTION GATEWAY VIEW: Clean Minimalist Style Matching Mobile Menu */
+              <div className="flex-1 flex flex-col justify-center items-start px-8 sm:px-16 md:px-24 lg:px-32 max-w-4xl mx-auto w-full overflow-y-auto">
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full text-center mb-8 sm:mb-12"
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col items-start space-y-7 sm:space-y-10"
                 >
-                  <span className="text-xs font-mono uppercase tracking-[0.25em] text-neutral-400 font-semibold">
-                    Archive Gateway
-                  </span>
-                  <h3 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white mt-2 font-heading">
-                    Choose an Archive
-                  </h3>
-                  <p className="mt-3 text-sm sm:text-base text-neutral-400 max-w-lg mx-auto font-light leading-relaxed">
-                    Select a collection below to view detailed photo records, descriptions, and creative journeys.
-                  </p>
+                  {/* 1. HOBBIES › */}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategory('hobbies')}
+                      className="group inline-flex items-center text-3xl min-[360px]:text-4xl sm:text-5xl md:text-6xl font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit cursor-pointer text-left"
+                    >
+                      <span>HOBBIES</span>
+                      <span className="text-2xl min-[360px]:text-3xl sm:text-4xl md:text-5xl font-light text-white/50 ml-3 sm:ml-4 group-hover:translate-x-2 transition-transform">
+                        ›
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* 2. PETS › */}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategory('pets')}
+                      className="group inline-flex items-center text-3xl min-[360px]:text-4xl sm:text-5xl md:text-6xl font-black uppercase text-white font-heading tracking-tight hover:text-neutral-300 transition-colors w-fit cursor-pointer text-left"
+                    >
+                      <span>PETS</span>
+                      <span className="text-2xl min-[360px]:text-3xl sm:text-4xl md:text-5xl font-light text-white/50 ml-3 sm:ml-4 group-hover:translate-x-2 transition-transform">
+                        ›
+                      </span>
+                    </button>
+                  </div>
                 </motion.div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full">
-                  {/* OPTION 1: HOBBIES */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-                    whileHover={{ scale: 1.015 }}
-                    whileTap={{ scale: 0.985 }}
-                    onClick={() => setSelectedCategory('hobbies')}
-                    className="group relative border border-neutral-800 hover:border-white bg-neutral-900/50 hover:bg-neutral-900/80 p-8 sm:p-10 flex flex-col justify-between cursor-pointer transition-all duration-300 shadow-2xl gpu-accelerated-card"
-                  >
-                    <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-
-                    <div>
-                      <div className="flex items-center justify-between mb-6 sm:mb-8">
-                        <div className="w-14 h-14 bg-neutral-950 border border-neutral-800 group-hover:border-rose-500/50 flex items-center justify-center transition-colors">
-                          <Heart className="w-7 h-7 text-rose-400 group-hover:scale-110 transition-transform duration-300" />
-                        </div>
-                        <span className="px-3 py-1 font-mono text-[11px] uppercase tracking-wider bg-neutral-950 border border-neutral-800 text-neutral-400">
-                          {hobbies.length} {hobbies.length === 1 ? 'Pursuit' : 'Pursuits'}
-                        </span>
-                      </div>
-
-                      <h4 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-white font-heading group-hover:text-rose-400 transition-colors">
-                        HOBBIES
-                      </h4>
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-neutral-800/80 flex items-center justify-between">
-                      <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-white group-hover:translate-x-1 transition-transform">
-                        Explore Hobbies
-                      </span>
-                      <span className="text-base font-bold text-rose-400 group-hover:translate-x-2 transition-transform duration-200">
-                        →
-                      </span>
-                    </div>
-                  </motion.div>
-
-                  {/* OPTION 2: PETS */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
-                    whileHover={{ scale: 1.015 }}
-                    whileTap={{ scale: 0.985 }}
-                    onClick={() => setSelectedCategory('pets')}
-                    className="group relative border border-neutral-800 hover:border-white bg-neutral-900/50 hover:bg-neutral-900/80 p-8 sm:p-10 flex flex-col justify-between cursor-pointer transition-all duration-300 shadow-2xl gpu-accelerated-card"
-                  >
-                    <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-400 opacity-60 group-hover:opacity-100 transition-opacity" />
-
-                    <div>
-                      <div className="flex items-center justify-between mb-6 sm:mb-8">
-                        <div className="w-14 h-14 bg-neutral-950 border border-neutral-800 group-hover:border-amber-400/50 flex items-center justify-center transition-colors">
-                          <PawPrint className="w-7 h-7 text-amber-300 group-hover:scale-110 transition-transform duration-300" />
-                        </div>
-                        <span className="px-3 py-1 font-mono text-[11px] uppercase tracking-wider bg-neutral-950 border border-neutral-800 text-neutral-400">
-                          {pets.length} {pets.length === 1 ? 'Companion' : 'Companions'}
-                        </span>
-                      </div>
-
-                      <h4 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-white font-heading group-hover:text-amber-300 transition-colors">
-                        PETS
-                      </h4>
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-neutral-800/80 flex items-center justify-between">
-                      <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-white group-hover:translate-x-1 transition-transform">
-                        Explore Pets
-                      </span>
-                      <span className="text-base font-bold text-amber-300 group-hover:translate-x-2 transition-transform duration-200">
-                        →
-                      </span>
-                    </div>
-                  </motion.div>
-                </div>
               </div>
             ) : (
               /* SPECIFIC COLLECTION GRID VIEW */
@@ -543,113 +630,302 @@ export const HobbiesPetsSection: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredItems.map((item, idx) => (
-                    <HobbyPetCard
-                      key={item.type === 'pet' ? `pet-${item.data.id}` : `hobby-${item.data.id}`}
-                      item={item}
-                      idx={idx}
-                      onSelect={handleSelectHobbyPet}
-                    />
-                  ))}
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                      setActiveItemId(null);
+                    }
+                  }}
+                >
+                  {filteredItems.map((item, idx) => {
+                    const itemKey = item.type === 'pet' ? `pet-${item.data.id}` : `hobby-${item.data.id}`;
+                    return (
+                      <HobbyPetCard
+                        key={itemKey}
+                        item={item}
+                        idx={idx}
+                        isActive={activeItemId === itemKey}
+                        onTap={() => setActiveItemId(itemKey)}
+                        onSelect={handleSelectHobbyPet}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* ============================================================== */}
-      {/* PET / HOBBY LIGHTBOX MODAL (Smooth Hardware Accelerated)       */}
+      {/* PET / HOBBY LIGHTBOX & COMMENTS MODAL (Mobile-Optimized)       */}
       {/* ============================================================== */}
-      <AnimatePresence>
-        {selectedItem && (
-          <motion.div
-            key="item-lightbox"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 transform-gpu"
-            style={{ transform: 'translate3d(0, 0, 0)' }}
-            onClick={() => setSelectedItem(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.96, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.96, opacity: 0 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-3xl bg-neutral-950 border border-neutral-800 rounded-none overflow-hidden shadow-2xl gpu-accelerated-card"
-            >
-              {/* Close Button */}
-              <button
-                type="button"
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {selectedItem && (
+              <motion.div
+                key="item-lightbox"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-[105] flex items-center justify-center p-2 sm:p-4 bg-black/95 md:bg-black/90 md:backdrop-blur-md"
                 onClick={() => setSelectedItem(null)}
-                className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-black/80 border border-neutral-800 text-neutral-400 hover:text-white transition-all cursor-pointer"
-                title="Close"
               >
-                <X className="w-4 h-4" />
-              </button>
-
-              {/* Full Image */}
-              {selectedItem.data.imageUrl && (
-                <div className="w-full max-h-[65vh] bg-black flex items-center justify-center overflow-hidden">
-                  <img
-                    src={getOptimizedImageUrl(selectedItem.data.imageUrl, {
-                      width: 1400,
-                      quality: 'auto',
-                      format: 'auto',
-                    })}
-                    alt={selectedItem.data.name}
-                    className="w-full h-full max-h-[65vh] object-contain gpu-accelerated-image"
-                    decoding="async"
-                    style={{ transform: 'translate3d(0, 0, 0)' }}
-                  />
-                </div>
-              )}
-
-              {/* Modal Details */}
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <div>
-                    <h3 className="text-xl font-black uppercase tracking-wider text-white flex items-center gap-2">
-                      {selectedItem.type === 'pet' ? (
-                        <PawPrint className="w-5 h-5 text-neutral-400" />
-                      ) : (
-                        <Heart className="w-5 h-5 text-rose-400" />
-                      )}
-                      {selectedItem.data.name}
-                    </h3>
-                    <p className="text-xs uppercase font-mono tracking-widest text-neutral-400 mt-1">
-                      {selectedItem.type === 'pet' ? (
-                        <>
-                          {(selectedItem.data as Pet).species}
-                          {(selectedItem.data as Pet).breed
-                            ? ` • ${(selectedItem.data as Pet).breed}`
-                            : ''}
-                        </>
-                      ) : (
-                        'Creative Hobby & Passion'
-                      )}
-                    </p>
+                <motion.div
+                  initial={{ scale: 0.97, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.97, opacity: 0 }}
+                  transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    transform: 'translate3d(0, 0, 0)',
+                    willChange: 'transform, opacity',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative w-full max-w-4xl max-h-[92vh] bg-neutral-950 border border-neutral-800 rounded-none overflow-hidden shadow-2xl flex flex-col md:flex-row"
+                >
+                  {/* Desktop Close Button */}
+                  <div className="hidden md:flex absolute top-4 right-4 z-20 items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedItem(null)}
+                      className="p-2 bg-black/75 hover:bg-white hover:text-black text-white border border-white/20 transition-colors cursor-pointer"
+                      title="Close"
+                      aria-label="Close"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <span className="text-[10px] font-mono uppercase bg-neutral-900 text-neutral-300 px-3 py-1 border border-neutral-800 tracking-wider">
-                    {selectedItem.type === 'pet' ? 'Pet Profile' : 'Hobby'}
-                  </span>
-                </div>
 
-                {selectedItem.data.description && (
-                  <p className="text-sm text-neutral-400 leading-relaxed font-light mt-3">
-                    {selectedItem.data.description}
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
+                  {/* Mobile Header Bar: Pet/Hobby, COMMENTS, and Close ('×') cleanly aligned */}
+                  <div className="md:hidden flex items-center justify-between border-b border-white/10 bg-black/95 p-1.5 shrink-0 gap-1.5">
+                    <div className="flex items-center flex-1 gap-1">
+                      <button
+                        type="button"
+                        onClick={scrollToItem}
+                        className={`flex-1 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          modalTab === 'item'
+                            ? 'bg-white text-black shadow'
+                            : 'text-neutral-400 hover:text-white'
+                        }`}
+                      >
+                        {selectedItem.type === 'pet' ? (
+                          <PawPrint className="w-3.5 h-3.5" />
+                        ) : (
+                          <Heart className="w-3.5 h-3.5" />
+                        )}
+                        {selectedItem.type === 'pet' ? 'Pet' : 'Hobby'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={scrollToComments}
+                        className={`flex-1 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          modalTab === 'comments'
+                            ? 'bg-white text-black shadow'
+                            : 'text-neutral-400 hover:text-white'
+                        }`}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        Comments ({activeDetail?.comments?.length ?? 0})
+                      </button>
+                    </div>
+
+                    {/* Mobile Close Button ('×' only) */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedItem(null)}
+                      className="p-2 text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                      aria-label="Close profile preview"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* -------------------------------------------------------- */}
+                  {/* MOBILE VIEW (Continuous Natural Scroll with Comments)    */}
+                  {/* -------------------------------------------------------- */}
+                  <div
+                    ref={mobileModalScrollRef}
+                    className="md:hidden flex-1 flex flex-col min-h-0 overflow-y-auto"
+                  >
+                    {/* Image display */}
+                    {selectedItem.data.imageUrl && (
+                      <div className="w-full bg-black flex items-center justify-center p-2 min-h-[220px] max-h-[50vh] overflow-hidden shrink-0">
+                        <InstantModalImage
+                          thumbSrc={selectedItemThumbUrl}
+                          src={selectedItemModalUrl}
+                          alt={selectedItem.data.name}
+                          className="max-w-full max-h-[48vh] w-auto h-auto object-contain select-none mx-auto"
+                        />
+                      </div>
+                    )}
+
+                    {/* Details and Comments Section underneath */}
+                    <div className="p-4 bg-neutral-900/90 flex flex-col flex-1">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div>
+                          <h3 className="text-lg font-bold uppercase text-white flex items-center gap-2">
+                            {selectedItem.type === 'pet' ? (
+                              <PawPrint className="w-4 h-4 text-neutral-400" />
+                            ) : (
+                              <Heart className="w-4 h-4 text-rose-400" />
+                            )}
+                            {selectedItem.data.name}
+                          </h3>
+                          <p className="text-[11px] uppercase font-mono tracking-wider text-neutral-400 mt-0.5">
+                            {selectedItem.type === 'pet' ? (
+                              <>
+                                {(selectedItem.data as Pet).species}
+                                {(selectedItem.data as Pet).breed
+                                  ? ` • ${(selectedItem.data as Pet).breed}`
+                                  : ''}
+                              </>
+                            ) : (
+                              'Creative Hobby & Passion'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {selectedItem.data.description && (
+                        <p className="text-xs text-neutral-400 leading-relaxed font-light mt-1">
+                          {selectedItem.data.description}
+                        </p>
+                      )}
+
+                      <hr className="my-4 border-white/10" />
+
+                      {/* Comments Section directly underneath image */}
+                      <div ref={mobileCommentsRef} className="scroll-mt-3">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                            <MessageSquare className="w-3.5 h-3.5 text-white" /> Thoughts &amp; Notes
+                          </h4>
+                          <span className="text-[11px] font-mono text-neutral-400">
+                            {activeDetail?.comments?.length ?? 0} {activeDetail?.comments?.length === 1 ? 'comment' : 'comments'}
+                          </span>
+                        </div>
+
+                        {/* Approved Comments List */}
+                        <div className="mb-4">
+                          <CommentList
+                            comments={activeDetail?.comments}
+                            isLoading={isLoadingDetail}
+                          />
+                        </div>
+
+                        {/* Submit Comment Form directly visible underneath */}
+                        <div className="pt-2 border-t border-white/10">
+                          <CommentForm
+                            petId={selectedItem.type === 'pet' ? selectedItem.data.id : undefined}
+                            hobbyId={selectedItem.type === 'hobby' ? selectedItem.data.id : undefined}
+                            placeholder={
+                              selectedItem.type === 'pet'
+                                ? 'Leave a sweet thought about this pet...'
+                                : 'Share your thoughts on this hobby...'
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* -------------------------------------------------------- */}
+                  {/* DESKTOP VIEW (Side-by-side Image & Info/Comments)        */}
+                  {/* -------------------------------------------------------- */}
+                  <div className="hidden md:flex w-full">
+                    {/* Full Image */}
+                    {selectedItem.data.imageUrl && (
+                      <div className="w-3/5 bg-black flex items-center justify-center p-4 min-h-[300px] max-h-[85vh] overflow-hidden">
+                        <InstantModalImage
+                          thumbSrc={selectedItemThumbUrl}
+                          src={selectedItemModalUrl}
+                          alt={selectedItem.data.name}
+                          className="max-w-full max-h-[82vh] w-auto h-auto object-contain select-none mx-auto"
+                        />
+                      </div>
+                    )}
+
+                    {/* Info & Comments Sidebar */}
+                    <div className="w-2/5 p-6 flex flex-col overflow-y-auto bg-neutral-900/90 max-h-[85vh]">
+                      <div className="shrink-0">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div>
+                            <h3 className="text-xl font-black uppercase tracking-wider text-white flex items-center gap-2">
+                              {selectedItem.type === 'pet' ? (
+                                <PawPrint className="w-5 h-5 text-neutral-400" />
+                              ) : (
+                                <Heart className="w-5 h-5 text-rose-400" />
+                              )}
+                              {selectedItem.data.name}
+                            </h3>
+                            <p className="text-xs uppercase font-mono tracking-widest text-neutral-400 mt-1">
+                              {selectedItem.type === 'pet' ? (
+                                <>
+                                  {(selectedItem.data as Pet).species}
+                                  {(selectedItem.data as Pet).breed
+                                    ? ` • ${(selectedItem.data as Pet).breed}`
+                                    : ''}
+                                </>
+                              ) : (
+                                'Creative Hobby & Passion'
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        {selectedItem.data.description && (
+                          <p className="text-xs text-neutral-400 leading-relaxed font-light mt-2">
+                            {selectedItem.data.description}
+                          </p>
+                        )}
+
+                        <hr className="my-4 border-white/10" />
+
+                        {/* Comments Header */}
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                            <MessageSquare className="w-3.5 h-3.5 text-white" /> Community Thoughts
+                          </h4>
+                          <span className="text-[11px] font-mono text-neutral-400">
+                            {activeDetail?.comments?.length ?? 0} {activeDetail?.comments?.length === 1 ? 'comment' : 'comments'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Approved Comments Feed */}
+                      <div className="flex-1 min-h-0">
+                        <CommentList
+                          comments={activeDetail?.comments}
+                          isLoading={isLoadingDetail}
+                        />
+                      </div>
+
+                      {/* Submit New Comment */}
+                      <div className="mt-4 shrink-0">
+                        <CommentForm
+                          petId={selectedItem.type === 'pet' ? selectedItem.data.id : undefined}
+                          hobbyId={selectedItem.type === 'hobby' ? selectedItem.data.id : undefined}
+                          placeholder={
+                            selectedItem.type === 'pet'
+                              ? 'Leave a sweet thought about this pet...'
+                              : 'Share your thoughts on this hobby...'
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </section>
   );
 };

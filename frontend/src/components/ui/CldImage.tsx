@@ -54,14 +54,18 @@ export function buildCloudinaryUrl(
   if (options.height) transforms.push(`h_${options.height}`);
 
   // Cropping & Gravity
-  let cropType = 'auto';
+  let cropType = '';
   let gravity = options.gravity;
 
   if (typeof options.crop === 'string') {
     cropType = options.crop;
   } else if (options.crop && typeof options.crop === 'object') {
-    cropType = options.crop.type || 'auto';
+    cropType = options.crop.type || '';
     if (options.crop.gravity) gravity = options.crop.gravity;
+  } else if (options.width && options.height) {
+    cropType = 'fill';
+  } else if (options.width || options.height) {
+    cropType = 'limit';
   }
 
   if (cropType) {
@@ -70,7 +74,7 @@ export function buildCloudinaryUrl(
 
   if (gravity) {
     transforms.push(`g_${gravity}`);
-  } else if (cropType === 'auto' || cropType === 'fill') {
+  } else if (cropType === 'fill') {
     transforms.push('g_auto');
   }
 
@@ -95,10 +99,18 @@ export function buildCloudinaryUrl(
     try {
       const url = new URL(src);
       if (options.width) url.searchParams.set('w', String(options.width));
-      if (options.height) url.searchParams.set('h', String(options.height));
+      if (options.height) {
+        url.searchParams.set('h', String(options.height));
+      } else {
+        url.searchParams.delete('h');
+      }
       url.searchParams.set('auto', 'format');
-      url.searchParams.set('fit', 'crop');
-      url.searchParams.set('q', typeof options.quality === 'number' ? String(options.quality) : '80');
+      if (cropType === 'fill' || cropType === 'crop' || cropType === 'thumb') {
+        url.searchParams.set('fit', 'crop');
+      } else {
+        url.searchParams.set('fit', 'max');
+      }
+      url.searchParams.set('q', typeof options.quality === 'number' ? String(options.quality) : '85');
       return url.toString();
     } catch {
       return src;

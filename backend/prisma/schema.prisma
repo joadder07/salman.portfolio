@@ -63,27 +63,29 @@ model Video {
 }
 
 model Art {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   medium      String?
   year        String?
   description String?
   imageUrl    String
   palette     String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  comments    Comment[]
 }
 
 model Hobby {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String?
   iconUrl     String?
   imageUrl    String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  comments    Comment[]
 }
 
 model Pet {
@@ -97,6 +99,7 @@ model Pet {
   order       Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  comments    Comment[]
 }
 
 model Book {
@@ -136,6 +139,12 @@ model Comment {
   photography   Photography?  @relation(fields: [photographyId], references: [id], onDelete: Cascade)
   videoId       String?
   video         Video?        @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  artId         String?
+  art           Art?          @relation(fields: [artId], references: [id], onDelete: Cascade)
+  hobbyId       String?
+  hobby         Hobby?        @relation(fields: [hobbyId], references: [id], onDelete: Cascade)
+  petId         String?
+  pet           Pet?          @relation(fields: [petId], references: [id], onDelete: Cascade)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }

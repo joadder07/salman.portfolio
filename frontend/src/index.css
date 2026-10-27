@@ -48,8 +48,8 @@ html {
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background-color: #12100e;
-  background-image: url('/images/dark-grunge-texture.png');
+  background-color: #000000;
+  background-image: url('/images/dark-grunge-texture.png?v=2');
   background-repeat: repeat;
   background-size: 600px auto;
   color: hsl(var(--foreground));
@@ -68,7 +68,7 @@ button, a, input, textarea, select {
 
 @media (min-width: 768px) {
   body {
-    background-size: 741px 1024px;
+    background-size: 733px 1024px;
     background-attachment: fixed;
   }
 }
@@ -78,15 +78,15 @@ button, a, input, textarea, select {
 /* Authentic Dark Grunge Texture & Soft Light Paper Texture       */
 /* ============================================================== */
 .bg-dark-grunge {
-  background-color: #12100e;
-  background-image: url('/images/dark-grunge-texture.png');
+  background-color: #000000;
+  background-image: url('/images/dark-grunge-texture.png?v=2');
   background-repeat: repeat;
   background-size: 600px auto;
 }
 
 @media (min-width: 768px) {
   .bg-dark-grunge {
-    background-size: 741px 1024px;
+    background-size: 733px 1024px;
     background-attachment: fixed;
   }
 }
@@ -240,13 +240,10 @@ h2:not(.font-brush) {
 /* ============================================================== */
 /* CINEMATIC HERO SPLIT-CURTAIN REVEAL ANIMATION                  */
 /* Fully Solid Black Vertical Split (Top & Bottom) for Web & Mobile */
-/* Hardware-accelerated GPU compositor keyframes for 60/120fps    */
+/* Fluid, frictionless GPU compositor keyframes                   */
 /* ============================================================== */
 @keyframes heroCurtainSplitTop {
   0% {
-    transform: translate3d(0, 0, 0);
-  }
-  14% {
     transform: translate3d(0, 0, 0);
   }
   100% {
@@ -256,9 +253,6 @@ h2:not(.font-brush) {
 
 @keyframes heroCurtainSplitBottom {
   0% {
-    transform: translate3d(0, 0, 0);
-  }
-  14% {
     transform: translate3d(0, 0, 0);
   }
   100% {
@@ -286,7 +280,7 @@ h2:not(.font-brush) {
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  animation: heroCurtainSplitTop 0.95s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+  animation: heroCurtainSplitTop 1.05s cubic-bezier(0.65, 0, 0.2, 1) 0.05s forwards;
 }
 
 .hero-curtain-bottom {
@@ -305,7 +299,7 @@ h2:not(.font-brush) {
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  animation: heroCurtainSplitBottom 0.95s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+  animation: heroCurtainSplitBottom 1.05s cubic-bezier(0.65, 0, 0.2, 1) 0.05s forwards;
 }
 
 @keyframes heroTitleReveal {
@@ -466,19 +460,23 @@ h2:not(.font-brush) {
 .scroll-delay-3 { transition-delay: 0.30s; }
 .scroll-delay-4 { transition-delay: 0.40s; }
 .scroll-delay-5 { transition-delay: 0.50s; }
+.scroll-delay-6 { transition-delay: 0.60s; }
+.scroll-delay-7 { transition-delay: 0.70s; }
 
 /* Subtle Scale Variant for Media Cards & Frames */
-.scroll-reveal-scale {
+.scroll-reveal-scale,
+.scroll-reveal.scroll-reveal-scale {
   opacity: 0;
-  transform: scale(0.96) translate3d(0, 20px, 0);
+  transform: scale(0.96) translate3d(0, 22px, 0);
   transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 
-.scroll-reveal-scale.is-revealed {
-  opacity: 1;
-  transform: scale(1) translate3d(0, 0, 0);
+.scroll-reveal-scale.is-revealed,
+.scroll-reveal.scroll-reveal-scale.is-revealed {
+  opacity: 1 !important;
+  transform: scale(1) translate3d(0, 0, 0) !important;
 }
 
 @media (max-width: 768px) {
@@ -513,6 +511,8 @@ h2:not(.font-brush) {
   .scroll-delay-3 { transition-delay: 0.24s; }
   .scroll-delay-4 { transition-delay: 0.32s; }
   .scroll-delay-5 { transition-delay: 0.40s; }
+  .scroll-delay-6 { transition-delay: 0.48s; }
+  .scroll-delay-7 { transition-delay: 0.56s; }
 }
 
 /* Viewfinder Corner Framing Brackets (Solid & Crisp on all devices) */

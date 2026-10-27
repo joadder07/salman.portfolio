@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight } from 'lucide-react';
@@ -60,6 +61,7 @@ const DEFAULT_HERO_IMAGES: ViewfinderImage[] = [
 export const AboutSection: React.FC = () => {
   const { data: settings } = useSiteSettings();
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [activeVisualId, setActiveVisualId] = useState<string | number | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -105,7 +107,7 @@ export const AboutSection: React.FC = () => {
   const idx3 = (currentIndex + 2) % carouselImages.length;
 
   return (
-    <section id="about" className="relative bg-dark-grunge pt-6 sm:pt-10 lg:pt-28 pb-16 sm:pb-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full overflow-hidden">
+    <section id="about" className="relative -mt-[1px] bg-dark-grunge pt-6 sm:pt-10 lg:pt-28 pb-16 sm:pb-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full overflow-hidden">
       {/* ============================================================== */}
       {/* RESPONSIVE SPLIT LAYOUT (grid-cols-1 lg:grid-cols-12 gap-8)    */}
       {/* ============================================================== */}
@@ -114,12 +116,12 @@ export const AboutSection: React.FC = () => {
         {/* LEFT COLUMN: Multi-line Roles, Bio Text & Salman's Story Link */}
         {/* ------------------------------------------------------------ */}
         <div className="w-full lg:col-span-5 xl:col-span-4 flex flex-col justify-center items-start text-left">
-          {/* Multi-line Roles Stack */}
-          <div className="scroll-reveal flex flex-col items-start text-left select-none space-y-0.5 sm:space-y-1 w-full">
-            {ROLES.map((role) => (
+          {/* Multi-line Roles Stack: Sequentially Fades In After Bio Text */}
+          <div className="flex flex-col items-start text-left select-none space-y-0.5 sm:space-y-1 w-full">
+            {ROLES.map((role, rIdx) => (
               <h2
                 key={role}
-                className="text-[28px] min-[360px]:text-3xl xs:text-4xl sm:text-4xl md:text-5xl lg:text-[2.85rem] font-black uppercase text-white font-heading leading-[0.96] tracking-tight whitespace-normal sm:whitespace-nowrap break-words hover:text-neutral-300 transition-colors duration-200"
+                className={`scroll-reveal scroll-delay-${rIdx + 1} text-[28px] min-[360px]:text-3xl xs:text-4xl sm:text-4xl md:text-5xl lg:text-[2.85rem] font-black uppercase text-white font-heading leading-[0.96] tracking-tight whitespace-normal sm:whitespace-nowrap break-words hover:text-neutral-300 transition-colors duration-200`}
                 style={{
                   fontFamily: "'Anton', 'Bebas Neue', 'Oswald', sans-serif",
                 }}
@@ -129,16 +131,16 @@ export const AboutSection: React.FC = () => {
             ))}
           </div>
 
-          {/* Clean Flow into Bio Text Immediately Below Roles */}
-          <p className="scroll-reveal scroll-delay-1 mt-5 sm:mt-6 text-sm sm:text-base text-neutral-300 font-light leading-relaxed max-w-xl">
+          {/* Clean Flow into Bio Text Immediately Below Roles: APPEARS FIRST ON LOAD/RELOAD */}
+          <p className="scroll-reveal mt-5 sm:mt-6 text-sm sm:text-base text-neutral-300 font-light leading-relaxed max-w-xl">
             {settings?.aboutText ||
               'Researcher at IntelliNova Research Team | Public Health Student at Daffodil International University | Videographer & Storyteller capturing perspectives beyond the lens.'}
           </p>
 
-          {/* Salman's Story Button (Rory Kramer Outline Box Style - Compact on Mobile) */}
+          {/* Salman's Story Button (Rory Kramer Outline Box Style - Compact on Mobile): Sequentially Follows */}
           <Link
             to="/about"
-            className="scroll-reveal scroll-delay-2 mt-5 sm:mt-8 inline-flex items-center justify-center px-4 xs:px-5 sm:px-10 py-2 xs:py-2.5 sm:py-3.5 border-[1.5px] sm:border-2 border-white rounded-none bg-transparent hover:bg-white text-white hover:text-black text-[10px] min-[360px]:text-[11px] sm:text-sm font-bold uppercase tracking-[0.14em] sm:tracking-[0.16em] transition-all duration-200 cursor-pointer text-center select-none w-fit"
+            className="scroll-reveal scroll-delay-6 mt-5 sm:mt-8 inline-flex items-center justify-center px-4 xs:px-5 sm:px-10 py-2 xs:py-2.5 sm:py-3.5 border-[1.5px] sm:border-2 border-white rounded-none bg-transparent hover:bg-white text-white hover:text-black text-[10px] min-[360px]:text-[11px] sm:text-sm font-bold uppercase tracking-[0.14em] sm:tracking-[0.16em] transition-all duration-200 cursor-pointer text-center select-none w-fit"
           >
             SALMAN&apos;S STORY
           </Link>
@@ -158,7 +160,7 @@ export const AboutSection: React.FC = () => {
               {/* Box 1 */}
               <div
                 onClick={() => setIsGalleryOpen(true)}
-                className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-950 shadow-2xl cursor-pointer group"
+                className="scroll-reveal scroll-reveal-scale scroll-delay-1 relative aspect-[4/3] w-full overflow-hidden bg-neutral-950 shadow-2xl cursor-pointer group"
               >
                 {carouselImages.map((img, idx) => (
                   <img
@@ -176,7 +178,7 @@ export const AboutSection: React.FC = () => {
               {/* Box 2 */}
               <div
                 onClick={() => setIsGalleryOpen(true)}
-                className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-950 shadow-2xl cursor-pointer group"
+                className="scroll-reveal scroll-reveal-scale scroll-delay-2 relative aspect-[4/3] w-full overflow-hidden bg-neutral-950 shadow-2xl cursor-pointer group"
               >
                 {carouselImages.map((img, idx) => (
                   <img
@@ -194,7 +196,7 @@ export const AboutSection: React.FC = () => {
               {/* Box 3 */}
               <div
                 onClick={() => setIsGalleryOpen(true)}
-                className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-950 shadow-2xl cursor-pointer group"
+                className="scroll-reveal scroll-reveal-scale scroll-delay-3 relative aspect-[4/3] w-full overflow-hidden bg-neutral-950 shadow-2xl cursor-pointer group"
               >
                 {carouselImages.map((img, idx) => (
                   <img
@@ -242,14 +244,16 @@ export const AboutSection: React.FC = () => {
       {/* ============================================================== */}
       {/* FULL-SCREEN 'VIEW ALL' MODAL GALLERY                           */}
       {/* ============================================================== */}
-      <AnimatePresence>
-        {isGalleryOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col overflow-hidden text-white transform-gpu"
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isGalleryOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-[100] bg-neutral-950/98 sm:bg-black/95 flex flex-col overflow-hidden text-white transform-gpu"
             style={{ transform: 'translate3d(0, 0, 0)' }}
           >
             {/* Modal Top Bar */}
@@ -264,10 +268,11 @@ export const AboutSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsGalleryOpen(false)}
-                className="p-2 sm:p-2.5 rounded-none border border-white/20 text-white/80 hover:text-white hover:border-white transition-colors cursor-pointer"
-                title="Close Gallery"
+                className="p-1.5 sm:p-2 text-white/80 hover:text-white transition-opacity cursor-pointer focus:outline-none"
+                title="Close Archive"
+                aria-label="Close Archive"
               >
-                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                <X className="w-6 h-6 sm:w-6 sm:h-6" />
               </button>
             </div>
 
@@ -281,8 +286,17 @@ export const AboutSection: React.FC = () => {
                 willChange: 'scroll-position',
               }}
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setActiveVisualId(null);
+                  }
+                }}
+              >
                 {carouselImages.map((item, idx) => {
+                  const itemId = item.id || idx;
+                  const isActive = activeVisualId === itemId;
                   const optUrl = getOptimizedImageUrl(item.url, {
                     width: 600,
                     height: 450,
@@ -301,17 +315,27 @@ export const AboutSection: React.FC = () => {
                         delay: Math.min(idx * 0.02, 0.16),
                         ease: [0.16, 1, 0.3, 1],
                       }}
-                      className="rounded-none border border-neutral-850 bg-neutral-950 p-4 hover:border-neutral-500 transition-colors group gpu-accelerated-card"
+                      onClick={() => {
+                        const isTouch = typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+                        if (isTouch) {
+                          setActiveVisualId(isActive ? null : itemId);
+                        }
+                      }}
+                      className={`rounded-none border bg-neutral-950 p-4 transition-all group gpu-accelerated-card cursor-pointer select-none ${
+                        isActive ? 'border-white/60 shadow-lg' : 'border-neutral-850 hover:border-neutral-500'
+                      }`}
                       style={{
                         transform: 'translate3d(0, 0, 0)',
                         willChange: 'transform',
                       }}
                     >
-                      <div className="w-full h-56 rounded-none overflow-hidden bg-neutral-900 border border-neutral-800">
+                      <div className="w-full h-56 rounded-none overflow-hidden bg-neutral-900 border border-neutral-800 relative">
                         <img
                           src={optUrl}
                           alt={item.title || 'Visual'}
-                          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 gpu-accelerated-image"
+                          className={`w-full h-full object-cover transition-transform duration-500 ease-out gpu-accelerated-image ${
+                            isActive ? 'scale-105' : 'group-hover:scale-105'
+                          }`}
                           loading="lazy"
                           decoding="async"
                           style={{
@@ -320,6 +344,17 @@ export const AboutSection: React.FC = () => {
                             WebkitBackfaceVisibility: 'hidden',
                           }}
                         />
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent transition-opacity p-3 flex flex-col justify-end pointer-events-none ${
+                            isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                          }`}
+                        >
+                          {item.title && (
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-white truncate">
+                              {item.title}
+                            </h4>
+                          )}
+                        </div>
                       </div>
                       {item.title && (
                         <h4 className="mt-3 text-sm font-bold uppercase tracking-wider text-white truncate">
@@ -333,7 +368,9 @@ export const AboutSection: React.FC = () => {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
     </section>
   );
 };

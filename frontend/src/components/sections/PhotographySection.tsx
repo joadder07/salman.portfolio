@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -17,6 +18,8 @@ import { useSiteSettings } from '@/api/settings.api';
 import { CommentList, CommentForm } from '@/components/comments';
 import { CameraViewfinderCarousel, ViewfinderImage } from '@/components/ui/CameraViewfinderCarousel';
 import { getOptimizedImageUrl } from '@/components/ui/CldImage';
+import { InstantModalImage } from '@/components/ui/InstantModalImage';
+import { preloadImage, preloadImagesIdle } from '@/utils/imagePreload';
 
 // Curated high-resolution fallback photos for the cinematic viewfinder carousel
 const FALLBACK_PHOTOS: ViewfinderImage[] = [
@@ -56,8 +59,10 @@ const ITEMS_PER_PAGE = 24;
 
 interface PhotoCardProps {
   photo: Photography;
-  onClick: () => void;
+  onOpen: (photo: Photography) => void;
   priority?: boolean;
+  isActive?: boolean;
+  onTap?: () => void;
 }
 
 /**
@@ -66,8 +71,9 @@ interface PhotoCardProps {
  * - IntersectionObserver to lazy-mount <img> only when within 350px of viewport.
  * - Cloudinary & Unsplash auto-format (AVIF/WebP) + resize to 640x480 (reducing memory from 15MB to ~40KB per card).
  * - Hardware GPU accelerated (translateZ(0)) hover transform for consistent 60fps scrolling.
+ * - Immediate high-resolution preloading on hover and pointerdown for zero-delay modal opening.
  */
-const PhotoCard: React.FC<PhotoCardProps> = React.memo(({ photo, onClick, priority = false }) => {
+const PhotoCard: React.FC<PhotoCardProps> = React.memo(({ photo, onOpen, priority = false, isActive = false, onTap }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -104,17 +110,47 @@ const PhotoCard: React.FC<PhotoCardProps> = React.memo(({ photo, onClick, priori
     });
   }, [photo.imageUrl]);
 
+  const modalUrl = useMemo(() => {
+    return getOptimizedImageUrl(photo.imageUrl, {
+      width: 1400,
+      crop: 'limit',
+      quality: 'auto',
+      format: 'auto',
+    });
+  }, [photo.imageUrl]);
+
+  const handlePreload = useCallback(() => {
+    preloadImage(modalUrl, 'high');
+  }, [modalUrl]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    const isTouch = typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    if (isTouch && !isActive) {
+      e.stopPropagation();
+      handlePreload();
+      onTap?.();
+      return;
+    }
+    handlePreload();
+    onOpen(photo);
+  };
+
   return (
     <div
       ref={cardRef}
-      onClick={onClick}
+      onClick={handleCardClick}
+      onMouseEnter={handlePreload}
+      onPointerDown={handlePreload}
+      onTouchStart={handlePreload}
       style={{
         contentVisibility: 'auto',
         containIntrinsicSize: '300px 225px',
         contain: 'layout paint',
         transform: 'translateZ(0)',
       }}
-      className="group relative aspect-[4/3] overflow-hidden bg-neutral-950 border border-neutral-850 hover:border-neutral-500 transition-colors duration-200 cursor-pointer select-none"
+      className={`group relative aspect-[4/3] overflow-hidden bg-neutral-950 border transition-all duration-200 cursor-pointer select-none ${
+        isActive ? 'border-white/60 shadow-lg' : 'border-neutral-850 hover:border-neutral-500'
+      }`}
     >
       {/* Background dark texture placeholder while loading */}
       <div
@@ -122,7 +158,7 @@ const PhotoCard: React.FC<PhotoCardProps> = React.memo(({ photo, onClick, priori
           isLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
         style={{
-          backgroundImage: "url('/images/dark-grunge-texture.png')",
+          backgroundImage: "url('/images/dark-grunge-texture.png?v=2')",
           backgroundRepeat: 'repeat',
           backgroundSize: '300px auto',
         }}
@@ -136,20 +172,29 @@ const PhotoCard: React.FC<PhotoCardProps> = React.memo(({ photo, onClick, priori
           decoding="async"
           onLoad={() => setIsLoaded(true)}
           style={{ willChange: 'transform' }}
-          className={`w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105 ${
+          className={`w-full h-full object-cover transition-transform duration-300 ease-out ${
+            isActive ? 'scale-105' : 'group-hover:scale-105'
+          } ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           } transition-opacity duration-300`}
         />
       )}
 
       {/* Frame overlay with Category and Title */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-4 flex flex-col justify-end pointer-events-none">
+      <div
+        className={`absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent p-4 flex flex-col justify-end pointer-events-none transition-opacity duration-200 ${
+          isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+        }`}
+      >
         <span className="text-[10px] font-mono uppercase text-neutral-400">
           {photo.category || 'Capture'}
         </span>
         <h4 className="text-sm font-bold uppercase text-white truncate">
           {photo.title}
         </h4>
+        <span className="text-[9px] text-white/60 font-mono mt-0.5 sm:hidden">
+          Tap again to expand
+        </span>
       </div>
     </div>
   );
@@ -159,6 +204,7 @@ export const PhotographySection: React.FC = () => {
   const { data: settings } = useSiteSettings();
   const { data: photos, isLoading } = photographyApi.useGetAll();
   const [selectedPhoto, setSelectedPhoto] = useState<Photography | null>(null);
+  const [modalTab, setModalTab] = useState<'photo' | 'comments'>('photo');
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   // Gallery interactive controls
@@ -168,8 +214,39 @@ export const PhotographySection: React.FC = () => {
   const [viewMode, setViewMode] = useState<'paginated' | 'all'>('paginated');
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [visibleAllCount, setVisibleAllCount] = useState<number>(ITEMS_PER_PAGE);
+  const [activePhotoId, setActivePhotoId] = useState<string | null>(null);
 
   const galleryScrollRef = useRef<HTMLDivElement>(null);
+  const mobileModalScrollRef = useRef<HTMLDivElement>(null);
+  const mobileCommentsRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenPhoto = useCallback((photo: Photography) => {
+    preloadImage(
+      getOptimizedImageUrl(photo.imageUrl, {
+        width: 1400,
+        crop: 'limit',
+        quality: 'auto',
+        format: 'auto',
+      }),
+      'high'
+    );
+    setSelectedPhoto(photo);
+    setModalTab('photo');
+  }, []);
+
+  const scrollToComments = useCallback(() => {
+    setModalTab('comments');
+    if (mobileCommentsRef.current) {
+      mobileCommentsRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
+  const scrollToPhoto = useCallback(() => {
+    setModalTab('photo');
+    if (mobileModalScrollRef.current) {
+      mobileModalScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
 
   // Listen for global open-archive events (from Portfolio dropdown or external deep links)
   useEffect(() => {
@@ -331,11 +408,38 @@ export const PhotographySection: React.FC = () => {
     });
   }, [selectedPhoto]);
 
+  // Cached thumbnail URL from the grid to render immediately with 0ms delay
+  const selectedPhotoThumbUrl = useMemo(() => {
+    if (!selectedPhoto?.imageUrl) return '';
+    return getOptimizedImageUrl(selectedPhoto.imageUrl, {
+      width: 640,
+      height: 480,
+      crop: 'fill',
+      quality: 'auto',
+      format: 'auto',
+    });
+  }, [selectedPhoto]);
+
+  // Preload top gallery modal images during idle browser time
+  useEffect(() => {
+    if (isGalleryOpen && displayedPhotos.length > 0) {
+      const topModalUrls = displayedPhotos.slice(0, 10).map((p) =>
+        getOptimizedImageUrl(p.imageUrl, {
+          width: 1400,
+          crop: 'limit',
+          quality: 'auto',
+          format: 'auto',
+        })
+      );
+      preloadImagesIdle(topModalUrls);
+    }
+  }, [isGalleryOpen, displayedPhotos]);
+
   return (
     <section id="photography" className="scroll-mt-20 sm:scroll-mt-24 py-16 sm:py-24 md:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
         {/* MEDIA PREVIEW: LEFT ON DESKTOP, TOP ON MOBILE */}
-        <div className="w-full lg:col-span-7 order-1 lg:order-1 flex items-center justify-center">
+        <div className="scroll-reveal scroll-reveal-scale w-full lg:col-span-7 order-1 lg:order-1 flex items-center justify-center">
           <CameraViewfinderCarousel
             images={carouselImages}
             intervalMs={3500}
@@ -367,39 +471,55 @@ export const PhotographySection: React.FC = () => {
       {/* ============================================================== */}
       {/* FULL-SCREEN 'VIEW ALL' MODAL GALLERY                           */}
       {/* ============================================================== */}
-      <AnimatePresence>
-        {isGalleryOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              backgroundColor: '#0c0d0e',
-              backgroundImage: "url('/images/dark-grunge-texture.png')",
-              backgroundRepeat: 'repeat',
-              backgroundSize: '600px auto',
-            }}
-            className="fixed inset-0 z-50 flex flex-col overflow-hidden"
-          >
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isGalleryOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  backgroundColor: '#0c0d0e',
+                  backgroundImage: "url('/images/dark-grunge-texture.png?v=2')",
+                  backgroundRepeat: 'repeat',
+                  backgroundSize: '600px auto',
+                }}
+                className="fixed inset-0 z-[100] flex flex-col overflow-hidden"
+              >
             {/* Modal Top Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 sm:px-10 py-4 sm:py-5 border-b border-white/10 shrink-0 bg-black/80 backdrop-blur-md gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse shrink-0" />
-                <h3 className="text-base sm:text-lg lg:text-xl font-black uppercase tracking-wider text-white">
-                  Photography Archive
-                </h3>
+            <div className="px-4 xs:px-6 sm:px-10 py-3.5 sm:py-5 border-b border-white/10 shrink-0 bg-black/80 backdrop-blur-md">
+              {/* Row 1: Title on left, Clean 'X' Close Button on Top-Right */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse shrink-0" />
+                  <h3 className="text-base sm:text-lg lg:text-xl font-black uppercase tracking-wider text-white truncate font-heading">
+                    Photography Archive
+                  </h3>
+                </div>
+
+                {/* Top-Right Clean Cross Close Button (Icon only, no 'CLOSE' text) */}
+                <button
+                  type="button"
+                  onClick={() => setIsGalleryOpen(false)}
+                  className="p-1.5 sm:p-2 text-white/80 hover:text-white transition-opacity cursor-pointer focus:outline-none shrink-0"
+                  title="Close Archive"
+                  aria-label="Close Archive"
+                >
+                  <X className="w-6 h-6 sm:w-6 sm:h-6" />
+                </button>
               </div>
 
-              {/* Controls: Search, View Mode, Close */}
-              <div className="flex items-center flex-wrap gap-2.5">
-                <div className="relative">
+              {/* Row 2: Search and View Mode controls */}
+              <div className="flex items-center flex-wrap gap-2.5 mt-3 sm:mt-3.5">
+                <div className="relative flex-1 sm:flex-initial">
                   <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="Search captures..."
                     value={searchQuery}
                     onChange={handleSearchChange}
-                    className="h-8 pl-8 pr-3 text-xs bg-white/5 border border-white/15 text-white placeholder:text-neutral-500 rounded-none focus:outline-none focus:border-white transition-colors w-36 sm:w-48"
+                    className="h-8 pl-8 pr-3 text-xs bg-white/5 border border-white/15 text-white placeholder:text-neutral-500 rounded-none focus:outline-none focus:border-white transition-colors w-full sm:w-48"
                   />
                   {searchQuery && (
                     <button
@@ -418,48 +538,48 @@ export const PhotographySection: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleToggleViewMode}
-                  className="h-8 px-3 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-1.5 text-xs uppercase font-mono tracking-wider"
+                  className="h-8 px-3 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-1.5 text-xs uppercase font-mono tracking-wider shrink-0"
                   title="Toggle between paginated pages and scrolling through all captures"
                 >
                   <SlidersHorizontal className="w-3 h-3" />
                   <span>{viewMode === 'paginated' ? 'View All' : 'Paginated'}</span>
                 </button>
-
-                <button
-                  onClick={() => setIsGalleryOpen(false)}
-                  className="h-8 px-3 rounded-none border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black transition-all cursor-pointer flex items-center gap-1.5 text-xs uppercase font-bold tracking-wider"
-                >
-                  <X className="w-4 h-4" />
-                  <span>Close</span>
-                </button>
               </div>
             </div>
 
-            {/* Category Filter Pills */}
-            {categories.length > 1 && (
-              <div className="px-6 sm:px-10 py-2.5 border-b border-white/5 bg-black/60 backdrop-blur-md overflow-x-auto no-scrollbar flex items-center gap-2">
-                <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-wider mr-1 shrink-0">
-                  Category:
-                </span>
-                {categories.map((cat) => {
-                  const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => handleCategorySelect(cat)}
-                      className={`text-xs px-3 py-1 font-mono uppercase tracking-wider rounded-none transition-all shrink-0 cursor-pointer ${
-                        isActive
-                          ? 'bg-white text-black font-bold'
-                          : 'bg-white/5 text-neutral-400 border border-white/10 hover:border-white/40 hover:text-white'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {/* Category Filter Pills & Hint Bar */}
+            <div className="px-4 sm:px-10 py-2 sm:py-2.5 border-b border-white/5 bg-black/60 backdrop-blur-md flex items-center justify-between gap-3 sm:gap-4 shrink-0">
+              {categories.length > 1 ? (
+                <div className="overflow-x-auto no-scrollbar flex items-center gap-2 min-w-0 flex-1">
+                  <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-wider mr-1 shrink-0">
+                    Category:
+                  </span>
+                  {categories.map((cat) => {
+                    const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => handleCategorySelect(cat)}
+                        className={`text-xs px-3 py-1 font-mono uppercase tracking-wider rounded-none transition-all shrink-0 cursor-pointer ${
+                          isActive
+                            ? 'bg-white text-black font-bold'
+                            : 'bg-white/5 text-neutral-400 border border-white/10 hover:border-white/40 hover:text-white'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div />
+              )}
+
+              <span className="text-[11px] sm:text-xs text-neutral-400 font-light tracking-wide whitespace-nowrap ml-auto shrink-0 select-none">
+                Click to view the full image
+              </span>
+            </div>
 
             {/* Gallery Grid Content with Smooth Scroll & Hardware Acceleration */}
             <div
@@ -504,13 +624,22 @@ export const PhotographySection: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) {
+                        setActivePhotoId(null);
+                      }
+                    }}
+                  >
                     {displayedPhotos.map((photo, idx) => (
                       <PhotoCard
                         key={photo.id}
                         photo={photo}
                         priority={idx < 8}
-                        onClick={() => setSelectedPhoto(photo)}
+                        isActive={activePhotoId === photo.id}
+                        onTap={() => setActivePhotoId(photo.id)}
+                        onOpen={handleOpenPhoto}
                       />
                     ))}
                   </div>
@@ -581,67 +710,122 @@ export const PhotographySection: React.FC = () => {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* ============================================================== */}
       {/* SINGLE PHOTO DETAIL & COMMENTS MODAL                           */}
       {/* ============================================================== */}
-      <AnimatePresence>
-        {selectedPhoto && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {selectedPhoto && (
+              <div className="fixed inset-0 z-[105] flex items-center justify-center p-2 sm:p-4 bg-black/95 md:bg-black/90 md:backdrop-blur-md">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-4xl max-h-[90vh] rounded-none overflow-hidden flex flex-col md:flex-row border border-white/20 bg-neutral-950 shadow-2xl"
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                transform: 'translate3d(0, 0, 0)',
+                willChange: 'transform, opacity',
+              }}
+              className="relative w-full max-w-4xl max-h-[92vh] rounded-none overflow-hidden flex flex-col md:flex-row border border-white/20 bg-neutral-950 shadow-2xl"
             >
-              {/* Action Buttons */}
-              <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+              {/* Desktop Action Buttons (External Link + Close) */}
+              <div className="hidden md:flex absolute top-4 right-4 z-20 items-center gap-2">
                 <Link
                   to={`/photography/${selectedPhoto.id}`}
-                  className="p-2 bg-black/60 hover:bg-white hover:text-black text-white border border-white/20 transition-colors cursor-pointer"
+                  className="p-2 bg-black/75 hover:bg-white hover:text-black text-white border border-white/20 transition-colors cursor-pointer"
                   title="Open dedicated full page"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </Link>
                 <button
                   onClick={() => setSelectedPhoto(null)}
-                  className="p-2 bg-black/60 hover:bg-white hover:text-black text-white border border-white/20 transition-colors cursor-pointer"
+                  className="p-2 bg-black/75 hover:bg-white hover:text-black text-white border border-white/20 transition-colors cursor-pointer"
                   aria-label="Close photo preview"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Photo Display with High-Res Compressed Stream */}
-              <div className="w-full md:w-3/5 bg-black flex items-center justify-center overflow-hidden">
-                <img
-                  src={previewModalImageUrl}
-                  alt={selectedPhoto.title}
-                  decoding="async"
-                  className="max-h-[45vh] md:max-h-[85vh] w-full object-contain"
-                />
+              {/* Mobile Header Bar: PHOTO, COMMENTS, and Close ('×') cleanly aligned */}
+              <div className="md:hidden flex items-center justify-between border-b border-white/10 bg-black/95 p-1.5 shrink-0 gap-1.5">
+                <div className="flex items-center flex-1 gap-1">
+                  <button
+                    type="button"
+                    onClick={scrollToPhoto}
+                    className={`flex-1 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      modalTab === 'photo'
+                        ? 'bg-white text-black shadow'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    Photo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={scrollToComments}
+                    className={`flex-1 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      modalTab === 'comments'
+                        ? 'bg-white text-black shadow'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    Comments ({photoDetail?.comments?.length ?? 0})
+                  </button>
+                </div>
+
+                {/* Mobile Close Button ('×' only) */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedPhoto(null)}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                  aria-label="Close photo preview"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              {/* Info & Comments Sidebar */}
-              <div className="w-full md:w-2/5 p-6 flex flex-col overflow-y-auto bg-neutral-900/90 max-h-[50vh] md:max-h-[85vh]">
-                <div className="shrink-0">
-                  <span className="text-xs uppercase font-mono text-neutral-400 font-semibold tracking-wider">
+              {/* -------------------------------------------------------- */}
+              {/* MOBILE VIEW (Continuous Natural Scroll with Comments)    */}
+              {/* -------------------------------------------------------- */}
+              <div
+                ref={mobileModalScrollRef}
+                className="md:hidden flex-1 flex flex-col min-h-0 overflow-y-auto"
+              >
+                {/* Photo display */}
+                <div className="w-full bg-black flex items-center justify-center p-2 min-h-[220px] max-h-[50vh] overflow-hidden shrink-0">
+                  <InstantModalImage
+                    thumbSrc={selectedPhotoThumbUrl}
+                    src={previewModalImageUrl}
+                    alt={selectedPhoto.title}
+                    className="max-w-full max-h-[48vh] w-auto h-auto object-contain select-none mx-auto"
+                  />
+                </div>
+
+                {/* Metadata & Direct Comments Feed & Input underneath */}
+                <div className="p-4 bg-neutral-900/90 flex flex-col flex-1">
+                  <span className="text-[10px] uppercase font-mono text-neutral-400 font-semibold tracking-wider">
                     {selectedPhoto.category || 'Photography'}
                   </span>
-                  <h3 className="text-xl font-bold uppercase text-white mt-1">{selectedPhoto.title}</h3>
+                  <h3 className="text-lg font-bold uppercase text-white mt-0.5">{selectedPhoto.title}</h3>
                   {selectedPhoto.description && (
-                    <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+                    <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">
                       {selectedPhoto.description}
                     </p>
                   )}
 
                   {selectedPhoto.tags && selectedPhoto.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-3">
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
                       {selectedPhoto.tags.map((tag, i) => (
                         <span
                           key={i}
-                          className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-none bg-white/5 text-neutral-400 border border-white/10"
+                          className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 bg-white/5 text-neutral-400 border border-white/10"
                         >
                           <Tag className="w-2.5 h-2.5 text-white" /> {tag}
                         </span>
@@ -651,34 +835,112 @@ export const PhotographySection: React.FC = () => {
 
                   <hr className="my-4 border-white/10" />
 
-                  {/* Comments Header */}
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5 text-white" /> Community Thoughts
-                    </h4>
-                    <span className="text-[11px] font-mono text-neutral-400">
-                      {photoDetail?.comments?.length ?? 0} {photoDetail?.comments?.length === 1 ? 'comment' : 'comments'}
-                    </span>
+                  {/* Comments Section directly underneath image */}
+                  <div ref={mobileCommentsRef} className="scroll-mt-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                        <MessageSquare className="w-3.5 h-3.5 text-white" /> Community Thoughts
+                      </h4>
+                      <span className="text-[11px] font-mono text-neutral-400">
+                        {photoDetail?.comments?.length ?? 0} {photoDetail?.comments?.length === 1 ? 'comment' : 'comments'}
+                      </span>
+                    </div>
+
+                    {/* Approved Comments List */}
+                    <div className="mb-4">
+                      <CommentList
+                        comments={photoDetail?.comments}
+                        isLoading={isLoadingDetail}
+                      />
+                    </div>
+
+                    {/* Submit Comment Form directly visible underneath */}
+                    <div className="pt-2 border-t border-white/10">
+                      <CommentForm
+                        photographyId={selectedPhoto.id}
+                        placeholder="What do you think about this capture?"
+                      />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Approved Comments Feed */}
-                <div className="flex-1 min-h-0">
-                  <CommentList
-                    comments={photoDetail?.comments}
-                    isLoading={isLoadingDetail}
+              {/* -------------------------------------------------------- */}
+              {/* DESKTOP VIEW (Side-by-side Photo & Info/Comments)        */}
+              {/* -------------------------------------------------------- */}
+              <div className="hidden md:flex w-full">
+                {/* Photo Display */}
+                <div className="w-3/5 bg-black flex items-center justify-center p-4 min-h-[300px] max-h-[85vh] overflow-hidden">
+                  <InstantModalImage
+                    thumbSrc={selectedPhotoThumbUrl}
+                    src={previewModalImageUrl}
+                    alt={selectedPhoto.title}
+                    className="max-w-full max-h-[82vh] w-auto h-auto object-contain select-none mx-auto"
                   />
                 </div>
 
-                {/* Submit New Comment */}
-                <div className="mt-4 shrink-0">
-                  <CommentForm photographyId={selectedPhoto.id} />
+                {/* Info & Comments Sidebar */}
+                <div className="w-2/5 p-6 flex flex-col overflow-y-auto bg-neutral-900/90 max-h-[85vh]">
+                  <div className="shrink-0">
+                    <span className="text-xs uppercase font-mono text-neutral-400 font-semibold tracking-wider">
+                      {selectedPhoto.category || 'Photography'}
+                    </span>
+                    <h3 className="text-xl font-bold uppercase text-white mt-1">{selectedPhoto.title}</h3>
+                    {selectedPhoto.description && (
+                      <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+                        {selectedPhoto.description}
+                      </p>
+                    )}
+
+                    {selectedPhoto.tags && selectedPhoto.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {selectedPhoto.tags.map((tag, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-none bg-white/5 text-neutral-400 border border-white/10"
+                          >
+                            <Tag className="w-2.5 h-2.5 text-white" /> {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <hr className="my-4 border-white/10" />
+
+                    {/* Comments Header */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                        <MessageSquare className="w-3.5 h-3.5 text-white" /> Community Thoughts
+                      </h4>
+                      <span className="text-[11px] font-mono text-neutral-400">
+                        {photoDetail?.comments?.length ?? 0} {photoDetail?.comments?.length === 1 ? 'comment' : 'comments'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Approved Comments Feed */}
+                  <div className="flex-1 min-h-0">
+                    <CommentList
+                      comments={photoDetail?.comments}
+                      isLoading={isLoadingDetail}
+                    />
+                  </div>
+
+                  {/* Submit New Comment */}
+                  <div className="mt-4 shrink-0">
+                    <CommentForm
+                      photographyId={selectedPhoto.id}
+                      placeholder="What do you think about this capture?"
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
     </section>
   );
 };

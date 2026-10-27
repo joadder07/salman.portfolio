@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronRight, ArrowRight, X, ExternalLink, Sparkles, Maximize2 } from 'lucide-react';
 import { HeroImageSlot, useSiteSettings } from '@/api/settings.api';
 import { getOptimizedImageUrl } from '@/components/ui/CldImage';
@@ -249,10 +250,12 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = React.mem
       </div>
 
       {/* Full-screen Modal to view all pictures at once */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-neutral-950/98 sm:bg-black/95 flex flex-col p-4 sm:p-8 animate-in fade-in duration-200 transform-gpu"
-          style={{ transform: 'translate3d(0, 0, 0)' }}
+      {typeof document !== 'undefined' &&
+        isModalOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] bg-neutral-950/98 sm:bg-black/95 flex flex-col p-4 sm:p-8 animate-in fade-in duration-200 transform-gpu"
+            style={{ transform: 'translate3d(0, 0, 0)' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setIsModalOpen(false);
@@ -273,10 +276,11 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = React.mem
                 setIsModalOpen(false);
                 setSelectedImage(null);
               }}
-              className="p-2 rounded-full border border-white/15 text-white hover:bg-white/10 transition-colors cursor-pointer"
-              aria-label="Close modal"
+              className="p-1.5 sm:p-2 text-white/80 hover:text-white transition-opacity cursor-pointer focus:outline-none"
+              title="Close Archive"
+              aria-label="Close Archive"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6 sm:w-6 sm:h-6" />
             </button>
           </div>
 
@@ -352,7 +356,8 @@ export const HeroGalleryCarousel: React.FC<HeroGalleryCarouselProps> = React.mem
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

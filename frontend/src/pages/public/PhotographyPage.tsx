@@ -93,7 +93,7 @@ export const PhotographyPage: React.FC = () => {
             })}
             alt={photo.title}
             decoding="async"
-            className="w-full max-h-[75vh] object-contain mx-auto"
+            className="max-w-full max-h-[75vh] w-auto h-auto object-contain mx-auto"
           />
         </motion.div>
 

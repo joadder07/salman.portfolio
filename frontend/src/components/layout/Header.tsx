@@ -453,8 +453,8 @@ export const Header: React.FC = () => {
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[100] bg-dark-grunge text-white flex flex-col overflow-y-auto overscroll-contain select-none md:hidden"
             style={{
-              backgroundColor: '#12100e',
-              backgroundImage: "url('/images/dark-grunge-texture.png')",
+              backgroundColor: '#000000',
+              backgroundImage: "url('/images/dark-grunge-texture.png?v=2')",
               backgroundRepeat: 'repeat',
               backgroundSize: '400px auto',
             }}

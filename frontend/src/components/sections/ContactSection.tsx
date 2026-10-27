@@ -54,22 +54,29 @@ export const ContactSection: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="scroll-mt-20 sm:scroll-mt-24 pt-5 pb-2 sm:py-12 px-3 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full overflow-hidden">
+    <section id="contact" className="scroll-mt-20 sm:scroll-mt-24 pt-8 pb-3 sm:py-12 px-3 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full overflow-hidden">
       {/* ============================================================== */}
       {/* SECTION HEADER: Clean Minimalist Typography                     */}
       {/* ============================================================== */}
-      <div className="scroll-reveal max-w-4xl lg:max-w-5xl mx-auto mb-2.5 sm:mb-6 flex flex-col md:flex-row md:items-end justify-between gap-1.5 sm:gap-3 text-left">
-        <div>
-          <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-[0.2em] sm:tracking-[0.25em] text-neutral-400 mb-0.5 sm:mb-1 block">
-            Connect &amp; Collaborate
-          </span>
-          <h2 className="text-xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white leading-tight font-heading">
-            Send a Message
-          </h2>
-        </div>
-        <p className="text-[11px] sm:text-sm text-neutral-400 font-light leading-snug sm:leading-relaxed max-w-md">
-          Reach out for collaborations, research inquiries, or drop an anonymous whisper. Whether you have a project idea, an invitation, or simply want to connect, feel free to drop a line below.
+      <div className="scroll-reveal max-w-4xl lg:max-w-5xl mx-auto mb-4 sm:mb-6 text-left">
+        {/* Elegant Section Intro / Passion Note */}
+        <p className="text-xs sm:text-[13px] md:text-sm text-neutral-400 font-light italic tracking-wide leading-relaxed mb-6 sm:mb-4 md:mb-5 max-w-2xl">
+          I don&apos;t consider myself a professional photographer or videographer. I simply pursue photography and videography out of passion and personal interest.
         </p>
+
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 sm:gap-3">
+          <div>
+            <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-[0.2em] sm:tracking-[0.25em] text-neutral-400 mb-0.5 sm:mb-1 block">
+              Connect &amp; Collaborate
+            </span>
+            <h2 className="text-xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white leading-tight font-heading">
+              Send a Message
+            </h2>
+          </div>
+          <p className="text-[11px] sm:text-sm text-neutral-400 font-light leading-snug sm:leading-relaxed max-w-md">
+            Reach out for collaborations, research inquiries, or drop an anonymous whisper. Whether you have a project idea, an invitation, or simply want to connect, feel free to drop a line below.
+          </p>
+        </div>
       </div>
 
       {/* ============================================================== */}
